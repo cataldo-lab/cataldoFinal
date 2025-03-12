@@ -294,4 +294,4 @@ Este proyecto utiliza el stack **PERN**, que incluye las siguientes tecnologías
 
 Estas tecnologías y herramientas forman la base de la aplicación y permiten su funcionamiento de forma correcta.
 
-⌨️ with ❤️ by [@Didudocl](https://github.com/Didudocl)
+⌨️ with ❤️ by [@Didudocl](https://github.com/Didudocl)# cataldoFinal
