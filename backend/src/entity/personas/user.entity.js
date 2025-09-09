@@ -7,7 +7,6 @@ export const Role = {
   GERENTE: "gerente",
   TRABAJADOR_TIENDA: "trabajador_tienda",
   CLIENTE: "cliente",
-  TRABAJADOR_FABRICA: "trabajador_fabrica",
 }
 
 const UserSchema = new EntitySchema({
