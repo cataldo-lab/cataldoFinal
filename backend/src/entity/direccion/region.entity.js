@@ -15,5 +15,21 @@ export const RegionSchema = new EntitySchema({
             length: 100,
             nullable: false
         }
+    },
+    relations:{
+        pais:{
+            type: "many-to-one",
+            target: "Pais",
+            joinColumn: { name: "id_pais" },
+            nullable: false,
+            cascade: true
+        },
+        provincias:{
+            type: "one-to-many",
+            target: "Provincia",
+            inverseSide: "region",
+            //cascade: true
+        }
+
     }
 })

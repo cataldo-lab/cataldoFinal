@@ -15,5 +15,13 @@ export const PaisSchema = new EntitySchema({
             length: 100,
             nullable: false
         }
+    },
+    relations: {
+        regiones: {
+            type: "one-to-many",
+            target: "Region",
+            inverseSide: "pais",
+            //cascade: true
+        }
     }
 })

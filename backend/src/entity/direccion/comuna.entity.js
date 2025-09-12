@@ -1,13 +1,13 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-export const comunaSchema = new EntitySchema({
+export const ComunaSchema = new EntitySchema({
     name: "Comuna",
     tableName: "comuna",
     columns: {
         id_comuna: {
             type: "int",
-            primary: true, 
+            primary: true,
             generated: true,
         },
         nombre_comuna: {
@@ -15,27 +15,35 @@ export const comunaSchema = new EntitySchema({
             length: 100,
             nullable: false
         },
-        nombre_calle:{
+        nombre_calle: {
             type: "varchar",
             length: 100,
             nullable: false
         },
-        numero_calle:{
+        numero_calle: {
             type: "int",
             nullable: false
         },
-        departamento:{
+        departamento: {
             type: "boolean",
             nullable: true
         },
-        numero_depto:{
+        numero_depto: {
             type: "int",
             nullable: true
         },
-        bloque_depto:{
+        bloque_depto: {
             type: "varchar",
             length: 10,
             nullable: true
         }
+    },
+    relations: {
+        provincia: {
+            type: "many-to-one",       
+            target: "Provincia",
+            joinColumn: { name: "id_provincia" },
+            nullable: false,
+        }
     }
-})
+});
