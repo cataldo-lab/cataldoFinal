@@ -15,4 +15,9 @@ export const productoSchema = new EntitySchema({
             length: 100,
             nullable: false
         },
+        categoria_producto: {
+            type: "varchar",
+            length: 100,
+            nullable: false
+        },
 }})
