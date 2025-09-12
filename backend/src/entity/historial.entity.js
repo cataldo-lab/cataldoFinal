@@ -40,7 +40,14 @@ export const historialSchema = new EntitySchema({
             nullable: false,
             default: () => "CURRENT_TIMESTAMP"
         }
-        
-        
-
-    }})
+    },
+    relations: {
+        operacion:{
+            type: "many-to-one",
+            target: "Operacion",
+            joinColumn: { name: "id_operacion" },
+            nullable: false,
+            cascade: false
+    }}
+})
+    

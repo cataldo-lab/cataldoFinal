@@ -32,5 +32,14 @@ export const Cliente = new EntitySchema({
             nullable: true
         }
 
+    },
+    relations: {
+        user:{
+            type: "one-to-one",
+            target: "User",
+            joinColumn: { name: "id_user" },
+            nullable: false,
+            cascade: true
+        }
     }
 });

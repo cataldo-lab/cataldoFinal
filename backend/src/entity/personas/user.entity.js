@@ -31,30 +31,44 @@ const UserSchema = new EntitySchema({
       unique: true,
       nullable: false,
     },
-    nombres:{
+    nombres_persona:{
       type: "varchar",
       length: 100,
       nullable: false,
     },
-    apellidos:{
+    apellidos_persona:{
       type: "varchar",
       length: 100,
       nullable: false,
     },  
 
-    correo: {
+    correo_persona: {
       type: "varchar",
       length: 255,
       nullable: false,
       unique: true,
     },
-    rol: {
+    nacionalidad:{
+      type: "varchar",
+      length: 100,
+      nullable: false,
+    },
+    fecha_nacimiento:{
+      type: "date",
+      nullable: false,
+    },
+    genero_persona:{
+      type: "varchar",
+      length: 50,
+      nullable: false,
+    },
+    rol_persona: {
       type: "enum",
       enum:Role,
       default: Role.CLIENTE,
     
     },
-    password: {
+    password_hash: {
       type: "varchar",
       nullable: false,
     },
@@ -87,6 +101,16 @@ const UserSchema = new EntitySchema({
       unique: true,
     },
   ],
+  
+  relations: {
+    comuna:{
+      type: "many-to-one",
+      target: "Comuna",
+      joinColumn: { name: "id_comuna" },
+      nullable: true,
+      cascade: false
+    }
+  }
 });
 
 export default UserSchema;

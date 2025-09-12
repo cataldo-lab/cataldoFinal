@@ -34,5 +34,14 @@ export const Encuesta = new EntitySchema({
             nullable: null,
             default: () => "CURRENT_TIMESTAMP"
         }
+    },
+    relations: {
+        operacion:{
+            type: "one-to-one",
+            target: "Operacion",
+            joinColumn: { name: "id_operacion" },
+            nullable: false,
+            cascade: true
+        }
     }
 });

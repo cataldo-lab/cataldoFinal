@@ -20,5 +20,14 @@ const PersonaTiendaSchema = new EntitySchema({
             length: 20,
             nullable: true
         }
+    },
+    relations: {
+        user:{
+            type: "one-to-one",
+            target: "User",
+            joinColumn: { name: "id_user" },
+            nullable: false,
+            cascade: true
+        }
     }
 })
