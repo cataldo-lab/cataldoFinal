@@ -47,6 +47,12 @@ export const representanteSchema = new EntitySchema({
         }
     },
     relations: {
-        // Define any relationships with other entities here
+        proveedores:{
+            type: "many-to-one",
+            target: "Proveedores",
+            joinColumn: { name: "id_proveedor" },
+            nullable: false,
+            cascade: true
+        }
     }
 });
