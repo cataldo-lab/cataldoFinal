@@ -1,4 +1,4 @@
-import User from "../entity/user.entity.js";
+import User from "../entity/personas/user.entity.js";
 import { AppDataSource } from "../config/configDb.js";
 import {
 handleErrorClient,

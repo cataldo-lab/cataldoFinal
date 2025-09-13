@@ -1,5 +1,5 @@
 "use strict";
-import User from "../entity/user.entity.js";
+import User from "../entity/personas/user.entity.js";
 import jwt from "jsonwebtoken";
 import { AppDataSource } from "../config/configDb.js";
 import { comparePassword, encryptPassword } from "../helpers/bcrypt.helper.js";
