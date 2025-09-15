@@ -17,8 +17,8 @@ import { ProductoMaterialesSchema } from "../entity/producto_materiales.entity.j
 import { proveedoresSchema } from "../entity/proveedores.entity.js";
 import { representanteSchema } from "../entity/respresentante.entity.js";
 import { historialSchema } from "../entity/historial.entity.js";
-import { Encuesta } from "../entity/encuesta.entity.js";
-import { CostoTerceros } from "../entity/costoTerceros.entity.js";
+import { EncuestaSchema } from "../entity/encuesta.entity.js";
+import { CostoTercerosSchema } from "../entity/costoTerceros.entity.js";
 
 
 export const AppDataSource = new DataSource({
@@ -47,8 +47,8 @@ export const AppDataSource = new DataSource({
     proveedoresSchema,
     representanteSchema,
     historialSchema,
-    Encuesta,
-    CostoTerceros
+    EncuestaSchema,
+    CostoTercerosSchema
   ]
 });
 
