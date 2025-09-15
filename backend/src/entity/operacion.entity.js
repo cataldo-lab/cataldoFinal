@@ -39,8 +39,8 @@ export const operacionSchema = new EntitySchema({
      relations: {
         cliente: {
             type: "many-to-one",
-            target: "Cliente",
-            joinColumn: { name: "id_cliente" },
+            target: "User",
+            joinColumn: { name: "id_user" },
             nullable: false
         }
     }

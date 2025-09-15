@@ -59,4 +59,12 @@ export const productoSchema = new EntitySchema({
             nullable: false,
             default: () => "CURRENT_TIMESTAMP"
         }
-}})
+},
+    relations: {
+        operaciones: {
+            type: "one-to-many",
+            target: "Operacion",
+            inverseSide: "producto"
+        }
+    }
+})

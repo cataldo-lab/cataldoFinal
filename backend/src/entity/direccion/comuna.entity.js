@@ -44,6 +44,11 @@ export const ComunaSchema = new EntitySchema({
             target: "Provincia",
             joinColumn: { name: "id_provincia" },
             nullable: false,
+        },
+        user:{
+            type: "one-to-many",
+            target: "User",
+            inverseSide: "comuna"
         }
     }
 });

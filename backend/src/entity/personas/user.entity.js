@@ -55,6 +55,28 @@ const UserSchema = new EntitySchema({
       nullable: false,
     },
   },
+  retarion:{
+    cliente:{
+        type: "one-to-one",
+        target: "Cliente",
+      },
+    personaTienda:{
+        type: "one-to-one",
+        target: "PersonaTienda",
+      },
+    operaciones:{
+        type: "one-to-many",
+        target: "Operacion",
+        inverseSide: "cliente"
+      },
+    comuna:{
+        type: "many-to-one",
+        target: "Comuna",
+        joinColumn: { name: "id_comuna" },
+        nullable: false,
+        eager: true
+      }
+  },
   indices: [
     {
       name: "IDX_USER_ID",
