@@ -8,7 +8,7 @@ import passport from "passport";
 import express, { json, urlencoded } from "express";
 import { cookieKey, HOST, PORT } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
-import { createUsers } from "./config/initialSetup.js";
+import { runInitialSetup } from "./config/initialSetup.js";
 import { passportJwtSetup } from "./auth/passport.auth.js";
 
 async function setupServer() {
@@ -66,21 +66,35 @@ async function setupServer() {
     });
   } catch (error) {
     console.log("Error en index.js -> setupServer(), el error es: ", error);
+    throw error;
   }
 }
 
 async function setupAPI() {
   try {
+    console.log("🔄 Iniciando API...");
+    
+    // 1. Conectar a la base de datos
+    console.log("📊 Conectando a la base de datos...");
     await connectDB();
+    
+    // 2. Ejecutar setup inicial (crear datos básicos)
+    console.log("⚙️ Ejecutando configuración inicial...");
+    await runInitialSetup();
+    
+    // 3. Iniciar servidor
+    console.log("🌐 Iniciando servidor...");
     await setupServer();
-    await createUsers();
+    
   } catch (error) {
-    console.log("Error en index.js -> setupAPI(), el error es: ", error);
+    console.log("❌ Error en index.js -> setupAPI(), el error es: ", error);
+    process.exit(1);
   }
 }
 
 setupAPI()
-  .then(() => console.log("=> API Iniciada exitosamente"))
-  .catch((error) =>
-    console.log("Error en index.js -> setupAPI(), el error es: ", error),
-  );
+  .then(() => console.log("🎉 => API Iniciada exitosamente"))
+  .catch((error) => {
+    console.log("💥 Error en index.js -> setupAPI(), el error es: ", error);
+    process.exit(1);
+  });

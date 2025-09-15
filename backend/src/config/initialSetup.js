@@ -11,13 +11,15 @@ import { MaterialesSchema } from "../entity/materiales.entity.js";
 import { CostoTercerosSchema } from "../entity/costoTerceros.entity.js";
 import { ProductoSchema } from "../entity/producto.entity.js";
 
-
 async function createPaises() {
   try {
     const paisRepository = AppDataSource.getRepository("Pais");
     
     const count = await paisRepository.count();
-    if (count > 0) return;
+    if (count > 0) {
+      console.log("* => Países ya existen, omitiendo creación");
+      return;
+    }
 
     await Promise.all([
       paisRepository.save(
@@ -40,6 +42,7 @@ async function createPaises() {
     console.log("* => Países creados exitosamente");
   } catch (error) {
     console.error("Error al crear países:", error);
+    throw error;
   }
 }
 
@@ -49,12 +52,15 @@ async function createRegiones() {
     const paisRepository = AppDataSource.getRepository("Pais");
     
     const count = await regionRepository.count();
-    if (count > 0) return;
+    if (count > 0) {
+      console.log("* => Regiones ya existen, omitiendo creación");
+      return;
+    }
 
     const chile = await paisRepository.findOne({ where: { nombre_pais: "Chile" } });
     if (!chile) {
       console.error("No se encontró el país Chile para crear regiones");
-      return;
+      throw new Error("País Chile no encontrado");
     }
 
     const regiones = [
@@ -90,6 +96,7 @@ async function createRegiones() {
     console.log("* => Regiones creadas exitosamente");
   } catch (error) {
     console.error("Error al crear regiones:", error);
+    throw error;
   }
 }
 
@@ -99,7 +106,10 @@ async function createProvincias() {
     const regionRepository = AppDataSource.getRepository("Region");
     
     const count = await provinciaRepository.count();
-    if (count > 0) return;
+    if (count > 0) {
+      console.log("* => Provincias ya existen, omitiendo creación");
+      return;
+    }
 
     const biobio = await regionRepository.findOne({ 
       where: { nombre_region: "Región del Biobío" } 
@@ -107,7 +117,7 @@ async function createProvincias() {
     
     if (!biobio) {
       console.error("No se encontró la Región del Biobío para crear provincias");
-      return;
+      throw new Error("Región del Biobío no encontrada");
     }
 
     const provincias = [
@@ -130,10 +140,9 @@ async function createProvincias() {
     console.log("* => Provincias creadas exitosamente");
   } catch (error) {
     console.error("Error al crear provincias:", error);
+    throw error;
   }
 }
-
-// Crear comunas
 
 async function createComunas() {
   try {
@@ -141,7 +150,10 @@ async function createComunas() {
     const provinciaRepository = AppDataSource.getRepository("Provincia");
     
     const count = await comunaRepository.count();
-    if (count > 0) return;
+    if (count > 0) {
+      console.log("* => Comunas ya existen, omitiendo creación");
+      return;
+    }
 
     const concepcion = await provinciaRepository.findOne({ 
       where: { nombre_provincia: "Provincia de Concepción" } 
@@ -149,7 +161,7 @@ async function createComunas() {
     
     if (!concepcion) {
       console.error("No se encontró la Provincia de Concepción para crear comunas");
-      return;
+      throw new Error("Provincia de Concepción no encontrada");
     }
 
     const comunas = [
@@ -181,17 +193,19 @@ async function createComunas() {
     console.log("* => Comunas creadas exitosamente");
   } catch (error) {
     console.error("Error al crear comunas:", error);
+    throw error;
   }
 }
 
-//---------------------------------------
-// Crear proveedores iniciales
 async function createProveedores() {
   try {
     const proveedorRepository = AppDataSource.getRepository("Proveedores");
     
     const count = await proveedorRepository.count();
-    if (count > 0) return;
+    if (count > 0) {
+      console.log("* => Proveedores ya existen, omitiendo creación");
+      return;
+    }
 
     await Promise.all([
       proveedorRepository.save(
@@ -243,6 +257,7 @@ async function createProveedores() {
     console.log("* => Proveedores creados exitosamente");
   } catch (error) {
     console.error("Error al crear proveedores:", error);
+    throw error;
   }
 }
 
@@ -252,7 +267,10 @@ async function createMateriales() {
     const proveedorRepository = AppDataSource.getRepository("Proveedores");
     
     const count = await materialRepository.count();
-    if (count > 0) return;
+    if (count > 0) {
+      console.log("* => Materiales ya existen, omitiendo creación");
+      return;
+    }
 
     const proveedorMadera = await proveedorRepository.findOne({ 
       where: { rol_proveedor: "Materiales de Construcción" } 
@@ -266,6 +284,10 @@ async function createMateriales() {
     const proveedorHerrajes = await proveedorRepository.findOne({ 
       where: { rol_proveedor: "Herrajes y Accesorios" } 
     });
+
+    if (!proveedorMadera || !proveedorVidrio || !proveedorTela || !proveedorHerrajes) {
+      throw new Error("No se encontraron todos los proveedores necesarios");
+    }
 
     await Promise.all([
       // Materiales de madera
@@ -377,18 +399,19 @@ async function createMateriales() {
     console.log("* => Materiales creados exitosamente");
   } catch (error) {
     console.error("Error al crear materiales:", error);
+    throw error;
   }
 }
 
-//---------------------------------------
-
-// Crear costos terceros iniciales
 async function createCostosTerceros() {
   try {
     const costoTercerosRepository = AppDataSource.getRepository("CostoTerceros");
     
     const count = await costoTercerosRepository.count();
-    if (count > 0) return;
+    if (count > 0) {
+      console.log("* => Costos terceros ya existen, omitiendo creación");
+      return;
+    }
 
     await Promise.all([
       costoTercerosRepository.save(
@@ -410,21 +433,28 @@ async function createCostosTerceros() {
     console.log("* => Costos terceros creados exitosamente");
   } catch (error) {
     console.error("Error al crear costos terceros:", error);
+    throw error;
   }
 }
 
-// Crear productos iniciales
 async function createProductos() {
   try {
     const productoRepository = AppDataSource.getRepository("Producto");
     const costoTercerosRepository = AppDataSource.getRepository("CostoTerceros");
     
     const count = await productoRepository.count();
-    if (count > 0) return;
+    if (count > 0) {
+      console.log("* => Productos ya existen, omitiendo creación");
+      return;
+    }
 
     const costoTerceros2024 = await costoTercerosRepository.findOne({
       where: { anno: 2024 }
     });
+
+    if (!costoTerceros2024) {
+      throw new Error("No se encontraron costos terceros para 2024");
+    }
 
     await Promise.all([
       // Muebles
@@ -557,16 +587,19 @@ async function createProductos() {
     console.log("* => Productos creados exitosamente");
   } catch (error) {
     console.error("Error al crear productos:", error);
+    throw error;
   }
 }
 
-// Crear usuario administrador
 async function createUsers() {
   try {
     const userRepository = AppDataSource.getRepository(User);
 
     const count = await userRepository.count();
-    if (count > 0) return;
+    if (count > 0) {
+      console.log("* => Usuario administrador ya existe, omitiendo creación");
+      return;
+    }
 
     await userRepository.save(
       userRepository.create({
@@ -582,17 +615,42 @@ async function createUsers() {
     console.log("* => Usuario administrador creado exitosamente");
   } catch (error) {
     console.error("Error al crear usuario administrador:", error);
+    throw error;
   }
 }
 
+// Función principal que ejecuta todo el setup inicial
+export async function runInitialSetup() {
+  console.log("🚀 Iniciando configuración inicial de la base de datos...");
+  
+  try {
+    // Ejecutar en orden de dependencias
+    await createPaises();
+    await createRegiones();
+    await createProvincias();
+    await createComunas();
+    await createProveedores();
+    await createMateriales();
+    await createCostosTerceros();
+    await createProductos();
+    await createUsers();
+    
+    console.log("✅ Configuración inicial completada exitosamente");
+  } catch (error) {
+    console.error("❌ Error durante la configuración inicial:", error);
+    throw error;
+  }
+}
 
+// Exportar funciones individuales para uso específico
 export {
-        createPaises,
-        createRegiones,
-        createProvincias,
-        createComunas,
-        createProveedores,
-        createMateriales,
-        createProductos,
-        createUsers
-        };
+  createPaises,
+  createRegiones,
+  createProvincias,
+  createComunas,
+  createProveedores,
+  createMateriales,
+  createCostosTerceros,
+  createProductos,
+  createUsers
+};
