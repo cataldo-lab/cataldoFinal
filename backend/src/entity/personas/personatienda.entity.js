@@ -1,7 +1,7 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-const PersonaTiendaSchema = new EntitySchema({
+export const PersonaTiendaSchema = new EntitySchema({
     name: "PersonaTienda",
     tableName: "personas_tienda",
     columns: {
@@ -10,19 +10,28 @@ const PersonaTiendaSchema = new EntitySchema({
             primary: true,
             generated: true,
         },
-        contacto_emergencia:{
+        contacto_emergencia: {
             type: "varchar",
             length: 100,
             nullable: true
         },
-        numero_emergencia:{
+        numero_emergencia: {
             type: "varchar",
             length: 20,
+            nullable: true
+        },
+        cargo: {
+            type: "varchar",
+            length: 50,
+            nullable: true
+        },
+        fecha_contratacion: {
+            type: "date",
             nullable: true
         }
     },
     relations: {
-        user:{
+        user: {
             type: "one-to-one",
             target: "User",
             joinColumn: { name: "id_user" },
@@ -30,4 +39,6 @@ const PersonaTiendaSchema = new EntitySchema({
             cascade: true
         }
     }
-})
+});
+
+export default PersonaTiendaSchema;

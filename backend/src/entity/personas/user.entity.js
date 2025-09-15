@@ -44,6 +44,11 @@ const UserSchema = new EntitySchema({
       length: 20,
       default: "usuario",
     },
+    telefono: {
+      type: "varchar",
+      length: 20,
+      nullable: true,
+    },
     createdAt: {
       type: "timestamp with time zone",
       default: () => "CURRENT_TIMESTAMP",
@@ -55,27 +60,33 @@ const UserSchema = new EntitySchema({
       nullable: false,
     },
   },
-  retarion:{
-    cliente:{
-        type: "one-to-one",
-        target: "Cliente",
-      },
-    personaTienda:{
-        type: "one-to-one",
-        target: "PersonaTienda",
-      },
-    operaciones:{
-        type: "one-to-many",
-        target: "Operacion",
-        inverseSide: "cliente"
-      },
-    comuna:{
-        type: "many-to-one",
-        target: "Comuna",
-        joinColumn: { name: "id_comuna" },
-        nullable: false,
-        eager: true
-      }
+  relations: {
+    // Relación con Cliente (1:1)
+    cliente: {
+      type: "one-to-one",
+      target: "Cliente",
+      inverseSide: "user",
+    },
+    // Relación con PersonaTienda (1:1)
+    personaTienda: {
+      type: "one-to-one",
+      target: "PersonaTienda",
+      inverseSide: "user",
+    },
+    // Relación con Operaciones (1:N) - Un usuario puede tener múltiples operaciones
+    operaciones: {
+      type: "one-to-many",
+      target: "Operacion",
+      inverseSide: "cliente"
+    },
+    // Relación con Comuna (N:1) - Muchos usuarios pueden vivir en una comuna
+    comuna: {
+      type: "many-to-one",
+      target: "Comuna",
+      joinColumn: { name: "id_comuna" },
+      nullable: true, // Puede ser null inicialmente
+      eager: false // No cargar automáticamente
+    }
   },
   indices: [
     {

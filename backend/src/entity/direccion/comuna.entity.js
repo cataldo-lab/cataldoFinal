@@ -15,28 +15,7 @@ export const ComunaSchema = new EntitySchema({
             length: 100,
             nullable: false
         },
-        nombre_calle: {
-            type: "varchar",
-            length: 100,
-            nullable: false
-        },
-        numero_calle: {
-            type: "int",
-            nullable: false
-        },
-        departamento: {
-            type: "boolean",
-            nullable: true
-        },
-        numero_depto: {
-            type: "int",
-            nullable: true
-        },
-        bloque_depto: {
-            type: "varchar",
-            length: 10,
-            nullable: true
-        }
+        // Removemos campos de dirección específica, eso va en una entidad Direccion separada
     },
     relations: {
         provincia: {
@@ -45,10 +24,13 @@ export const ComunaSchema = new EntitySchema({
             joinColumn: { name: "id_provincia" },
             nullable: false,
         },
-        user:{
+        // Relación inversa con User (1:N)
+        users: {
             type: "one-to-many",
             target: "User",
             inverseSide: "comuna"
         }
     }
 });
+
+export default ComunaSchema;

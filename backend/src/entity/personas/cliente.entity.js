@@ -1,9 +1,7 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-
-
-export const Cliente = new EntitySchema({
+export const ClienteSchema = new EntitySchema({
     name: "Cliente",
     tableName: "clientes",
     columns: {
@@ -12,29 +10,36 @@ export const Cliente = new EntitySchema({
             primary: true,
             generated: true,
         },
-        cumpleanos_cliente:{
+        cumpleanos_cliente: {
             type: "date",
             nullable: true
         },
-        whatsapp_cliente:{
+        whatsapp_cliente: {
             type: "varchar",
             length: 20,
             nullable: true
         },
-        correo_alterno_cliente:{
+        correo_alterno_cliente: {
             type: "varchar",
             length: 50,
             nullable: true
         },
-        categoria_cliente:{
+        categoria_cliente: {
             type: "varchar",
             length: 20,
-            nullable: true
+            nullable: true,
+            default: "regular" // regular, vip, premium
+        },
+        descuento_cliente: {
+            type: "decimal",
+            precision: 5,
+            scale: 2,
+            nullable: true,
+            default: 0
         }
-
     },
     relations: {
-        user:{
+        user: {
             type: "one-to-one",
             target: "User",
             joinColumn: { name: "id_user" },
@@ -43,3 +48,5 @@ export const Cliente = new EntitySchema({
         }
     }
 });
+
+export default ClienteSchema;
