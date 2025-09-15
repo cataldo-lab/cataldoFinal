@@ -36,7 +36,12 @@ export const operacionSchema = new EntitySchema({
             default: () => "CURRENT_TIMESTAMP"
         }
     },
-    relations: {
-        
+     relations: {
+        cliente: {
+            type: "many-to-one",
+            target: "Cliente",
+            joinColumn: { name: "id_cliente" },
+            nullable: false
+        }
     }
 })
