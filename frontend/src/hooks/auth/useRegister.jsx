@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 
+
 const useRegister = () => {
     const [errorEmail, setErrorEmail] = useState('');
     const [errorRut, setErrorRut] = useState('');

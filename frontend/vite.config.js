@@ -8,6 +8,9 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   plugins: [react()],
+  css:{
+    postcss: './postcss.config.js',
+  },
   preview: {port:443, host:true},
   resolve: {
     alias: {

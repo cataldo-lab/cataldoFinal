@@ -4,6 +4,8 @@ import Form from "@components/Form";
 import useRegister from '@hooks/auth/useRegister.jsx';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 import '@styles/form.css';
+//import { esEmailValido } from '@helpers/validacion/emailValidator.js';
+import { EMAILS_DOMINIOS_PERMITIDOS, EMAILS_DOMINIOS_BLOQUEADOS } from '@helpers/validacion/emailsDomains.js';
 
 const Register = () => {
 	const navigate = useNavigate();
@@ -72,8 +74,9 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                         minLength: 15,
                         maxLength: 35,
                         errorMessageData: errorEmail,
-                        validate: {
-                            emailDomain: (value) => value.endsWith('@gmail.cl') || 'El correo debe terminar en @gmail.cl'
+                        validate: { validator: 
+                            (value) => EMAILS_DOMINIOS_PERMITIDOS.includes(value.split("@")[1]) && !EMAILS_DOMINIOS_BLOQUEADOS.includes(value.split("@")[1]),
+                            message: `El correo debe pertenecer a un dominio permitido.`
                         },
                         onChange: (e) => handleInputChange('email', e.target.value)
                     },
