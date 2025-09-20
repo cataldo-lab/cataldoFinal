@@ -1,5 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-
 export default {
   content: [
     "./index.html",
@@ -34,7 +33,7 @@ export default {
         }
       },
       fontFamily: {
-        'sans': ['roboto', 'ui-sans-serif', 'system-ui'],
+        'sans': ['ro', 'ui-sans-serif', 'system-ui'],
       },
       spacing: {
         '18': '4.5rem',

@@ -47,7 +47,7 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                         fieldType: 'input',
 						type: "text",
 						required: true,
-						minLength: 15,
+						minLength: 3,
 						maxLength: 50,
                         pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
 						patternMessage: "Debe contener solo letras y espacios",
@@ -59,26 +59,34 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                         fieldType: 'input',
                         type: "text",
                         required: true,
-                        minLength: 10,
+                        minLength: 3,
                         maxLength: 50,
                         pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
 						patternMessage: "Debe contener solo letras y espacios",
 					},
                     {
-                        label: "Correo electrónico",
-                        name: "email",
-                        placeholder: "example@gmail.cl",
-                        fieldType: 'input',
-                        type: "email",
-                        required: true,
-                        minLength: 15,
-                        maxLength: 35,
-                        errorMessageData: errorEmail,
-                        validate: { validator: 
-                            (value) => EMAILS_DOMINIOS_PERMITIDOS.includes(value.split("@")[1]) && !EMAILS_DOMINIOS_BLOQUEADOS.includes(value.split("@")[1]),
-                            message: `El correo debe pertenecer a un dominio permitido.`
+                    label: "Correo electrónico",
+                    name: "email",
+                    placeholder: "example@gmail.cl",
+                    fieldType: 'input',
+                    type: "email",
+                    required: true,
+                    minLength: 15,
+                    maxLength: 35,
+                    errorMessageData: errorEmail,
+                    validate: {
+                        validator: (value) => {
+                        const dominio = value.split("@")[1];
+                        const fueraValido= !(EMAILS_DOMINIOS_PERMITIDOS.includes(dominio));
+                        const esValido = EMAILS_DOMINIOS_PERMITIDOS.includes(dominio) && !EMAILS_DOMINIOS_BLOQUEADOS.includes(dominio);
+                        if (!esValido || fueraValido) {
+                            showErrorAlert('Correo no permitido', 'El correo debe pertenecer a un dominio permitido.');
+                        }
+                        return esValido;
                         },
-                        onChange: (e) => handleInputChange('email', e.target.value)
+                        message: `El correo debe pertenecer a un dominio permitido.`
+                    },
+                    onChange: (e) => handleInputChange('email', e.target.value)
                     },
                     {
 						label: "Rut",
@@ -101,7 +109,7 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                         fieldType: 'input',
                         type: "password",
                         required: true,
-                        minLength: 8,
+                        minLength: 4,
                         maxLength: 26,
                         pattern: /^[a-zA-Z0-9]+$/,
                         patternMessage: "Debe contener solo letras y números",
