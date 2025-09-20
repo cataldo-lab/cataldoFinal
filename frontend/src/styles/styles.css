@@ -1,7 +1,6 @@
-
-
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap");
 @import url("animations.css");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,7 +9,7 @@
   html,
   body {
     margin: 0;
-    font-family: "Montserrat", sans-serif;
+    font-family: roboto, sans-serif;
   }
   
   #root {
@@ -18,14 +17,223 @@
     min-height: 100vh;
     margin: 0 auto;
   }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-neutral-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-400 rounded-lg;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-500;
+  }
 }
 
 @layer components {
+  /* Button Components */
   .btn-primary {
-    @apply bg-primary text-white px-4 py-2 rounded-lg font-bold border-2 border-primary hover:bg-primary-light hover:text-primary transition-colors duration-300;
+    @apply bg-primary text-white px-4 py-2 rounded-xl font-bold border-2 border-primary hover:bg-primary-light hover:text-primary transition-colors duration-300 cursor-pointer;
   }
-  
+
+  .btn-secondary {
+    @apply bg-transparent text-primary px-4 py-2 rounded-xl font-bold border-2 border-primary hover:bg-primary hover:text-white transition-colors duration-300 cursor-pointer;
+  }
+
+  .btn-danger {
+    @apply bg-error text-white px-4 py-2 rounded-xl font-bold border-2 border-error hover:bg-red-600 hover:border-red-600 transition-colors duration-300 cursor-pointer;
+  }
+
+  .btn-success {
+    @apply bg-success text-white px-4 py-2 rounded-xl font-bold border-2 border-success hover:bg-green-600 hover:border-green-600 transition-colors duration-300 cursor-pointer;
+  }
+
+  .btn-disabled {
+    @apply bg-neutral-300 text-neutral-500 px-4 py-2 rounded-xl font-bold border-2 border-neutral-300 cursor-not-allowed opacity-60;
+  }
+
+  /* Form Components */
   .form-input {
-    @apply border-2 border-primary rounded-lg px-3 py-2 bg-primary-light text-primary placeholder-primary/30 focus:bg-blue-50 focus:outline-none;
+    @apply border-2 border-primary rounded-xl px-3 py-2 bg-primary-light text-primary placeholder-primary/30 focus:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200;
+  }
+
+  .form-input-error {
+    @apply border-error focus:ring-error/20;
+  }
+
+  .form-label {
+    @apply text-primary font-bold mb-2 block;
+  }
+
+  .form-select {
+    @apply border-2 border-primary rounded-xl px-3 py-2 bg-primary-light text-primary focus:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 appearance-none;
+  }
+
+  .form-textarea {
+    @apply border-2 border-primary rounded-xl px-3 py-2 bg-primary-light text-primary placeholder-primary/30 focus:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 resize-vertical min-h-[100px];
+  }
+
+  /* Error message */
+  .error-message {
+    @apply text-error text-sm mt-1 pl-1 invisible h-5;
+  }
+
+  .error-message.visible {
+    @apply visible;
+  }
+
+  /* Card Components */
+  .card {
+    @apply bg-white rounded-3xl shadow-soft p-6;
+  }
+
+  .card-header {
+    @apply border-b border-neutral-200 pb-4 mb-4;
+  }
+
+  .card-title {
+    @apply text-xl font-bold text-primary mb-0;
+  }
+
+  /* Container Components */
+  .container-center {
+    @apply min-h-screen bg-gradient-to-r from-primary to-primary-dark flex justify-center items-center;
+  }
+
+  .container-main {
+    @apply flex flex-col justify-center items-center min-h-screen w-full;
+  }
+
+  /* Navigation Components */
+  .nav-link {
+    @apply text-white no-underline relative border-b-2 border-transparent transition-all duration-300 px-2 pb-1 box-border;
+  }
+
+  .nav-link:not(.active)::before {
+    @apply content-[''] absolute bottom-0 left-0 w-full h-1 bg-secondary transform scale-x-0 origin-bottom transition-transform duration-300;
+  }
+
+  .nav-link:not(.active):hover::before {
+    @apply animate-heartbeat scale-x-100;
+  }
+
+  .nav-link.active {
+    @apply font-bold bg-primary-light text-primary-dark m-0 pb-0 border-0 h-full leading-[9.1vh];
+  }
+
+  /* Table Components */
+  .table-container {
+    @apply w-full max-w-7xl mx-auto;
+  }
+
+  .table-header {
+    @apply flex justify-between items-center w-full mb-4;
+  }
+
+  .table-title {
+    @apply text-primary text-2xl font-bold;
+  }
+
+  .table-actions {
+    @apply flex gap-2;
+  }
+
+  .table-button {
+    @apply bg-white/90 border border-white cursor-pointer shadow-soft p-2 rounded hover:shadow-medium transition-shadow duration-200;
+  }
+
+  .table-button:disabled {
+    @apply opacity-60 cursor-not-allowed;
+  }
+
+  /* Search Components */
+  .search-input {
+    @apply py-2 px-4 rounded border border-primary text-base w-52 bg-white/90 text-black pl-10 bg-no-repeat;
+
+    background-position: 10px center;
+    background-image: url('../assets/SearchIcon.svg');
+  }
+
+  .search-input::placeholder {
+    @apply text-black;
+  }
+
+  /* Popup Components */
+  .popup-backdrop {
+    @apply fixed inset-0 bg-black/30 flex items-center justify-center z-50;
+  }
+
+  .popup-content {
+    @apply bg-white relative rounded-xl shadow-strong max-h-[90vh] overflow-y-auto;
+  }
+
+  .popup-close {
+    @apply absolute top-5 right-5 cursor-pointer bg-transparent border-0 p-1 hover:bg-neutral-100 rounded transition-colors duration-200;
+  }
+
+  /* Tooltip Components */
+  .tooltip {
+    @apply relative inline-block;
+  }
+
+  .tooltip-text {
+    @apply invisible w-40 bg-black/75 text-white text-center rounded py-1 px-2 absolute text-xs z-10 opacity-0 transition-opacity duration-300;
+
+    top: -3px;
+    left: 105%;
+  }
+
+  .tooltip-text::after {
+    @apply content-[''] absolute top-1/2 right-full -mt-1 border-4 border-transparent border-r-black/75;
+  }
+
+  .tooltip:hover .tooltip-text {
+    @apply visible opacity-100;
+  }
+
+  /* Loading Components */
+  .loading-spinner {
+    @apply animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent;
+  }
+
+  /* Utility Components */
+  .gradient-bg {
+    @apply bg-gradient-to-r from-primary to-primary-dark;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+  }
+}
+
+@layer utilities {
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  /* Focus utilities */
+  .focus-ring {
+	@apply focus:outline-none focus:ring-2 focus:ring-primary/20;
+  }
+
+  /* Hover utilities */
+  .hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-1;
+  }
+
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
   }
 }

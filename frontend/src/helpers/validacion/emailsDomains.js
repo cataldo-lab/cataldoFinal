@@ -1,5 +1,5 @@
 export const EMAILS_DOMINIOS_PERMITIDOS = [
-  // === PROVEEDORES GLOBALES PRINCIPALES ===
+    // === PROVEEDORES DE EMAILS MÁS COMUNES ===
   "gmail.com",
   "outlook.com",
   "hotmail.com",
