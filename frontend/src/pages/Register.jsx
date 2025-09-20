@@ -5,7 +5,8 @@ import useRegister from '@hooks/auth/useRegister.jsx';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 import '@styles/form.css';
 //import { esEmailValido } from '@helpers/validacion/emailValidator.js';
-import { EMAILS_DOMINIOS_PERMITIDOS, EMAILS_DOMINIOS_BLOQUEADOS } from '@helpers/validacion/emailsDomains.js';
+import { EMAILS_DOMINIOS_PERMITIDOS, 
+         EMAILS_DOMINIOS_BLOQUEADOS } from '@helpers/validacion/emailsDomains.js';
 
 const Register = () => {
 	const navigate = useNavigate();
@@ -76,7 +77,7 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                     errorMessageData: errorEmail,
                     validate: {
                         validator: (value) => {
-                        const dominio = value.split("@")[1];
+                        const dominio = (!value.split("@")) ? false : value.split("@")[1];
                         const fueraValido= !(EMAILS_DOMINIOS_PERMITIDOS.includes(dominio));
                         const esValido = EMAILS_DOMINIOS_PERMITIDOS.includes(dominio) && !EMAILS_DOMINIOS_BLOQUEADOS.includes(dominio);
                         if (!esValido || fueraValido) {

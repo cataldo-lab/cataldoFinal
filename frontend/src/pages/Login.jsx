@@ -3,7 +3,7 @@ import { login } from '@services/auth.service.js';
 import Form from '@components/Form';
 import useLogin from '@hooks/auth/useLogin.jsx';
 import '@styles/form.css';
-
+import { EMAILS_DOMINIOS_PERMITIDOS } from '@helpers/validacion/emailsDomains.js';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -33,19 +33,24 @@ const Login = () => {
                 title="Iniciar sesión"
                 fields={[
                     {
-                        label: "Correo electrónico",
-                        name: "email",
-                        placeholder: "example@gmail.cl",
-                        fieldType: 'input',
-                        type: "email",
-                        required: true,
-                        minLength: 15,
-                        maxLength: 30,
-                        errorMessageData: errorEmail,
-                        validate: {
-                            emailDomain: (value) => value.endsWith('@gmail.cl') || 'El correo debe terminar en @gmail.cl'
+                    label: "Correo electrónico",
+                    name: "email",
+                    placeholder: "example@gmail.cl",
+                    fieldType: 'input',
+                    type: "email",
+                    required: true,
+                    minLength: 5,
+                    maxLength: 30,
+                    errorMessageData: errorEmail,
+                    validate: {
+                        validator: (value) => {
+                        if (!value.includes("@")) return false;
+                        const dominio = value.split("@")[1];
+                        return EMAILS_DOMINIOS_PERMITIDOS.includes(dominio);
                         },
-                        onChange: (e) => handleInputChange('email', e.target.value),
+                        message: "El correo debe pertenecer a un dominio permitido."
+                    },
+                    onChange: (e) => handleInputChange('email', e.target.value),
                     },
                     {
                         label: "Contraseña",
@@ -54,7 +59,7 @@ const Login = () => {
                         fieldType: 'input',
                         type: "password",
                         required: true,
-                        minLength: 8,
+                        minLength: 4,
                         maxLength: 26,
                         pattern: /^[a-zA-Z0-9]+$/,
                         patternMessage: "Debe contener solo letras y números",
