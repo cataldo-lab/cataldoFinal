@@ -42,7 +42,7 @@ const UserSchema = new EntitySchema({
     rol: {
       type: "varchar",
       length: 20,
-      default: "usuario",
+      default: "cliente",
     },
     telefono: {
       type: "varchar",

@@ -1,3 +1,4 @@
+// backend/src/controllers/auth.controller.js
 "use strict";
 import { loginService, registerService } from "../services/auth.service.js";
 import {
@@ -19,16 +20,23 @@ export async function login(req, res) {
     if (error) {
       return handleErrorClient(res, 400, "Error de validación", error.message);
     }
+    
     const [accessToken, errorToken] = await loginService(body);
 
     if (errorToken) return handleErrorClient(res, 400, "Error iniciando sesión", errorToken);
 
+    // Configurar cookie con opciones de seguridad mejoradas
     res.cookie("jwt", accessToken, {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true, // No accesible desde JavaScript del cliente
+      secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
+      sameSite: 'strict', // Protección CSRF
+      maxAge: 24 * 60 * 60 * 1000, // 24 horas
     });
 
-    handleSuccess(res, 200, "Inicio de sesión exitoso", { token: accessToken });
+    // Devolver respuesta sin el token (ya está en la cookie)
+    handleSuccess(res, 200, "Inicio de sesión exitoso", { 
+      message: "Sesión iniciada correctamente" 
+    });
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }
@@ -55,7 +63,13 @@ export async function register(req, res) {
 
 export async function logout(req, res) {
   try {
-    res.clearCookie("jwt", { httpOnly: true });
+    // Limpiar la cookie JWT
+    res.clearCookie("jwt", { 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+    
     handleSuccess(res, 200, "Sesión cerrada exitosamente");
   } catch (error) {
     handleErrorServer(res, 500, error.message);

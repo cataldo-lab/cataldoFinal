@@ -1,0 +1,18 @@
+meta {
+  name: loginTraTienda
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:3000/api/auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "fernando.herrera@gmail.cl",
+    "password": "trabajador2024"
+  }
+}
