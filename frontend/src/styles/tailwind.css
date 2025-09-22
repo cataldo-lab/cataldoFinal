@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* Configuración personalizada para Tailwind v4 */
+@theme {
+  --color-primary: #003366;
+  --color-primary-dark: #001a33;
+  --color-primary-light: #eef7ff;
+  --color-secondary: #006edf;
+  --color-accent: #006edf;
+  --color-error: #E4332C;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+
+  --font-family-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+
+  --spacing-18: 4.5rem;
+  --spacing-88: 22rem;
+  --spacing-128: 32rem;
+
+  --border-radius-xl: 12px;
+  --border-radius-2xl: 16px;
+  --border-radius-3xl: 24px;
+
+  --box-shadow-soft: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  --box-shadow-medium: rgba(0, 0, 0, 0.1) 0px 4px 12px 0px;
+  --box-shadow-strong: rgba(0, 0, 0, 0.25) 0px 8px 16px 0px;
+
+  --animate-heartbeat: heartbeat 5s ease-in-out infinite;
+}
+
+/* Keyframes para animaciones personalizadas */
+@keyframes heartbeat {
+  0% { transform: scaleX(1); }
+  25% { transform: scaleX(1.2); }
+  50% { transform: scaleX(1); }
+  75% { transform: scaleX(1.2); }
+  100% { transform: scaleX(1); }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slideIn {
+  0% { 
+    transform: translateY(-10px); 
+    opacity: 0; 
+  }
+  100% { 
+    transform: translateY(0); 
+    opacity: 1; 
+  }
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #a1a1aa;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #71717a;
+}

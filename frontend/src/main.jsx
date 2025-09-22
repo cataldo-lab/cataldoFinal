@@ -8,7 +8,9 @@ import Register from '@pages/Register';
 import Error404 from '@pages/Error404';
 import Navbar from '@components/Navbar';
 import ProtectedRoute from '@components/ProtectedRoute';
-import '@styles/styles.css';
+
+// Importar los estilos principales (que incluyen Tailwind)
+import '@styles/main.css';
 
 // Componente Layout para rutas autenticadas
 function AuthenticatedLayout() {
