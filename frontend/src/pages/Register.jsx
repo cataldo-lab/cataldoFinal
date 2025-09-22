@@ -37,7 +37,7 @@ const registerSubmit = async (data) => {
 const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
 
 	return (
-		<main className="container">
+		<main className="w-full min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-800">
 			<Form
 				title="Crea tu cuenta"
 				fields={[

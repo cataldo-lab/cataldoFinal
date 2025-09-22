@@ -59,7 +59,7 @@ const Login = () => {
     };
 
     return (
-        <main className="container">
+        <main className="w-full min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-800">
             <Form
                 title="Iniciar sesión"
                 fields={[
