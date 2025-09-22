@@ -1,3 +1,4 @@
+// backend/src/services/auth.service.js
 "use strict";
 import User from "../entity/personas/user.entity.js";
 import jwt from "jsonwebtoken";
@@ -30,10 +31,10 @@ export async function loginService(user) {
     }
 
     const payload = {
-      
+      nombreCompleto: userFound.nombreCompleto,
       email: userFound.email,
       rut: userFound.rut,
-      
+      rol: userFound.rol
     };
 
     const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, {
@@ -46,7 +47,6 @@ export async function loginService(user) {
     return [null, "Error interno del servidor"];
   }
 }
-
 
 export async function registerService(user) {
   try {

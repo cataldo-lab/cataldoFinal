@@ -1,44 +1,89 @@
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import { AuthProvider } from '@context/AuthContext';
 import Login from '@pages/Login';
 import Home from '@pages/Home';
 import Users from '@pages/Users';
 import Register from '@pages/Register';
 import Error404 from '@pages/Error404';
-import Root from '@pages/Root';
+import Navbar from '@components/Navbar';
 import ProtectedRoute from '@components/ProtectedRoute';
 import '@styles/styles.css';
 
+// Componente Layout para rutas autenticadas
+function AuthenticatedLayout() {
+  return (
+    <>
+      <Navbar />
+      <Outlet />
+    </>
+  );
+}
+
+// Componente Layout para rutas públicas (sin navbar)
+function PublicLayout() {
+  return <Outlet />;
+}
+
+// Configuración del router
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Root/>,
-    errorElement: <Error404/>,
+    element: (
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
+    ),
+    errorElement: <Error404 />,
     children: [
+      // Rutas públicas (sin navbar)
       {
-        path: '/home',
-        element: <Home/>
+        element: <PublicLayout />,
+        children: [
+          {
+            path: '/auth',
+            element: <Login />
+          },
+          {
+            path: '/register',
+            element: <Register />
+          }
+        ]
       },
+      // Rutas autenticadas (con navbar)
       {
-        path: '/users',
-        element: (
-        <ProtectedRoute allowedRoles={['administrador']}>
-          <Users />
-        </ProtectedRoute>
-        ),
-    }
+        element: <AuthenticatedLayout />,
+        children: [
+          {
+            path: '/',
+            element: (
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/home',
+            element: (
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/users',
+            element: (
+              <ProtectedRoute allowedRoles={['administrador']}>
+                <Users />
+              </ProtectedRoute>
+            )
+          }
+        ]
+      }
     ]
-  },
-  {
-    path: '/auth',
-    element: <Login/>
-  },
-  {
-    path: '/register',
-    element: <Register/>
   }
-])
+]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <RouterProvider router={router}/>
-)
+  <RouterProvider router={router} />
+);

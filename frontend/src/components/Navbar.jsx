@@ -1,21 +1,32 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { logout } from '@services/auth.service.js';
+import { useAuth } from '@context/AuthContext';
 import '@styles/navbar.css';
 import { useState } from "react";
 
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const user = JSON.parse(sessionStorage.getItem('usuario')) || '';
-    const userRole = user?.rol;
+    const auth = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
 
-    const logoutSubmit = () => {
+    // Verificación segura del usuario y rol
+    const user = auth?.user || JSON.parse(sessionStorage.getItem('usuario') || '{}');
+    const userRole = user?.rol;
+
+    const logoutSubmit = async () => {
         try {
-            logout();
-            navigate('/auth'); 
+            await logout();
+            // Forzar recarga del contexto si está disponible
+            if (auth?.logout) {
+                auth.logout();
+            }
+            navigate('/auth', { replace: true }); 
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
+            // En caso de error, limpiar localmente y navegar
+            sessionStorage.removeItem('usuario');
+            navigate('/auth', { replace: true });
         }
     };
 
@@ -44,6 +55,8 @@ const Navbar = () => {
 
     // Función para obtener las rutas según el rol
     const getRoutesByRole = () => {
+        if (!userRole) return [];
+
         const routes = [
             {
                 path: "/home",
@@ -88,6 +101,11 @@ const Navbar = () => {
 
     const availableRoutes = getRoutesByRole();
 
+    // Si no hay usuario, no mostrar navbar
+    if (!user || !userRole) {
+        return null;
+    }
+
     return (
         <nav className="navbar">
             <div className={`nav-menu ${menuOpen ? 'activado' : ''}`}>
@@ -109,7 +127,8 @@ const Navbar = () => {
                     <li>
                         <NavLink 
                             to="/auth" 
-                            onClick={() => { 
+                            onClick={(e) => { 
+                                e.preventDefault();
                                 logoutSubmit(); 
                                 setMenuOpen(false); 
                             }} 

@@ -9,24 +9,40 @@ export async function login(dataUser) {
             email: dataUser.email, 
             password: dataUser.password
         });
+        
         const { status, data } = response;
+        
         if (status === 200) {
-            const {email, rut} = jwtDecode(data.data.token);
-            const userData = { email, rut};
+            const { token } = data.data;
+            const decodedToken = jwtDecode(token);
+            const { nombreCompleto, email, rut, rol } = decodedToken;
+            const userData = { nombreCompleto, email, rut, rol };
+            
+            // Guardar datos del usuario en sessionStorage
             sessionStorage.setItem('usuario', JSON.stringify(userData));
-            axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-            cookies.set('jwt-auth', data.data.token, {path:'/'});
-            return response.data
+            
+            // Guardar token en cookie
+            cookies.set('jwt-auth', token, { 
+                path: '/', 
+                expires: 1, // 1 día
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict'
+            });
+            
+            // Configurar header de autorización para futuras peticiones
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            
+            return response.data;
         }
     } catch (error) {
-        return error.response.data;
+        return error.response?.data || { status: 'error', message: 'Error de conexión' };
     }
 }
 
 export async function register(data) {
     try {
         const dataRegister = convertirMinusculas(data);
-        const { nombreCompleto, email, rut, password } = dataRegister
+        const { nombreCompleto, email, rut, password } = dataRegister;
         const response = await axios.post('/auth/register', {
             nombreCompleto,
             email,
@@ -35,17 +51,31 @@ export async function register(data) {
         });
         return response.data;
     } catch (error) {
-        return error.response.data;
+        return error.response?.data || { status: 'error', message: 'Error de conexión' };
     }
 }
 
 export async function logout() {
     try {
         await axios.post('/auth/logout');
+        
+        // Limpiar datos del usuario
+        sessionStorage.removeItem('usuario');
+        
+        // Limpiar cookies
+        cookies.remove('jwt');
+        cookies.remove('jwt-auth');
+        
+        // Limpiar header de autorización
+        delete axios.defaults.headers.common['Authorization'];
+        
+    } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+        
+        // En caso de error, limpiar de todas formas los datos locales
         sessionStorage.removeItem('usuario');
         cookies.remove('jwt');
         cookies.remove('jwt-auth');
-    } catch (error) {
-        console.error('Error al cerrar sesión:', error);
+        delete axios.defaults.headers.common['Authorization'];
     }
 }
