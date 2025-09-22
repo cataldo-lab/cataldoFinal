@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Configuración personalizada para Tailwind v4 - Basada en StiloMuebles.cl */
-@theme {
+:root {
   /* Colores principales basados en stilomuebles.cl */
   --color-primary: #1a237e;           /* Azul oscuro principal */
   --color-primary-dark: #0d47a1;      /* Azul más oscuro para gradientes */
