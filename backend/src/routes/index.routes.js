@@ -2,20 +2,19 @@
 import { Router } from "express";
 import userRoutes from "./user.routes.js";
 import authRoutes from "./auth.routes.js";
-//import managerRoutes from "./gerente.routes.js";
-//import employeeRoutes from "./trabajadorTienda.routes.js";
-//import clientRoutes from "./cliente.routes.js";
-//import profileRoutes from "./profile.routes.js";
-//import publicRoutes from "./public.routes.js";
+import adminRoutes from "./admin.routes.js";
+import gerenteRoutes from "./gerente.routes.js";
+import trabajadorTiendaRoutes from "./trabajadorTienda.routes.js";
+import clienteRoutes from "./cliente.routes.js";
+
 const router = Router();
 
 router
     .use("/auth", authRoutes)
-    .use("/user", userRoutes);
-    //.use("/manager", managerRoutes);
-    //.use("/employee", employeeRoutes);
-    //.use("/client", clientRoutes);
-    //.use("/profile", profileRoutes);
-    //.use("/public", publicRoutes);
+    .use("/user", userRoutes)
+    .use("/admin", adminRoutes)
+    .use("/gerente", gerenteRoutes)
+    .use("/trabajador-tienda", trabajadorTiendaRoutes)
+    .use("/cliente", clienteRoutes);
 
 export default router;
