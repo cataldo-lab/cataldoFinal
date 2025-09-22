@@ -43,12 +43,12 @@ const Login = () => {
                     maxLength: 30,
                     errorMessageData: errorEmail,
                     validate: {
-                        validator: (value) => {
-                        if (!value.includes("@")) return false;
+                    dominioValido: (value) => {
+                        if (!value.includes("@")) return "Email inválido";
                         const dominio = value.split("@")[1];
-                        return EMAILS_DOMINIOS_PERMITIDOS.includes(dominio);
-                        },
-                        message: "El correo debe pertenecer a un dominio permitido."
+                        return EMAILS_DOMINIOS_PERMITIDOS.includes(dominio) || 
+                            "El correo debe pertenecer a un dominio permitido";
+                    }
                     },
                     onChange: (e) => handleInputChange('email', e.target.value),
                     },
