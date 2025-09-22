@@ -1,51 +1,98 @@
 @import "tailwindcss";
 
-/* Configuración personalizada para Tailwind v4 */
+/* Configuración personalizada para Tailwind v4 - Basada en StiloMuebles.cl */
 @theme {
-  --color-primary: #003366;
-  --color-primary-dark: #001a33;
-  --color-primary-light: #eef7ff;
-  --color-secondary: #006edf;
-  --color-accent: #006edf;
-  --color-error: #E4332C;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-info: #3b82f6;
+  /* Colores principales basados en stilomuebles.cl */
+  --color-primary: #1a237e;           /* Azul oscuro principal */
+  --color-primary-dark: #0d47a1;      /* Azul más oscuro para gradientes */
+  --color-primary-light: #e8eaf6;     /* Azul muy claro para fondos */
+  --color-secondary: #3f51b5;         /* Azul intermedio */
+  --color-accent: #ffc107;            /* Dorado/amarillo de acento */
+  --color-accent-dark: #ff8f00;       /* Variante más oscura del acento */
+  
+  /* Colores del sistema */
+  --color-error: #d32f2f;             /* Rojo para errores */
+  --color-success: #388e3c;           /* Verde para éxito */
+  --color-warning: #f57c00;           /* Naranja para advertencias */
+  --color-info: #1976d2;              /* Azul para información */
+  
+  /* Grises neutros */
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #eeeeee;
+  --color-gray-300: #e0e0e0;
+  --color-gray-400: #bdbdbd;
+  --color-gray-500: #9e9e9e;
+  --color-gray-600: #757575;
+  --color-gray-700: #616161;
+  --color-gray-800: #424242;
+  --color-gray-900: #212121;
 
+  /* Tipografía */
   --font-family-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-family-serif: "Playfair Display", ui-serif, Georgia, serif;
 
+  /* Espaciado personalizado */
   --spacing-18: 4.5rem;
   --spacing-88: 22rem;
   --spacing-128: 32rem;
 
-  --border-radius-xl: 12px;
-  --border-radius-2xl: 16px;
+  /* Radios de borde más modernos */
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --border-radius-2xl: 20px;
   --border-radius-3xl: 24px;
 
-  --box-shadow-soft: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
-  --box-shadow-medium: rgba(0, 0, 0, 0.1) 0px 4px 12px 0px;
-  --box-shadow-strong: rgba(0, 0, 0, 0.25) 0px 8px 16px 0px;
+  /* Sombras elegantes */
+  --box-shadow-soft: rgba(26, 35, 126, 0.08) 0px 2px 8px 0px;
+  --box-shadow-medium: rgba(26, 35, 126, 0.12) 0px 4px 12px 0px;
+  --box-shadow-strong: rgba(26, 35, 126, 0.16) 0px 8px 20px 0px;
+  --box-shadow-hover: rgba(26, 35, 126, 0.20) 0px 6px 16px 0px;
 
-  --animate-heartbeat: heartbeat 5s ease-in-out infinite;
+  /* Animaciones */
+  --animate-heartbeat: heartbeat 2s ease-in-out infinite;
+  --animate-pulse-slow: pulse 3s ease-in-out infinite;
+  --animate-bounce-subtle: bounceSubtle 1s ease-out;
 }
 
 /* Keyframes para animaciones personalizadas */
 @keyframes heartbeat {
-  0% { transform: scaleX(1); }
-  25% { transform: scaleX(1.2); }
-  50% { transform: scaleX(1); }
-  75% { transform: scaleX(1.2); }
-  100% { transform: scaleX(1); }
+  0%, 50%, 100% { transform: scale(1); }
+  25%, 75% { transform: scale(1.05); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes bounceSubtle {
+  0% { transform: translateY(-3px); }
+  50% { transform: translateY(-1px); }
+  100% { transform: translateY(0); }
 }
 
 @keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideIn {
   0% { 
-    transform: translateY(-10px); 
+    transform: translateX(-20px); 
+    opacity: 0; 
+  }
+  100% { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
+}
+
+@keyframes slideUp {
+  0% { 
+    transform: translateY(20px); 
     opacity: 0; 
   }
   100% { 
@@ -54,20 +101,52 @@
   }
 }
 
-/* Scrollbar personalizado */
+/* Scrollbar personalizado con colores de la marca */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #f5f5f5;
+  background-color: var(--color-gray-100);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #a1a1aa;
+  background-color: var(--color-gray-400);
   border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #71717a;
+  background-color: var(--color-primary);
+}
+
+/* Utilidades de transición */
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-colors {
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.transition-transform {
+  transition: transform 0.2s ease;
+}
+
+/* Focus ring personalizado */
+.focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+}
+
+/* Gradientes personalizados */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
+}
+
+.gradient-soft {
+  background: linear-gradient(135deg, var(--color-primary-light), white);
 }

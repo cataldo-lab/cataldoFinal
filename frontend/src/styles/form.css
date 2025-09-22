@@ -1,31 +1,34 @@
+/* Estilos de formulario actualizados con la paleta de StiloMuebles.cl */
+
 @media (width <= 480px) {
     .form {
-        padding-left: 2px;
-		padding-right: 2px;
-        width: 90%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        width: 95%;
+        margin: 0.5rem;
     }
 
     .form h1 {
-        font-size: 24px;
-        margin-bottom: 2vh;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
     }
 
-    .form input, .form select {
-        padding: 10px;
-        font-size: 14px;
+    .form input, .form select, .form textarea {
+        padding: 0.75rem;
+        font-size: 0.9rem;
     }
 
     .form button {
-        padding: 10px;
-        font-size: 16px;
+        padding: 0.75rem;
+        font-size: 0.95rem;
     }
 
     .form .footerContent {
-        font-size: 12px;
+        font-size: 0.8rem;
     }
     
     .container {
-        padding: 0 10px;
+        padding: 0 0.5rem;
     }
     
     .toggle-password-icon {
@@ -34,213 +37,459 @@
     }
 }
 
-
 .form {
-	background-color: #eef7ff; /* Color del formulario */
-	padding: 7vh;
-	display: flex;
-	flex-direction: column;
-	border-radius: 24px;
-	align-items: center;
-
-	h1 {
-		color: #036; /* Color del titulo del formulario */
-		font-size: 30px;
-		font-weight: bold;
-		margin: 0;
-		margin-bottom: 4vh;
-	}
-
-	div {
-		width: 100%;
-		display: flex;
-	}
-
-	label {
-		color: #036; /* Color label de inputs del formulario */
-		font-weight: bold;
-		margin-bottom: 0.7vh;
-	}
-
-	input {
-		display: flex;
-		border: 3px solid #001a33; /* Color del borde de inputs del formulario */
-		padding: 8px 5px;
-		background-repeat: no-repeat;
-		margin-bottom: 0.8vh;
-		background-color: #eef7ff;
-		font-weight: regular;
-		font-size: 16px;
-		color: #036;
-		border-radius: 12px;
-		background-position: right 10px center;
-		background-size: 25px 25px;
-		box-sizing: border-box;
-	}
-
-	input::placeholder {
-		color: rgb(0 51 102 / 30%);
-		font-weight: light;
-	}
-
-	input:focus {
-		background-color: rgb(0 110 223 / 14%);
-		font-weight: regular;
-	}
-
-	select {
-		display: flex;
-		border: 3px solid #036; /* Color del borde de selects del formulario */
-		padding: 8px 5px;
-		margin-bottom: 0.8vh;
-		background-color: #eef7ff;
-		font-weight: regular;
-		font-size: 16px;
-		color: #036;
-		border-radius: 12px;
-		background-size: 25px 25px;
-		box-sizing: border-box;
-		background-image: url('../assets/ChevronDownIcon.svg');
-		background-repeat: no-repeat;
-		background-position: calc(100% - 12px) center;
-		appearance: none;
-		appearance: none;
-		appearance: none;
-	}
-
-	select::placeholder {
-		color: rgb(0 51 102 / 30%);
-		font-weight: light;
-	}
-
-	select:focus {
-		background-color: rgb(0 110 223 / 14%);
-		font-weight: regular;
-	}
-
-	textarea {
-		display: flex;
-		border: 3px solid #036; /* Color del borde de textareas del formulario */
-		padding: 8px 5px;
-		background-repeat: no-repeat;
-		margin-bottom: 0.8vh;
-		background-color: #eef7ff;
-		font-weight: regular;
-		font-size: 16px;
-		color: #036;
-		border-radius: 12px;
-		background-position: right 10px center;
-		background-size: 25px 25px;
-		box-sizing: border-box;
-	}
-
-	textarea::placeholder {
-		color: rgb(0 51 102 / 30%);
-		font-weight: light;
-	}
-
-	textarea:focus {
-		background-color: rgb(0 110 223 / 14%);
-		font-weight: regular;
-	}
-
-	button {
-		display: flex;
-		justify-content: center;
-		padding: 1.2vh 0;
-		border-radius: 12px;
-		width: 100%;
-		background-color: #036; /* Color del boton del formulario */
-		color: #eef7ff;
-		font-weight: bold;
-		font-size: 16px;
-		border: 3px solid #036; /* Color del borde del boton */
-		margin-top: 10px;
-	}
-
-	button:hover{
-		border: 3px solid #036;
-		background-color: #eef7ff;
-		color: #036;
-		transition: .3s ease-out;
-	}
-
-	div {
-		display: flex;
-		flex-direction: column;
-		width: 100%;
-	}
-
-	.footerContent {
-		display: flex;
-		align-items: center;
-		margin-top: 10px;
-	}
+    background: linear-gradient(145deg, #ffffff, #f8f9ff);
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    border-radius: 24px;
+    align-items: center;
+    box-shadow: 
+        0 20px 40px rgba(26, 35, 126, 0.1),
+        0 8px 20px rgba(26, 35, 126, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(26, 35, 126, 0.08);
+    position: relative;
+    overflow: hidden;
 }
 
+.form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #1a237e, #3f51b5, #ffc107);
+    border-radius: 24px 24px 0 0;
+}
+
+.form h1 {
+    color: #1a237e;
+    font-family: "Playfair Display", serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+    letter-spacing: -0.5px;
+}
+
+.form h1::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #ffc107, #ff8f00);
+    border-radius: 2px;
+}
+
+.form div.container_inputs {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.form label {
+    color: #1a237e;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form input,
+.form textarea {
+    display: flex;
+    border: 2px solid #e8eaf6;
+    padding: 1rem 1.25rem;
+    background-color: #ffffff;
+    background-repeat: no-repeat;
+    margin-bottom: 0.25rem;
+    font-weight: 400;
+    font-size: 0.95rem;
+    color: #1a237e;
+    border-radius: 12px;
+    background-position: right 15px center;
+    background-size: 20px 20px;
+    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        inset 0 1px 3px rgba(26, 35, 126, 0.05),
+        0 1px 2px rgba(26, 35, 126, 0.05);
+}
+
+.form input::placeholder,
+.form textarea::placeholder {
+    color: rgba(26, 35, 126, 0.4);
+    font-weight: 400;
+}
+
+.form input:focus,
+.form textarea:focus {
+    outline: none;
+    border-color: #3f51b5;
+    background-color: #f3f4ff;
+    box-shadow: 
+        0 0 0 3px rgba(63, 81, 181, 0.1),
+        inset 0 1px 3px rgba(26, 35, 126, 0.05);
+    transform: translateY(-1px);
+}
+
+.form input:hover,
+.form textarea:hover {
+    border-color: #c5cae9;
+    transform: translateY(-1px);
+}
+
+.form select {
+    display: flex;
+    border: 2px solid #e8eaf6;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.25rem;
+    background-color: #ffffff;
+    font-weight: 400;
+    font-size: 0.95rem;
+    color: #1a237e;
+    border-radius: 12px;
+    box-sizing: border-box;
+    background-image: url('../assets/ChevronDownIcon.svg');
+    background-repeat: no-repeat;
+    background-position: calc(100% - 15px) center;
+    background-size: 16px 16px;
+    appearance: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: 
+        inset 0 1px 3px rgba(26, 35, 126, 0.05),
+        0 1px 2px rgba(26, 35, 126, 0.05);
+}
+
+.form select:focus {
+    outline: none;
+    border-color: #3f51b5;
+    background-color: #f3f4ff;
+    box-shadow: 
+        0 0 0 3px rgba(63, 81, 181, 0.1),
+        inset 0 1px 3px rgba(26, 35, 126, 0.05);
+}
+
+.form select:hover {
+    border-color: #c5cae9;
+    transform: translateY(-1px);
+}
+
+.form button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    width: 100%;
+    background: linear-gradient(135deg, #1a237e, #3f51b5);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 4px 12px rgba(26, 35, 126, 0.3),
+        0 2px 4px rgba(26, 35, 126, 0.2);
+}
+
+.form button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 8px 25px rgba(26, 35, 126, 0.4),
+        0 4px 10px rgba(26, 35, 126, 0.3);
+    background: linear-gradient(135deg, #3f51b5, #1a237e);
+}
+
+.form button:hover::before {
+    left: 100%;
+}
+
+.form button:active {
+    transform: translateY(0);
+    box-shadow: 
+        0 2px 8px rgba(26, 35, 126, 0.3),
+        0 1px 3px rgba(26, 35, 126, 0.2);
+}
+
+.form .footerContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.5rem;
+    text-align: center;
+    color: #757575;
+    font-size: 0.9rem;
+}
+
+.form .footerContent a {
+    color: #ffc107;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.form .footerContent a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ffc107, #ff8f00);
+    transition: width 0.3s ease;
+}
+
+.form .footerContent a:hover {
+    color: #ff8f00;
+}
+
+.form .footerContent a:hover::after {
+    width: 100%;
+}
+
+/* Error messages with enhanced styling */
 .form .error-message {
     visibility: hidden;
-    height: 20px;
-    color: red;
-    font-size: 13px;
-	padding-left: 5px;
+    height: 1.25rem;
+    color: #d32f2f;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding-left: 0.25rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    background: rgba(211, 47, 47, 0.05);
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    border-left: 3px solid #d32f2f;
 }
 
 .form .error-message.visible {
     visibility: visible;
+    animation: slideUp 0.3s ease-out;
 }
 
+/* Container with updated gradient */
 .container {
-	height: 100vh;	
-	background: linear-gradient(90deg, #036, #001a33); /* Color principal para login (gradiente) */
-	display: flex;
-	justify-content: center;
-	align-items: center;
+    min-height: 100vh;    
+    background: linear-gradient(135deg, #1a237e 0%, #3f51b5 50%, #1a237e 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
 }
 
+.container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(255, 193, 7, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(63, 81, 181, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(26, 35, 126, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Input icons with updated colors */
 input[type='email'] {
-	background-image: url('../assets/MentionIcon.svg');
+    background-image: url('../assets/MentionIcon.svg');
+    filter: hue-rotate(240deg) saturate(1.2);
 }
 
 input[name='rut'] {
-	background-image: url('../assets/IdentityCardIcon.svg');
+    background-image: url('../assets/IdentityCardIcon.svg');
+    filter: hue-rotate(240deg) saturate(1.2);
 }
 
 input[name='nombreCompleto'] {
-	background-image: url('../assets/PersonIcon.svg');
+    background-image: url('../assets/PersonIcon.svg');
+    filter: hue-rotate(240deg) saturate(1.2);
 }
 
 input[name='rol'] {
-	background-image: url('../assets/PasskeyIcon.svg');
-	
+    background-image: url('../assets/PasskeyIcon.svg');
+    filter: hue-rotate(240deg) saturate(1.2);
 }
 
+/* Password toggle styling */
 .container_inputs {
     position: relative;
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
 }
 
-input {
-    padding-right: 40px;
+.container_inputs input {
+    padding-right: 3rem;
     width: 100%;
 }
 
 .toggle-password-icon {
     position: absolute;
     right: 15px;
-    top: 44%;
+    top: 50%;
     transform: translateY(-50%);
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+    z-index: 10;
 }
 
-.newPassword span {
-	top: 10px;
+.toggle-password-icon:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
 }
 
-.toggle-password-icon img{
-	width: 25px;
-	height: 25px;
-	margin-top: 4px;
+.toggle-password-icon img {
+    width: 20px;
+    height: 20px;
+    filter: hue-rotate(240deg) saturate(1.2);
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 640px) {
+    .form {
+        padding: 1.5rem;
+        margin: 0.5rem;
+        border-radius: 20px;
+    }
+    
+    .form h1 {
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form input,
+    .form textarea,
+    .form select {
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .form button {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .container_inputs input {
+        padding-right: 2.75rem;
+    }
+    
+    .toggle-password-icon {
+        right: 12px;
+        width: 18px;
+        height: 18px;
+    }
+    
+    .toggle-password-icon img {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Enhanced focus states for accessibility */
+.form input:focus-visible,
+.form textarea:focus-visible,
+.form select:focus-visible {
+    outline: 3px solid rgba(255, 193, 7, 0.5);
+    outline-offset: 2px;
+}
+
+.form button:focus-visible {
+    outline: 3px solid rgba(255, 193, 7, 0.8);
+    outline-offset: 3px;
+}
+
+/* Smooth loading animation for form appearance */
+.form {
+    animation: formSlideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes formSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateY(-5px) scale(1.01);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Success state for inputs */
+.form input.success,
+.form textarea.success,
+.form select.success {
+    border-color: #388e3c;
+    background-color: #f1f8e9;
+}
+
+.form input.success:focus,
+.form textarea.success:focus,
+.form select.success:focus {
+    box-shadow: 0 0 0 3px rgba(56, 142, 60, 0.1);
+}
+
+/* Loading state for button */
+.form button.loading {
+    pointer-events: none;
+    position: relative;
+    color: transparent;
+}
+
+.form button.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: buttonSpin 1s linear infinite;
+}
+
+@keyframes buttonSpin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
