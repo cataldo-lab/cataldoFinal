@@ -1,4 +1,4 @@
-import Form from './Form';
+import Form from '../../Form';
 import '@styles/popup.css';
 import CloseIcon from '@assets/XIcon.svg';
 import QuestionIcon from '@assets/QuestionCircleIcon.svg';
@@ -65,7 +65,10 @@ export default function Popup({ show, setShow, data, action }) {
                                 fieldType: 'select',
                                 options: [
                                     { value: 'administrador', label: 'Administrador' },
-                                    { value: 'usuario', label: 'Usuario' },
+                                    { value: 'gerente', label: 'Gerente' },
+                                    { value: 'trabajador_tienda', label: 'Trabajador de tienda' },
+                                    { value: 'cliente', label: 'Cliente' },
+                                    { value: 'bloqueado', label: 'Bloqueado' }
                                 ],
                                 required: true,
                                 defaultValue: userData.rol || "",

@@ -11,7 +11,7 @@ const useEditUser = (setUsers) => {
         if (dataUser.length > 0) {
             setIsPopupOpen(true);
         }
-    };
+    }; 
 
     const handleUpdate = async (updatedUserData) => {
         if (updatedUserData) {
