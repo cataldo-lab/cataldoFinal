@@ -124,6 +124,13 @@ export const userBodyValidation = Joi.object({
       "string.min": "El rol debe tener como mínimo 4 caracteres.",
       "string.max": "El rol debe tener como máximo 15 caracteres.",
     }),
+    telefono: Joi.string()
+    .pattern(/^\+?[0-9]{8,15}$/)
+    .allow("", null)
+    .messages({
+      "string.base": "El teléfono debe ser de tipo string.",
+      "string.pattern.base": "El teléfono debe tener entre 8 y 15 dígitos.",
+    }),
 })
   .or(
     "nombreCompleto",
@@ -131,7 +138,8 @@ export const userBodyValidation = Joi.object({
     "password",
     "newPassword",
     "rut",
-    "rol"
+    "rol",
+    "telefono"
   )
   .unknown(false)
   .messages({

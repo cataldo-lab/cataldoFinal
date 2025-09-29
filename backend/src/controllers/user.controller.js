@@ -16,6 +16,7 @@ import {
   handleSuccess,
 } from "../handlers/responseHandlers.js";
 
+
 export async function getUser(req, res) {
   try {
     const { rut, id, email } = req.query;
@@ -142,32 +143,18 @@ export async function createUser(req, res) {
       );
     }
 
-    // 2. Validar rol permitido
-    const rolesPermitidos = Object.values(Role);
-    if (body.rol && !rolesPermitidos.includes(body.rol)) {
-      return handleErrorClient(
-        res,
-        400,
-        "Rol inválido",
-        `El rol '${body.rol}' no es válido. Roles permitidos: ${rolesPermitidos.join(", ")}`
-      );
-    }
-
-    // 3. Encriptar contraseña
-    const hashedPassword = await bcrypt.hash(body.password, 10);
-    const userData = { ...body, password: hashedPassword };
-
-    // 4. Crear usuario en servicio
-    const [newUser, errorUser] = await createUserService(userData);
+    // 2. Llamar al servicio (que ya maneja encriptación y validaciones)
+    const [newUser, errorUser] = await createUserService(body);
+    
     if (errorUser) {
       return handleErrorClient(res, 400, "Error creando al usuario", errorUser);
     }
 
-    // 5. No devolver contraseña en la respuesta
-    const { password, ...userWithoutPassword } = newUser;
-
-    return handleSuccess(res, 201, "Usuario creado correctamente", userWithoutPassword);
+    // 3. Retornar respuesta exitosa
+    return handleSuccess(res, 201, "Usuario creado correctamente", newUser);
+    
   } catch (error) {
+    console.error("Error en createUser controller:", error);
     return handleErrorServer(res, 500, error.message);
   }
 }

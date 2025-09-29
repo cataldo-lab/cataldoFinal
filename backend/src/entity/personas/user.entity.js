@@ -10,6 +10,27 @@ export const Role = {
   BLOQUEADO: "bloqueado"
 }
 
+// ⭐ NUEVO: Definir permisos por rol
+export const RolePermissions = {
+  administrador: ["admin", "gerente", "trabajador_tienda", "cliente"],
+  gerente: ["gerente", "trabajador_tienda", "cliente"],
+  trabajador_tienda: ["trabajador_tienda", "cliente"],
+  cliente: ["cliente"],
+  usuario: ["cliente"], // Usuario básico = cliente
+  bloqueado: [] // Sin permisos
+}
+
+// ⭐ NUEVO: Función para verificar si un rol tiene permiso
+export function tienePermiso(rolPrincipal, rolRequerido) {
+  const permisos = RolePermissions[rolPrincipal] || [];
+  return permisos.includes(rolRequerido);
+}
+
+// ⭐ NUEVO: Obtener todos los roles disponibles para un usuario
+export function obtenerRolesDisponibles(rolPrincipal) {
+  return RolePermissions[rolPrincipal] || [];
+}
+
 const UserSchema = new EntitySchema({
   name: "User",
   tableName: "users",
@@ -43,6 +64,7 @@ const UserSchema = new EntitySchema({
     rol: {
       type: "varchar",
       default: "cliente",
+      comment: "Rol principal del usuario"
     },
     telefono: {
       type: "varchar",
@@ -61,31 +83,27 @@ const UserSchema = new EntitySchema({
     },
   },
   relations: {
-    // Relación con Cliente (1:1)
     cliente: {
       type: "one-to-one",
       target: "Cliente",
       inverseSide: "user",
     },
-    // Relación con PersonaTienda (1:1)
     personaTienda: {
       type: "one-to-one",
       target: "PersonaTienda",
       inverseSide: "user",
     },
-    // Relación con Operaciones (1:N) - Un usuario puede tener múltiples operaciones
     operaciones: {
       type: "one-to-many",
       target: "Operacion",
       inverseSide: "cliente"
     },
-    // Relación con Comuna (N:1) - Muchos usuarios pueden vivir en una comuna
     comuna: {
       type: "many-to-one",
       target: "Comuna",
       joinColumn: { name: "id_comuna" },
-      nullable: true, // Puede ser null inicialmente
-      eager: false // No cargar automáticamente
+      nullable: true,
+      eager: false
     }
   },
   indices: [

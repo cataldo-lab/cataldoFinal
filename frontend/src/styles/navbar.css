@@ -3,76 +3,128 @@
 	width: 100%;
 	top: 0;
 	left: 0;
-	display: block;
-	background-color: #036; /* Color de la navbar */
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: #036;
 	height: 9vh;
 	z-index: 1000;
-
-	ul {
-		display: flex;
-		justify-content:end;
-		align-items: center;
-		padding: 0 5vw;
-		margin: 0;
-		height: 100%;
-
-		li {
-			display: flex;
-			align-items: center;
-			padding: 0 60px;
-			position: relative;
-			height: 100%;
-
-			a {
-				color: white;
-				font-size: 0.9em;
-				text-decoration: none;
-				position: relative;
-				border-bottom: transparent 3px solid;
-				transition: border-color 0.3s ease;
-				padding: 0 10px 3px;
-				box-sizing: border-box;
-			}
-
-			:not(.active)::before {
-				content: "";
-				position: absolute;
-				bottom: 0;
-				left: 0;
-				width: 100%;
-				height: 3px;
-				background-color: #006edf;
-				transform: scaleX(0);
-				transform-origin: bottom;
-				transition: transform 0.3s ease;
-			}
-
-			:not(.active):hover::before {
-				animation: heartbeat 5s ease-in-out infinite;
-				transform: scaleX(1);
-			}
-
-			.active {
-				font-weight: bold;
-				background-color: #eef7ff;
-				color: #002651;
-				margin: 0;
-				padding-bottom: 0;
-				border: 0;
-				height: 100%;
-				line-height: 9.1vh;
-			}
-		}
-	}
+	padding: 0 2rem;
 }
 
+/* ⭐ ESTILOS PARA LA INFORMACIÓN DEL USUARIO */
+.navbar-user-info {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem 1rem;
+	background-color: rgba(255, 255, 255, 0.1);
+	border-radius: 8px;
+	transition: background-color 0.3s ease;
+}
+
+.navbar-user-info:hover {
+	background-color: rgba(255, 255, 255, 0.15);
+}
+
+.user-avatar {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, #ffc107, #ff8f00);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #036;
+	font-weight: bold;
+	font-size: 1.2rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.user-details {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+}
+
+.user-name {
+	color: white;
+	font-weight: 600;
+	font-size: 0.95rem;
+	line-height: 1.2;
+}
+
+.user-role {
+	color: #ffc107;
+	font-size: 0.75rem;
+	text-transform: capitalize;
+	font-weight: 500;
+}
+
+/* MENÚ DE NAVEGACIÓN */
+.nav-menu ul {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	padding: 0 2rem;
+	margin: 0;
+	height: 100%;
+	list-style: none;
+}
+
+.nav-menu ul li {
+	display: flex;
+	align-items: center;
+	padding: 0 30px;
+	position: relative;
+	height: 100%;
+}
+
+.nav-menu ul li a {
+	color: white;
+	font-size: 0.9em;
+	text-decoration: none;
+	position: relative;
+	border-bottom: transparent 3px solid;
+	transition: border-color 0.3s ease;
+	padding: 0 10px 3px;
+	box-sizing: border-box;
+}
+
+.nav-menu ul li :not(.active)::before {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 3px;
+	background-color: #006edf;
+	transform: scaleX(0);
+	transform-origin: bottom;
+	transition: transform 0.3s ease;
+}
+
+.nav-menu ul li :not(.active):hover::before {
+	animation: heartbeat 5s ease-in-out infinite;
+	transform: scaleX(1);
+}
+
+.nav-menu ul li .active {
+	font-weight: bold;
+	background-color: #eef7ff;
+	color: #002651;
+	margin: 0;
+	padding-bottom: 0;
+	border: 0;
+	height: 100%;
+	line-height: 9.1vh;
+}
+
+/* HAMBURGER MENU */
 .hamburger {
 	display: none;
 	flex-direction: column;
 	cursor: pointer;
-	position: absolute;
-	top: 25px;
-	right: 20px;
 	z-index: 1001;
 }
 
@@ -81,51 +133,112 @@
 	height: 3px;
 	background-color: white;
 	margin: 4px 0;
+	transition: all 0.3s ease;
 }
 
+/* ⭐ RESPONSIVE - MÓVIL */
 @media (width <= 768px) {
+	.navbar {
+		padding: 0 1rem;
+		flex-wrap: wrap;
+	}
+
+	/* Usuario a la izquierda en móvil */
+	.navbar-user-info {
+		order: 1;
+		padding: 0.4rem 0.8rem;
+	}
+
+	.user-avatar {
+		width: 35px;
+		height: 35px;
+		font-size: 1rem;
+	}
+
+	.user-name {
+		font-size: 0.85rem;
+		max-width: 120px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.user-role {
+		font-size: 0.7rem;
+	}
+
+	/* Hamburger a la derecha */
+	.hamburger {
+		display: flex;
+		order: 3;
+	}
+
+	/* Menú desplegable */
+	.nav-menu {
+		order: 4;
+		width: 100%;
+	}
+
 	.nav-menu ul {
 		display: none;
 		flex-direction: column;
-		background-color: #036;
+		background-color: #eef7ff;
 		position: absolute;
 		top: 9vh;
 		left: 0;
 		width: 100%;
 		text-align: center;
+		padding: 0;
 	}
 
 	.nav-menu.activado ul {
 		display: flex;
-		background-color: #eef7ff;
 		justify-content: center;
-		padding: 0;
-	}
-
-	.hamburger {
-		display: flex;
 	}
 
 	.nav-menu.activado ul li {
 		padding: 0;
 		width: 100%;
 		height: 60px;
+	}
 
-		a {
-			color: #036;
-			font-weight: bold;
-			font-size: 0.9em;
-			text-decoration: none;
-			position: relative;
-			border-bottom: none;
-			transition: border-color 0.3s ease;
-			padding-left: 5px;
-			box-sizing: border-box;
-        }
+	.nav-menu.activado ul li a {
+		color: #036;
+		font-weight: bold;
+		font-size: 0.9em;
+		text-decoration: none;
+		position: relative;
+		border-bottom: none;
+		transition: border-color 0.3s ease;
+		padding-left: 5px;
+		box-sizing: border-box;
 	}
 }
 
+/* ⭐ RESPONSIVE - TABLET */
 @media (width >= 768px) and (width <= 1024px) {
+	.navbar {
+		padding: 0 1.5rem;
+	}
+
+	.navbar-user-info {
+		padding: 0.5rem 0.9rem;
+	}
+
+	.user-avatar {
+		width: 38px;
+		height: 38px;
+		font-size: 1.1rem;
+	}
+
+	.user-name {
+		font-size: 0.9rem;
+	}
+
+	.hamburger {
+		display: flex;
+	}
+
 	.nav-menu ul {
 		display: none;
 		flex-direction: column;
@@ -144,25 +257,71 @@
 		padding: 0;
 	}
 
-	.hamburger {
-		display: flex;
-	}
-
 	.nav-menu.activado ul li {
 		padding: 0;
 		width: 100%;
 		height: 60px;
-
-		a {
-			color: #036;
-			font-weight: bold;
-			font-size: 0.9em;
-			text-decoration: none;
-			position: relative;
-			border-bottom: none;
-			transition: border-color 0.3s ease;
-			padding-left: 5px;
-			box-sizing: border-box;
-        }
 	}
+
+	.nav-menu.activado ul li a {
+		color: #036;
+		font-weight: bold;
+		font-size: 0.9em;
+		text-decoration: none;
+		position: relative;
+		border-bottom: none;
+		transition: border-color 0.3s ease;
+		padding-left: 5px;
+		box-sizing: border-box;
+	}
+}
+
+/* Animación del heartbeat */
+@keyframes heartbeat {
+	0% {
+		transform: scaleX(1);
+	}
+	25% {
+		transform: scaleX(1.2);
+	}
+	50% {
+		transform: scaleX(1);
+	}
+	75% {
+		transform: scaleX(1.2);
+	}
+	100% {
+		transform: scaleX(1);
+	}
+}
+
+
+.role-selector {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.role-selector:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 193, 7, 0.5);
+}
+
+.role-selector:focus {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: #ffc107;
+  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
+}
+
+.role-selector option {
+  background-color: #036;
+  color: white;
+  padding: 0.5rem;
 }

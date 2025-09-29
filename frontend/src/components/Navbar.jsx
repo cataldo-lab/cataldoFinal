@@ -2,7 +2,17 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { logout } from '@services/auth.service.js';
 import { useAuth } from '@context/AuthContext';
 import '@styles/navbar.css';
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+// ⭐ ROLES CONSISTENTES CON EL BACKEND
+const RolePermissions = {
+  administrador: ["administrador", "gerente", "trabajador_tienda", "cliente"],
+  gerente: ["gerente", "trabajador_tienda", "cliente"],
+  trabajador_tienda: ["trabajador_tienda", "cliente"],
+  cliente: ["cliente"],
+  usuario: ["cliente"],
+  bloqueado: []
+};
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -10,22 +20,38 @@ const Navbar = () => {
     const auth = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
 
-    // Verificación segura del usuario y rol
+    // Usuario y rol principal
     const user = auth?.user || JSON.parse(sessionStorage.getItem('usuario') || '{}');
     const userRole = user?.rol;
+    const userName = user?.nombreCompleto || 'Usuario';
+
+    // ⭐ Estado para el rol activo (el que está usando ahora)
+    const [activeRole, setActiveRole] = useState(() => {
+        return sessionStorage.getItem('activeRole') || userRole;
+    });
+
+    // ⭐ Obtener roles disponibles para el usuario
+    const rolesDisponibles = RolePermissions[userRole] || [userRole];
+
+    // Guardar rol activo en sessionStorage
+    useEffect(() => {
+        if (activeRole) {
+            sessionStorage.setItem('activeRole', activeRole);
+        }
+    }, [activeRole]);
 
     const logoutSubmit = async () => {
         try {
             await logout();
-            // Forzar recarga del contexto si está disponible
+            sessionStorage.removeItem('activeRole');
             if (auth?.logout) {
                 auth.logout();
             }
             navigate('/auth', { replace: true }); 
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
-            // En caso de error, limpiar localmente y navegar
             sessionStorage.removeItem('usuario');
+            sessionStorage.removeItem('activeRole');
             navigate('/auth', { replace: true });
         }
     };
@@ -53,50 +79,51 @@ const Navbar = () => {
         });
     };
 
-    // Función para obtener las rutas según el rol
+    // ⭐ OBTENER RUTAS SEGÚN EL ROL ACTIVO
     const getRoutesByRole = () => {
-        if (!userRole) return [];
+        if (!activeRole) return [];
 
-        const routes = [
-            {
-                path: "/home",
-                label: "Inicio",
-                roles: ['administrador', 'gerente', 'trabajador_tienda', 'cliente']
-            }
-        ];
+        const routes = [];
 
-        // Rutas específicas por rol
-        if (userRole === 'administrador') {
+        // Rutas base para todos
+        routes.push({ path: "/home", label: "Inicio" });
+
+        // Rutas para administrador
+        if (activeRole === "administrador") {
             routes.push(
-                { path: "/users", label: "Usuarios", roles: ['administrador'] },
-                { path: "/admin/dashboard", label: "Panel Admin", roles: ['administrador'] }
+                { path: "/users", label: "Usuarios" },
+                { path: "/admin/dashboard", label: "Panel Admin" }
             );
         }
 
-        if (userRole === 'gerente') {
+        // Rutas para gerente
+        if (activeRole === "gerente" && rolesDisponibles.includes("gerente")) {
             routes.push(
-                { path: "/gerente/dashboard", label: "Dashboard", roles: ['gerente'] },
-                { path: "/gerente/reports", label: "Reportes", roles: ['gerente'] }
+                { path: "/gerente/dashboard", label: "Dashboard" },
+                { path: "/gerente/reports", label: "Reportes" },
+                { path: "/gerente/employees", label: "Empleados" }
             );
         }
 
-        if (userRole === 'trabajador_tienda') {
+        // Rutas para trabajador
+        if (activeRole === "trabajador_tienda" && rolesDisponibles.includes("trabajador_tienda")) {
             routes.push(
-                { path: "/trabajador/operations", label: "Operaciones", roles: ['trabajador_tienda'] },
-                { path: "/trabajador/products", label: "Productos", roles: ['trabajador_tienda'] },
-                { path: "/trabajador/materials", label: "Materiales", roles: ['trabajador_tienda'] }
+                { path: "/trabajador/operations", label: "Operaciones" },
+                { path: "/trabajador/products", label: "Productos" },
+                { path: "/trabajador/materials", label: "Materiales" }
             );
         }
 
-        if (userRole === 'cliente') {
+        // Rutas para cliente (todos tienen acceso)
+        if (activeRole === "cliente" && rolesDisponibles.includes("cliente")) {
             routes.push(
-                { path: "/cliente/catalog", label: "Catálogo", roles: ['cliente'] },
-                { path: "/cliente/orders", label: "Mis Pedidos", roles: ['cliente'] },
-                { path: "/cliente/profile", label: "Mi Perfil", roles: ['cliente'] }
+                { path: "/cliente/catalog", label: "Catálogo" },
+                { path: "/cliente/orders", label: "Mis Pedidos" },
+                { path: "/cliente/profile", label: "Mi Perfil" }
             );
         }
 
-        return routes.filter(route => route.roles.includes(userRole));
+        return routes;
     };
 
     const availableRoutes = getRoutesByRole();
@@ -106,8 +133,44 @@ const Navbar = () => {
         return null;
     }
 
+    // ⭐ Mapeo de nombres amigables - CONSISTENTES CON BACKEND
+    const roleLabels = {
+        administrador: "Administrador",
+        gerente: "Gerente",
+        trabajador_tienda: "Trabajador",
+        cliente: "Cliente",
+        usuario: "Usuario",
+        bloqueado: "Bloqueado"
+    };
+
     return (
         <nav className="navbar">
+            <div className="navbar-user-info">
+                <div className="user-avatar">
+                    {userName.charAt(0).toUpperCase()}
+                </div>
+                <div className="user-details">
+                    <span className="user-name">{userName}</span>
+                    
+                    {/* ⭐ Selector de rol si tiene múltiples roles */}
+                    {rolesDisponibles.length > 1 ? (
+                        <select 
+                            className="role-selector"
+                            value={activeRole}
+                            onChange={(e) => setActiveRole(e.target.value)}
+                        >
+                            {rolesDisponibles.map(role => (
+                                <option key={role} value={role}>
+                                    {roleLabels[role] || role}
+                                </option>
+                            ))}
+                        </select>
+                    ) : (
+                        <span className="user-role">{roleLabels[userRole] || userRole}</span>
+                    )}
+                </div>
+            </div>
+
             <div className={`nav-menu ${menuOpen ? 'activado' : ''}`}>
                 <ul>
                     {availableRoutes.map((route) => (

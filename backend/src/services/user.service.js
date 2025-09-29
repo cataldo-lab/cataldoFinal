@@ -41,6 +41,8 @@ export async function getUsersService() {
   }
 }
 
+
+
 export async function updateUserService(query, body) {
   try {
     const { id, rut, email } = query;
