@@ -4,6 +4,7 @@ import CloseIcon from '@assets/XIcon.svg';
 import QuestionIcon from '@assets/QuestionCircleIcon.svg';
 import { useState } from 'react';
 import { convertirMinusculas } from '@helpers/formatData.js';
+//import { EMAILS_DOMINIOS_PERMITIDOS } from '@helpers/validacion/emailValidation.js';
 
 export default function PopupCreateUser({ show, setShow, action, isLoading }) {
     const [error, setError] = useState(null);
@@ -68,11 +69,11 @@ export default function PopupCreateUser({ show, setShow, action, isLoading }) {
                             {
                                 label: "Nombre completo",
                                 name: "nombreCompleto",
-                                placeholder: 'Diego Alexis Salazar Jara',
+                                placeholder: 'Daniel Perez Gonzalez',
                                 fieldType: 'input',
                                 type: "text",
                                 required: true,
-                                minLength: 15,
+                                minLength: 3,
                                 maxLength: 50,
                                 pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
                                 patternMessage: "Debe contener solo letras y espacios",
@@ -84,10 +85,10 @@ export default function PopupCreateUser({ show, setShow, action, isLoading }) {
                                 fieldType: 'input',
                                 type: "email",
                                 required: true,
-                                minLength: 15,
+                                minLength: 3,
                                 maxLength: 35,
                                 pattern: /.*@gmail\.cl$/,
-                                patternMessage: "El correo debe terminar en @gmail.cl",
+                                patternMessage: "El correo debe terminar en @gmail.*",
                             },
                             {
                                 label: "Rut",

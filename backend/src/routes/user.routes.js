@@ -20,7 +20,7 @@ router
   .get("/", getUsers)
   .get("/detail/", getUser)
   .patch("/detail/", updateUser)
-  .post("/create", isAdmin, createUser)
+  .post("/create/",createUser)
   .delete("/detail/", deleteUser);
 
 export default router;

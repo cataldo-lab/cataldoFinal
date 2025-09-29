@@ -131,26 +131,43 @@ export async function createUser(req, res) {
   try {
     const { body } = req;
 
-
-    const { error } = userBodyValidation.validate(body);
-
+    // 1. Validar body con Joi
+    const { error } = userBodyValidation.validate(body, { abortEarly: false });
     if (error) {
       return handleErrorClient(
         res,
         400,
         "Error de validación en los datos enviados",
-        error.message
+        error.details.map((d) => d.message).join(", ")
       );
     }
 
-   
-    const [newUser, errorUser] = await createUserService(body);
+    // 2. Validar rol permitido
+    const rolesPermitidos = Object.values(Role);
+    if (body.rol && !rolesPermitidos.includes(body.rol)) {
+      return handleErrorClient(
+        res,
+        400,
+        "Rol inválido",
+        `El rol '${body.rol}' no es válido. Roles permitidos: ${rolesPermitidos.join(", ")}`
+      );
+    }
 
-    if (errorUser) return handleErrorClient(res, 400, "Error creando al usuario", errorUser);
+    // 3. Encriptar contraseña
+    const hashedPassword = await bcrypt.hash(body.password, 10);
+    const userData = { ...body, password: hashedPassword };
 
-    handleSuccess(res, 201, "Usuario creado correctamente", newUser);
+    // 4. Crear usuario en servicio
+    const [newUser, errorUser] = await createUserService(userData);
+    if (errorUser) {
+      return handleErrorClient(res, 400, "Error creando al usuario", errorUser);
+    }
+
+    // 5. No devolver contraseña en la respuesta
+    const { password, ...userWithoutPassword } = newUser;
+
+    return handleSuccess(res, 201, "Usuario creado correctamente", userWithoutPassword);
   } catch (error) {
-  
-    handleErrorServer(res, 500, error.message);
+    return handleErrorServer(res, 500, error.message);
   }
 }

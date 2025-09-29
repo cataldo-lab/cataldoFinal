@@ -132,9 +132,9 @@ export async function deleteUserService(query) {
 export async function createUserService(body) {
   try {
     const userRepository = AppDataSource.getRepository(User);
-
+    
     const { nombreCompleto, rut, email, password, rol, telefono } = body;
-
+    
     // Verificar si ya existe un usuario con el mismo email
     const existingEmail = await userRepository.findOne({
       where: { email }
