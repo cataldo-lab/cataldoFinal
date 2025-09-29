@@ -6,7 +6,8 @@ export const Role = {
   GERENTE: "gerente", 
   TRABAJADOR_TIENDA: "trabajador_tienda",
   CLIENTE: "cliente",
-  USUARIO: "usuario"
+  USUARIO: "usuario",
+  BLOQUEADO: "bloqueado"
 }
 
 const UserSchema = new EntitySchema({
@@ -41,7 +42,6 @@ const UserSchema = new EntitySchema({
     },
     rol: {
       type: "varchar",
-      length: 20,
       default: "cliente",
     },
     telefono: {
@@ -52,12 +52,12 @@ const UserSchema = new EntitySchema({
     createdAt: {
       type: "timestamp with time zone",
       default: () => "CURRENT_TIMESTAMP",
-      nullable: false,
+      nullable: true,
     },
     updatedAt: {
       type: "timestamp with time zone",
       default: () => "CURRENT_TIMESTAMP",
-      nullable: false,
+      nullable: true,
     },
   },
   relations: {

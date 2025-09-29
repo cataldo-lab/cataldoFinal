@@ -1,0 +1,31 @@
+meta {
+  name: CrearUsuario
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3000/api/user/create/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub21icmVDb21wbGV0byI6IkFkbWluaXN0cmFkb3IgZGVsIFNpc3RlbWEiLCJlbWFpbCI6ImFkbWluLnNpc3RlbWFAZ21haWwuY2wiLCJydXQiOiIxMS4xMTEuMTExLTEiLCJyb2wiOiJjbGllbnRlIiwiaWF0IjoxNzU5MTczMjU5LCJleHAiOjE3NTkyNTk2NTl9.ScsVxrQyYxkMdEv3Y7Vcpu3c2aNoOlToWQW0ALUl4v8
+}
+
+body:json {
+  {
+    "nombreCompleto": "Juan Pérez monsalvez",
+    "rut": "12345678-9",
+    "email": "juanperezperezperez@gmail.cl",
+    "password": "123456usuario",
+    "rol": "cliente",
+    "telefono": "+56911111111"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}
