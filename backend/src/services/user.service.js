@@ -127,3 +127,53 @@ export async function deleteUserService(query) {
     return [null, "Error interno del servidor"];
   }
 }
+
+
+export async function createUserService(body) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    
+    const { nombreCompleto, rut, email, password, rol = "usuario", telefono } = body;
+    
+    // Verificar si ya existe un usuario con el mismo email
+    const existingEmail = await userRepository.findOne({
+      where: { email }
+    });
+    
+    if (existingEmail) {
+      return [null, "Ya existe un usuario con este correo electrónico"];
+    }
+    
+    // Verificar si ya existe un usuario con el mismo RUT
+    const existingRut = await userRepository.findOne({
+      where: { rut }
+    });
+    
+    if (existingRut) {
+      return [null, "Ya existe un usuario con este RUT"];
+    }
+    
+    // Crear nuevo usuario
+    const newUser = userRepository.create({
+      nombreCompleto,
+      rut,
+      email,
+      password: await encryptPassword(password),
+      rol,
+      telefono,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    
+    // Guardar en la base de datos
+    await userRepository.save(newUser);
+    
+    // Remover la contraseña antes de devolver el objeto
+    const { password: _, ...userData } = newUser;
+    
+    return [userData, null];
+  } catch (error) {
+    console.error("Error al crear un usuario:", error);
+    return [null, "Error interno del servidor"];
+  }
+}

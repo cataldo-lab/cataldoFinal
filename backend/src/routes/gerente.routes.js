@@ -26,6 +26,9 @@ router
   .get("/reports/inventory", getInventoryReport)
   .get("/reports/operations", getOperationsReport);
 
+
+
+  
 // Controladores temporales hasta implementar los reales
 function getOperations(req, res) {
   res.json({ 

@@ -1,5 +1,6 @@
 "use strict";
 import {
+  createUserService,
   deleteUserService,
   getUserService,
   getUsersService,
@@ -120,6 +121,36 @@ export async function deleteUser(req, res) {
 
     handleSuccess(res, 200, "Usuario eliminado correctamente", userDelete);
   } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+
+// Crear usuario
+export async function createUser(req, res) {
+  try {
+    const { body } = req;
+
+
+    const { error } = userBodyValidation.validate(body);
+
+    if (error) {
+      return handleErrorClient(
+        res,
+        400,
+        "Error de validación en los datos enviados",
+        error.message
+      );
+    }
+
+   
+    const [newUser, errorUser] = await createUserService(body);
+
+    if (errorUser) return handleErrorClient(res, 400, "Error creando al usuario", errorUser);
+
+    handleSuccess(res, 201, "Usuario creado correctamente", newUser);
+  } catch (error) {
+  
     handleErrorServer(res, 500, error.message);
   }
 }

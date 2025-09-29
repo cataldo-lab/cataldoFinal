@@ -1,15 +1,18 @@
 import Table from '@components/Table';
 import useUsers from '@hooks/users/useGetUsers.jsx';
 import Search from '../components/Search';
-import Popup from '../components/popup/adm/Popup';
+import Popup from '../components/popup/adm/PopupUpdateUser';
+import PopupCreateUser from "@components/popup/adm/PopupCreateUser";
 import DeleteIcon from '../assets/deleteIcon.svg';
 import UpdateIcon from '../assets/updateIcon.svg';
+import AddIcon from '../assets/addIcon.svg';
 import UpdateIconDisable from '../assets/updateIconDisabled.svg';
 import DeleteIconDisable from '../assets/deleteIconDisabled.svg';
 import { useCallback, useState } from 'react';
 import '@styles/users.css';
 import useEditUser from '@hooks/users/useEditUser';
 import useDeleteUser from '@hooks/users/useDeleteUser';
+import usePostUsers from '@hooks/users/usePostUsers';
 
 const Users = () => {
   const { users, fetchUsers, setUsers } = useUsers();
@@ -49,6 +52,9 @@ const Users = () => {
           <h1 className='title-table'>Usuarios</h1>
           <div className='filter-actions'>
             <Search value={filterRut} onChange={handleRutFilterChange} placeholder={'Filtrar por rut'} />
+           <button onClick={() => setIsCreatePopupOpen(true)} className="create-user-button">
+              <img src={AddIcon} alt="add" />
+            </button>
             <button onClick={handleClickUpdate} disabled={dataUser.length === 0}>
               {dataUser.length === 0 ? (
                 <img src={UpdateIconDisable} alt="edit-disabled" />
@@ -75,6 +81,8 @@ const Users = () => {
         />
       </div>
       <Popup show={isPopupOpen} setShow={setIsPopupOpen} data={dataUser} action={handleUpdate} />
+      <PopupCreateUser show={isCreatePopupOpen} setShow={setIsCreatePopupOpen} action={handleCreateUser} />
+
     </div>
   );
 };

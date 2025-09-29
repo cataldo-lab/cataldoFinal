@@ -64,7 +64,6 @@ export default function Popup({ show, setShow, data, action }) {
                                 name: "rol",
                                 fieldType: 'select',
                                 options: [
-                                    { value: 'administrador', label: 'Administrador' },
                                     { value: 'gerente', label: 'Gerente' },
                                     { value: 'trabajador_tienda', label: 'Trabajador de tienda' },
                                     { value: 'cliente', label: 'Cliente' },
