@@ -36,6 +36,10 @@ export const ClienteSchema = new EntitySchema({
             scale: 2,
             nullable: true,
             default: 0
+        },
+        Acepta_uso_datos: {
+            type: "boolean",
+            default: false
         }
     },
     relations: {

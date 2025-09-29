@@ -681,7 +681,9 @@ async function createClientes() {
         correo_alterno_cliente: "maria.gonzalez.alt@gmail.cl",
         categoria_cliente: "premium",
         descuento_cliente: 15.00,
-        user: usuariosCreados[0]
+        user: usuariosCreados[0],
+        Acepta_uso_datos: true
+
       },
       {
         cumpleanos_cliente: new Date('1978-07-22'),
@@ -689,7 +691,8 @@ async function createClientes() {
         correo_alterno_cliente: "carlos.mendoza.alt@gmail.cl",
         categoria_cliente: "vip",
         descuento_cliente: 20.00,
-        user: usuariosCreados[1]
+        user: usuariosCreados[1],
+        Acepta_uso_datos: false
       },
       {
         cumpleanos_cliente: new Date('1992-11-08'),
@@ -697,7 +700,8 @@ async function createClientes() {
         correo_alterno_cliente: "ana.rojas.alt@gmail.cl",
         categoria_cliente: "regular",
         descuento_cliente: 5.00,
-        user: usuariosCreados[2]
+        user: usuariosCreados[2],
+        Acepta_uso_datos: true
       },
       {
         cumpleanos_cliente: new Date('1980-05-30'),
@@ -705,7 +709,8 @@ async function createClientes() {
         correo_alterno_cliente: "jorge.fernandez.alt@gmail.cl",
         categoria_cliente: "premium",
         descuento_cliente: 12.00,
-        user: usuariosCreados[3]
+        user: usuariosCreados[3],
+        Acepta_uso_datos: false
       }
     ];
 
