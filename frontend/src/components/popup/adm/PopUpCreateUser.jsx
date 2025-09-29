@@ -1,146 +1,143 @@
-// PopupCreateUser.jsx
+import Form from '../../Form';
+import '@styles/popup.css';
+import CloseIcon from '@assets/XIcon.svg';
+import QuestionIcon from '@assets/QuestionCircleIcon.svg';
 import { useState } from 'react';
-import '../styles/popup.css'; // Asegúrate de tener estilos adecuados
+import { convertirMinusculas } from '@helpers/formatData.js';
 
-const PopupCreateUser = ({ show, setShow, action }) => {
-  const [userData, setUserData] = useState({
-    nombreCompleto: '',
-    email: '',
-    rut: '',
-    password: '',
-    rol: 'usuario',
-    telefono: ''
-  });
+export default function PopupCreateUser({ show, setShow, action, isLoading }) {
+    const [error, setError] = useState(null);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setUserData({
-      ...userData,
-      [name]: value
-    });
-  };
+    const handleSubmit = async (formData) => {
+        setError(null);
+        
+        try {
+            // Validar y formatear los datos
+            if (!formData.nombreCompleto || !formData.email || !formData.rut || !formData.password) {
+                setError('Todos los campos son obligatorios');
+                return;
+            }
+            
+            // Convertir campos a minúsculas (excepto password)
+            const { password, ...restData } = formData;
+            const dataLowercase = convertirMinusculas(restData);
+            
+            // Añadir el rol "usuario" por defecto
+            const formattedData = {
+                ...dataLowercase,
+                password,
+                rol: 'usuario' // Agregar rol 'usuario' por defecto
+            };
+            
+            console.log('Datos formateados a enviar:', formattedData);
+            
+            // Llamar a la acción con los datos formateados
+            const success = await action(formattedData);
+            
+            if (success) {
+                setShow(false);
+            } else {
+                setError('No se pudo crear el usuario. Revisa los datos e intenta de nuevo.');
+            }
+        } catch (error) {
+            console.error('Error al crear usuario:', error);
+            setError('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.');
+        }
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const success = await action(userData);
-    if (success) {
-      // Limpiar el formulario y cerrar el popup
-      setUserData({
-        nombreCompleto: '',
-        email: '',
-        rut: '',
-        password: '',
-        rol: 'usuario',
-        telefono: ''
-      });
-      setShow(false);
-    }
-  };
-
-  if (!show) return null;
-
-  return (
-    <div className="popup-overlay">
-      <div className="popup-container">
-        <h2>Crear Nuevo Usuario</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="nombreCompleto">Nombre Completo</label>
-            <input
-              type="text"
-              id="nombreCompleto"
-              name="nombreCompleto"
-              value={userData.nombreCompleto}
-              onChange={handleInputChange}
-              required
-              minLength={15}
-              maxLength={50}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="email">Correo Electrónico</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={userData.email}
-              onChange={handleInputChange}
-              required
-              pattern=".*@gmail\.cl$"
-              title="El correo debe terminar en @gmail.cl"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="rut">RUT</label>
-            <input
-              type="text"
-              id="rut"
-              name="rut"
-              value={userData.rut}
-              onChange={handleInputChange}
-              required
-              pattern="^[0-9]{1,2}\.[0-9]{3}\.[0-9]{3}-[0-9kK]{1}$|^[0-9]{7,8}-[0-9kK]{1}$"
-              title="Formato válido: 12.345.678-9 o 12345678-9"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="password">Contraseña</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={userData.password}
-              onChange={handleInputChange}
-              required
-              minLength={8}
-              maxLength={26}
-              pattern="^[a-zA-Z0-9]+$"
-              title="La contraseña solo puede contener letras y números"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="rol">Rol</label>
-            <select
-              id="rol"
-              name="rol"
-              value={userData.rol}
-              onChange={handleInputChange}
-            >
-              <option value="usuario">Usuario</option>
-              <option value="cliente">Cliente</option>
-              <option value="trabajador_tienda">Trabajador de Tienda</option>
-              <option value="gerente">Gerente</option>
-              <option value="administrador">Administrador</option>
-            </select>
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="telefono">Teléfono (opcional)</label>
-            <input
-              type="tel"
-              id="telefono"
-              name="telefono"
-              value={userData.telefono}
-              onChange={handleInputChange}
-            />
-          </div>
-          
-          <div className="popup-actions">
-            <button type="button" onClick={() => setShow(false)} className="cancel-button">
-              Cancelar
-            </button>
-            <button type="submit" className="confirm-button">
-              Crear Usuario
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-export default PopupCreateUser;
+    const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/);
+    
+    return (
+        <div>
+            { show && (
+            <div className="bg">
+                <div className="popup">
+                    <button className='close' onClick={() => setShow(false)}>
+                        <img src={CloseIcon} alt="Cerrar" />
+                    </button>
+                    
+                    {error && (
+                        <div className="error-message visible" style={{margin: '10px', textAlign: 'center'}}>
+                            {error}
+                        </div>
+                    )}
+                    
+                    <Form
+                        title="Crear nuevo usuario"
+                        fields={[
+                            {
+                                label: "Nombre completo",
+                                name: "nombreCompleto",
+                                placeholder: 'Diego Alexis Salazar Jara',
+                                fieldType: 'input',
+                                type: "text",
+                                required: true,
+                                minLength: 15,
+                                maxLength: 50,
+                                pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+                                patternMessage: "Debe contener solo letras y espacios",
+                            },
+                            {
+                                label: "Correo electrónico",
+                                name: "email",
+                                placeholder: 'example@gmail.cl',
+                                fieldType: 'input',
+                                type: "email",
+                                required: true,
+                                minLength: 15,
+                                maxLength: 35,
+                                pattern: /.*@gmail\.cl$/,
+                                patternMessage: "El correo debe terminar en @gmail.cl",
+                            },
+                            {
+                                label: "Rut",
+                                name: "rut",
+                                placeholder: '21.308.770-3',
+                                fieldType: 'input',
+                                type: "text",
+                                minLength: 9,
+                                maxLength: 12,
+                                pattern: patternRut,
+                                patternMessage: "Debe ser xx.xxx.xxx-x o xxxxxxxx-x",
+                                required: true,
+                            },
+                            {
+                                label: "Contraseña",
+                                name: "password",
+                                placeholder: "**********",
+                                fieldType: 'input',
+                                type: "password",
+                                required: true,
+                                minLength: 8,
+                                maxLength: 26,
+                                pattern: /^[a-zA-Z0-9]+$/,
+                                patternMessage: "Debe contener solo letras y números",
+                            },
+                            // El campo 'rol' ha sido eliminado
+                            {
+                                label: (
+                                    <span>
+                                        Teléfono
+                                        <span className='tooltip-icon'>
+                                            <img src={QuestionIcon} alt="Ayuda" />
+                                            <span className='tooltip-text'>Este campo es opcional</span>
+                                        </span>
+                                    </span>
+                                ),
+                                name: "telefono",
+                                placeholder: "+56912345678",
+                                fieldType: 'input',
+                                type: "tel",
+                                required: false,
+                            }
+                        ]}
+                        onSubmit={handleSubmit}
+                        buttonText={isLoading ? "Creando..." : "Crear usuario"}
+                        backgroundColor={'#fff'}
+                    />
+                </div>
+            </div>
+            )}
+        </div>
+    );
+}

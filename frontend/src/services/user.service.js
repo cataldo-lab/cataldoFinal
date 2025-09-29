@@ -34,9 +34,14 @@ export async function deleteUser(rut) {
 export async function createUser(data) {
     try {
         const response = await axios.post('/user/create/', data);
-        return response.data.data;
+        return {
+            status: 'Success',
+            data: response.data.data
+        };
     } catch (error) {
-        return error.response.data;
+        return error.response?.data || {
+            status: 'Server error',
+            message: 'Error de conexión'
+        };
     }
 }
-

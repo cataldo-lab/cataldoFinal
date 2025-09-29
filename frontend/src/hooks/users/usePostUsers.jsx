@@ -1,7 +1,7 @@
-// usePostUsers.jsx
+// frontend/src/hooks/users/usePostUsers.jsx
 import { useState } from 'react';
 import { createUser } from '@services/user.service.js';
-import { toast } from 'react-toastify'; // Asumiendo que usas react-toastify para notificaciones
+import { showSuccessAlert, showErrorAlert } from '@helpers/sweetAlert.js';
 
 const usePostUsers = (fetchUsers) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,14 +15,15 @@ const usePostUsers = (fetchUsers) => {
       const result = await createUser(userData);
       
       // Verificar si hay errores en la respuesta
-      if (result.status === 'Client error' || result.status === 'Server error') {
-        setError(result.message || 'Error al crear usuario');
-        toast.error(result.message || 'Error al crear usuario');
+      if (!result || (result.status !== 'Success')) {
+        const errorMsg = result?.message || 'Error al crear usuario';
+        setError(errorMsg);
+        showErrorAlert('Error', errorMsg);
         return false;
       }
       
       // Si todo fue exitoso
-      toast.success('Usuario creado correctamente');
+      showSuccessAlert('Éxito', 'Usuario creado correctamente');
       if (fetchUsers) {
         fetchUsers(); // Actualizar la lista de usuarios
       }
@@ -30,7 +31,7 @@ const usePostUsers = (fetchUsers) => {
     } catch (error) {
       const errorMessage = error.message || 'Error al crear usuario';
       setError(errorMessage);
-      toast.error(errorMessage);
+      showErrorAlert('Error', errorMessage);
       return false;
     } finally {
       setIsLoading(false);
