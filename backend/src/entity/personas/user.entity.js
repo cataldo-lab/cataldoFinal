@@ -16,7 +16,7 @@ export const RolePermissions = {
   gerente: ["gerente", "trabajador_tienda", "cliente"],
   trabajador_tienda: ["trabajador_tienda", "cliente"],
   cliente: ["cliente"],
-  usuario: ["cliente"], // Usuario básico = cliente
+  usuario: ["usuario"], // Usuario básico = cliente
   bloqueado: [] // Sin permisos
 }
 
