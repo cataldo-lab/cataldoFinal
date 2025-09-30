@@ -118,7 +118,7 @@ export const userBodyValidation = Joi.object({
     }),
   rol: Joi.string()
     .min(4)
-    .max(15)
+    .max(20)
     .messages({
       "string.base": "El rol debe ser de tipo string.",
       "string.min": "El rol debe tener como mínimo 4 caracteres.",
