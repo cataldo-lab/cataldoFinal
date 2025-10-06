@@ -13,7 +13,7 @@ import { Direccion } from "../../entity/direccion/provincia.entity.js";
 import { Operacion } from "../entity/operacion.entity.js";
 
 
-// Puede ver datos de los clientes, como sus compras, encuestas respondidas, etc.
-// Puede gestionar productos, como ver su estado, historial de operaciones, etc.
-// Puede gestionar encuestas, como ver las respondidas por los clientes, etc.
-// Puede ver y actualizar su propia informacion personal y de cliente
+// Trabajador puede ver existencias
+
+
+//Trabajador puede ver inventario
