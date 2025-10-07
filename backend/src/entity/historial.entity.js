@@ -20,9 +20,24 @@ export const historialSchema = new EntitySchema({
             nullable: true,
             default: false
         },
+        pendiente: {
+            type:"boolean",
+            nulleable: true,
+            default: false
+        },
+        en_proceso: {
+            type: "boolean",
+            nullable: true,
+            default: false
+        },
         terminada:{
             type: "boolean",
             nullable: true,
+            default: false
+        },
+        completada: {
+            type: "boolean",
+            nulleable: true,
             default: false
         },
         pagada:{
@@ -34,6 +49,11 @@ export const historialSchema = new EntitySchema({
             type: "boolean",
             nullable: true,
             default: false
+        },
+        anulada:{
+            type:"boolean",
+            nullable:true,
+            default:false
         },
         fecha_cambio:{
             type: "timestamp",

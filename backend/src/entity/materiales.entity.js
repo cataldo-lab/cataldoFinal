@@ -1,6 +1,62 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
+export const UnidadPeso={
+    KILOGRAMO: "kg",
+    GRAMO: "g",
+    LIBRA: "lb",
+    ONZA: "oz"
+}
+
+export const UnidadLongitud ={
+    METRO: "m",
+    CENTIMETRO: "cm",
+    MILIMETRO: "mm",
+    PULGADA: "in",
+    PIE: "ft"
+}
+
+export const UnidadVolumen={
+    LITRO: "lt",
+    MILILITRO: "ml",
+    GALON: "gal"
+}
+
+export const UnidadUnidad={
+    UNIDAD: "unidad",
+    PAR: "par",
+    MEDIADOCENA: "mediadocena",
+    DOCENA: "docena",
+    PAQUETE: "paquete"
+}
+
+export const UnidadMedida = {
+    ...UnidadPeso,
+    ...UnidadLongitud,
+    ...UnidadVolumen,
+    ...UnidadUnidad,
+    OTRO: "otro"
+};
+
+export const CategoriaUnidad = {
+    PESO: "peso",
+    LONGITUD: "longitud",
+    VOLUMEN: "volumen",
+    UNIDAD: "unidad",
+    OTRO: "otro"
+};
+
+
+export function detectarCategoria(unidad) {
+    if (Object.values(UnidadPeso).includes(unidad)) return CategoriaUnidad.PESO;
+    if (Object.values(UnidadLongitud).includes(unidad)) return CategoriaUnidad.LONGITUD;
+    if (Object.values(UnidadVolumen).includes(unidad)) return CategoriaUnidad.VOLUMEN;
+    if (Object.values(UnidadUnidad).includes(unidad)) return CategoriaUnidad.UNIDAD;
+    return CategoriaUnidad.OTRO;
+}
+
+
+
 export const MaterialesSchema = new EntitySchema({
     name: "Materiales",
     tableName: "materiales",
@@ -20,9 +76,15 @@ export const MaterialesSchema = new EntitySchema({
             nullable: false,
             default: 0
         },
+        categoria_unidad: {
+            type: "enum",
+            enum: CategoriaUnidad,
+            nullable: true
+        },
         unidad_medida: {
-            type: "varchar",
-            length: 20,
+            type: "enum",
+            enum: UnidadMedida,
+            default: UnidadUnidad.UNIDAD,
             nullable: false
         },
         precio_unitario: {

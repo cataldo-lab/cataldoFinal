@@ -1,6 +1,18 @@
 "use strict";       
 import { EntitySchema } from "typeorm";
 
+export const EstadoOperacion = {
+    COTIZACION: "cotizacion",
+    ORDEN_TRABAJO: "orden_trabajo",
+    PENDIENTE: "pendiente", //aprobado no iniciado
+    EN_PROCESO: "en_proceso", //aprobado e iniciado
+    TERMINADA: "terminada",
+    COMPLETADA: "completada",
+    ENTREGADA: "entregada",
+    PAGADA: "pagada",
+    ANULADA: "anulada"
+};
+
 export const OperacionSchema = new EntitySchema({
     name: "Operacion",
     tableName: "operacion",
@@ -11,14 +23,9 @@ export const OperacionSchema = new EntitySchema({
             generated: true,
         },
         estado_operacion: {
-            type: "varchar",
-            length: 50,
-            default: "pendiente" // pendiente, en_proceso, completada, cancelada
-        },
-        tipo_servicio: {
-            type: "boolean",
-            nullable: false,
-            default: false // false = producto, true = servicio
+            type: "enum",
+            enum: EstadoOperacion,
+            default: EstadoOperacion.PENDIENTE 
         },
         costo_operacion: {
             type: "decimal",

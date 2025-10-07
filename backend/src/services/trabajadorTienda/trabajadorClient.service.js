@@ -5,409 +5,462 @@ import { Producto } from "../entity/producto.entity.js";
 import { Producto_Operacion } from "../entity/producto_operacion.entity.js";
 import { Encuesta } from "../entity/encuesta.entity.js";
 import { Operacion } from "../entity/operacion.entity.js";
+import Cliente from "../entity/personas/cliente.entity.js";
+import bcrypt from "bcryptjs";
 
+//Trabajador consulta personas con Rol Cliente
+export async function getClientesTienda() {
+    try {
+        const clienteRepository = AppDataSource.getRepository("Cliente");
+        
+        // Obtener todos los clientes con sus datos de usuario relacionados
+        const clientes = await clienteRepository.find({
+            relations: {
+                user: {
+                    comuna: {
+                        provincia: {
+                            region: {
+                                pais: true
+                            }
+                        }
+                    }
+                }
+            },
+            where: {
+                user: {
+                    rol: "cliente"
+                }
+            },
+            order: {
+                user: {
+                    nombreCompleto: "ASC"
+                }
+            }
+        });
 
-/**
- * Trabajador consulta personas con Rol Cliente
- */
-export const obtenerClientes = async (req, res) => {
-  try {
-    const clientes = await Cliente.findAll({
-      include: [{
-        model: User,
-        attributes: ['id', 'nombre', 'email', 'telefono', 'estado']
-      }],
-      where: { activo: true } // Opcional: filtrar solo activos
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: clientes
-    });
-  } catch (error) {
-    console.error('Error al obtener clientes:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al obtener clientes'
-    });
-  }
-};
-
-/**
- * Trabajador consulta un cliente específico
- */
-export const obtenerClientePorId = async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const cliente = await Cliente.findByPk(id, {
-      include: [{
-        model: User,
-        attributes: ['id', 'nombre', 'email', 'telefono', 'estado']
-      }]
-    });
-
-    if (!cliente) {
-      return res.status(404).json({
-        success: false,
-        message: 'Cliente no encontrado'
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: cliente
-    });
-  } catch (error) {
-    console.error('Error al obtener cliente:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al obtener cliente'
-    });
-  }
-};
-
-/**
- * Trabajador crea personas con rol cliente
- */
-export const crearCliente = async (req, res) => {
-  try {
-    const { 
-      nombre, 
-      email, 
-      telefono, 
-      rut, 
-      direccion, 
-      fecha_nacimiento,
-      // Otros campos específicos de Cliente
-    } = req.body;
-
-    // Validaciones básicas
-    if (!nombre || !email || !rut) {
-      return res.status(400).json({
-        success: false,
-        message: 'Faltan campos requeridos: nombre, email, rut'
-      });
-    }
-
-    // Verificar si el email o rut ya existen
-    const clienteExistente = await Cliente.findOne({
-      where: { 
-        [Op.or]: [{ email }, { rut }]
-      }
-    });
-
-    if (clienteExistente) {
-      return res.status(409).json({
-        success: false,
-        message: 'Ya existe un cliente con ese email o RUT'
-      });
-    }
-
-    // Crear el cliente
-    const nuevoCliente = await Cliente.create({
-      nombre,
-      email,
-      telefono,
-      rut,
-      direccion,
-      fecha_nacimiento,
-      rol: 'CLIENTE', // Asignar rol de cliente
-      activo: true
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: 'Cliente creado exitosamente',
-      data: nuevoCliente
-    });
-  } catch (error) {
-    console.error('Error al crear cliente:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al crear cliente'
-    });
-  }
-};
-
-/**
- * Trabajador actualiza datos de cliente
- */
-export const actualizarCliente = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const datosActualizar = req.body;
-
-    // Buscar el cliente
-    const cliente = await Cliente.findByPk(id);
-
-    if (!cliente) {
-      return res.status(404).json({
-        success: false,
-        message: 'Cliente no encontrado'
-      });
-    }
-
-    // No permitir actualizar ciertos campos sensibles
-    delete datosActualizar.id;
-    delete datosActualizar.rol;
-
-    // Actualizar el cliente
-    await cliente.update(datosActualizar);
-
-    return res.status(200).json({
-      success: true,
-      message: 'Cliente actualizado exitosamente',
-      data: cliente
-    });
-  } catch (error) {
-    console.error('Error al actualizar cliente:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al actualizar cliente'
-    });
-  }
-};
-
-/**
- * Trabajador ingresa/registra encuesta de cliente
- */
-export const registrarEncuestaCliente = async (req, res) => {
-  try {
-    const { clienteId, respuestas, operacionId } = req.body;
-
-    // Validaciones
-    if (!clienteId || !respuestas) {
-      return res.status(400).json({
-        success: false,
-        message: 'Faltan datos requeridos'
-      });
-    }
-
-    // Verificar que el cliente existe
-    const cliente = await Cliente.findByPk(clienteId);
-    if (!cliente) {
-      return res.status(404).json({
-        success: false,
-        message: 'Cliente no encontrado'
-      });
-    }
-
-    // Crear la encuesta
-    const nuevaEncuesta = await Encuesta.create({
-      clienteId,
-      operacionId,
-      respuestas,
-      fecha_registro: new Date(),
-      registrado_por: req.user?.id // ID del trabajador que registra
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: 'Encuesta registrada exitosamente',
-      data: nuevaEncuesta
-    });
-  } catch (error) {
-    console.error('Error al registrar encuesta:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al registrar encuesta'
-    });
-  }
-};
-
-/**
- * Trabajador puede ver todas las operaciones asociadas a un cliente
- */
-export const obtenerOperacionesCliente = async (req, res) => {
-  try {
-    const { clienteId } = req.params;
-
-    // Verificar que el cliente existe
-    const cliente = await Cliente.findByPk(clienteId);
-    if (!cliente) {
-      return res.status(404).json({
-        success: false,
-        message: 'Cliente no encontrado'
-      });
-    }
-
-    // Obtener todas las operaciones del cliente con sus detalles
-    const operaciones = await Operacion.findAll({
-      where: { clienteId },
-      include: [
-        {
-          model: Producto_Operacion,
-          include: [{ model: Producto }]
-        },
-        {
-          model: Encuesta
+        // Si no hay clientes
+        if (!clientes || clientes.length === 0) {
+            return [null, "No se encontraron clientes"];
         }
-      ],
-      order: [['fecha_operacion', 'DESC']]
-    });
 
-    return res.status(200).json({
-      success: true,
-      data: {
-        cliente: {
-          id: cliente.id,
-          nombre: cliente.nombre,
-          email: cliente.email
-        },
-        operaciones
-      }
-    });
-  } catch (error) {
-    console.error('Error al obtener operaciones del cliente:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al obtener operaciones'
-    });
-  }
-};
+        // Formatear la respuesta mostrando solo datos completos
+        const clientesFormateados = clientes.map(cliente => {
+            const clienteData = {
+                id_cliente: cliente.id_cliente,
+                // Datos del usuario (siempre presentes)
+                id_user: cliente.user.id,
+                rut: cliente.user.rut,
+                nombreCompleto: cliente.user.nombreCompleto,
+                email: cliente.user.email,
+                rol: cliente.user.rol,
+            };
 
-/**
- * Trabajador obtiene detalle de una operación específica
- */
-export const obtenerDetalleOperacion = async (req, res) => {
-  try {
-    const { operacionId } = req.params;
+            // Solo agregar campos opcionales si tienen datos
+            if (cliente.user.telefono) {
+                clienteData.telefono = cliente.user.telefono;
+            }
 
-    const operacion = await Operacion.findByPk(operacionId, {
-      include: [
-        {
-          model: Cliente,
-          include: [{ model: User }]
-        },
-        {
-          model: Producto_Operacion,
-          include: [{ model: Producto }]
-        },
-        {
-          model: Encuesta
-        }
-      ]
-    });
+            if (cliente.cumpleanos_cliente) {
+                clienteData.cumpleanos = cliente.cumpleanos_cliente;
+            }
 
-    if (!operacion) {
-      return res.status(404).json({
-        success: false,
-        message: 'Operación no encontrada'
-      });
+            if (cliente.whatsapp_cliente) {
+                clienteData.whatsapp = cliente.whatsapp_cliente;
+            }
+
+            if (cliente.correo_alterno_cliente) {
+                clienteData.correo_alterno = cliente.correo_alterno_cliente;
+            }
+
+            if (cliente.categoria_cliente) {
+                clienteData.categoria = cliente.categoria_cliente;
+            }
+
+            if (cliente.descuento_cliente && cliente.descuento_cliente > 0) {
+                clienteData.descuento = cliente.descuento_cliente;
+            }
+
+            // Solo mostrar aceptación de datos si es true
+            if (cliente.Acepta_uso_datos) {
+                clienteData.acepta_uso_datos = cliente.Acepta_uso_datos;
+            }
+
+            // Solo agregar dirección si existe comuna
+            if (cliente.user.comuna) {
+                clienteData.direccion = {
+                    comuna: cliente.user.comuna.nombre_comuna
+                };
+
+                if (cliente.user.comuna.provincia) {
+                    clienteData.direccion.provincia = cliente.user.comuna.provincia.nombre_provincia;
+
+                    if (cliente.user.comuna.provincia.region) {
+                        clienteData.direccion.region = cliente.user.comuna.provincia.region.nombre_region;
+
+                        if (cliente.user.comuna.provincia.region.pais) {
+                            clienteData.direccion.pais = cliente.user.comuna.provincia.region.pais.nombre_pais;
+                        }
+                    }
+                }
+            }
+
+            // Fechas (siempre presentes)
+            clienteData.fecha_creacion = cliente.user.createdAt;
+            clienteData.fecha_actualizacion = cliente.user.updatedAt;
+
+            return clienteData;
+        });
+
+        return [clientesFormateados, null];
+
+    } catch (error) {
+        console.error("Error al obtener clientes:", error);
+        return [null, "Error interno del servidor al obtener clientes"];
     }
+}
 
-    return res.status(200).json({
-      success: true,
-      data: operacion
-    });
-  } catch (error) {
-    console.error('Error al obtener detalle de operación:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al obtener detalle de operación'
-    });
-  }
-};
 
-/**
- * Trabajador puede ver todas las encuestas
- */
-export const obtenerEncuestas = async (req, res) => {
-  try {
-    const { clienteId, estado } = req.query;
-    
-    const whereClause = {};
-    if (clienteId) whereClause.clienteId = clienteId;
-    if (estado) whereClause.estado = estado;
 
-    const encuestas = await Encuesta.findAll({
-      where: whereClause,
-      include: [
-        {
-          model: Cliente,
-          attributes: ['id', 'nombre', 'email']
-        },
-        {
-          model: Operacion,
-          attributes: ['id', 'fecha_operacion', 'monto_total']
+
+
+
+//Trabajador crea personas con rol cliente 
+export async function createCliente(datosCliente) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+        const userRepository = queryRunner.manager.getRepository("User");
+        const clienteRepository = queryRunner.manager.getRepository("Cliente");
+
+        // Validar datos obligatorios
+        if (!datosCliente.rut || !datosCliente.nombreCompleto || !datosCliente.email || !datosCliente.password) {
+            await queryRunner.rollbackTransaction();
+            return [null, "Faltan datos obligatorios: rut, nombreCompleto, email y password"];
         }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
 
-    return res.status(200).json({
-      success: true,
-      data: encuestas
-    });
-  } catch (error) {
-    console.error('Error al obtener encuestas:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al obtener encuestas'
-    });
-  }
-};
+        // Verificar si el RUT ya existe
+        const rutExistente = await userRepository.findOne({
+            where: { rut: datosCliente.rut }
+        });
 
-/**
- * Trabajador obtiene encuestas respondidas por un cliente específico
- */
-export const obtenerEncuestasCliente = async (req, res) => {
-  try {
-    const { clienteId } = req.params;
-
-    const encuestas = await Encuesta.findAll({
-      where: { clienteId },
-      include: [
-        {
-          model: Operacion,
-          attributes: ['id', 'fecha_operacion']
+        if (rutExistente) {
+            await queryRunner.rollbackTransaction();
+            return [null, "El RUT ya está registrado"];
         }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
 
-    return res.status(200).json({
-      success: true,
-      data: encuestas
-    });
-  } catch (error) {
-    console.error('Error al obtener encuestas del cliente:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al obtener encuestas'
-    });
-  }
-};
+        // Verificar si el email ya existe
+        const emailExistente = await userRepository.findOne({
+            where: { email: datosCliente.email }
+        });
 
-/**
- * Trabajador elimina/desactiva un cliente (soft delete)
- */
-export const desactivarCliente = async (req, res) => {
-  try {
-    const { id } = req.params;
+        if (emailExistente) {
+            await queryRunner.rollbackTransaction();
+            return [null, "El email ya está registrado"];
+        }
 
-    const cliente = await Cliente.findByPk(id);
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(datosCliente.email)) {
+            await queryRunner.rollbackTransaction();
+            return [null, "Formato de email inválido"];
+        }
 
-    if (!cliente) {
-      return res.status(404).json({
-        success: false,
-        message: 'Cliente no encontrado'
-      });
+        // Validar formato de RUT (básico)
+        const rutRegex = /^[0-9]+-[0-9kK]$/;
+        if (!rutRegex.test(datosCliente.rut)) {
+            await queryRunner.rollbackTransaction();
+            return [null, "Formato de RUT inválido. Debe ser: 12345678-9"];
+        }
+
+        // Si se proporciona id_comuna, verificar que existe
+        if (datosCliente.id_comuna) {
+            const comunaRepository = queryRunner.manager.getRepository("Comuna");
+            const comunaExiste = await comunaRepository.findOne({
+                where: { id_comuna: datosCliente.id_comuna }
+            });
+
+            if (!comunaExiste) {
+                await queryRunner.rollbackTransaction();
+                return [null, "La comuna especificada no existe"];
+            }
+        }
+
+        // Encriptar contraseña
+        const hashedPassword = await bcrypt.hash(datosCliente.password, 10);
+
+        // Crear usuario
+        const nuevoUser = userRepository.create({
+            rut: datosCliente.rut,
+            nombreCompleto: datosCliente.nombreCompleto,
+            email: datosCliente.email,
+            password: hashedPassword,
+            rol: "cliente",
+            telefono: datosCliente.telefono || null,
+            comuna: datosCliente.id_comuna ? { id_comuna: datosCliente.id_comuna } : null
+        });
+
+        const userGuardado = await userRepository.save(nuevoUser);
+
+        // Crear registro de cliente
+        const nuevoCliente = clienteRepository.create({
+            user: userGuardado,
+            cumpleanos_cliente: datosCliente.cumpleanos || null,
+            whatsapp_cliente: datosCliente.whatsapp || null,
+            correo_alterno_cliente: datosCliente.correo_alterno || null,
+            categoria_cliente: datosCliente.categoria || "regular",
+            descuento_cliente: datosCliente.descuento || 0,
+            Acepta_uso_datos: datosCliente.acepta_uso_datos || false
+        });
+
+        const clienteGuardado = await clienteRepository.save(nuevoCliente);
+
+        await queryRunner.commitTransaction();
+
+        // Obtener el cliente completo con sus relaciones
+        const clienteCompleto = await clienteRepository.findOne({
+            where: { id_cliente: clienteGuardado.id_cliente },
+            relations: {
+                user: {
+                    comuna: {
+                        provincia: {
+                            region: {
+                                pais: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Formatear respuesta (sin incluir el password)
+        const respuesta = {
+            id_cliente: clienteCompleto.id_cliente,
+            id_user: clienteCompleto.user.id,
+            rut: clienteCompleto.user.rut,
+            nombreCompleto: clienteCompleto.user.nombreCompleto,
+            email: clienteCompleto.user.email,
+            rol: clienteCompleto.user.rol
+        };
+
+        // Agregar campos opcionales si existen
+        if (clienteCompleto.user.telefono) respuesta.telefono = clienteCompleto.user.telefono;
+        if (clienteCompleto.cumpleanos_cliente) respuesta.cumpleanos = clienteCompleto.cumpleanos_cliente;
+        if (clienteCompleto.whatsapp_cliente) respuesta.whatsapp = clienteCompleto.whatsapp_cliente;
+        if (clienteCompleto.correo_alterno_cliente) respuesta.correo_alterno = clienteCompleto.correo_alterno_cliente;
+        if (clienteCompleto.categoria_cliente) respuesta.categoria = clienteCompleto.categoria_cliente;
+        if (clienteCompleto.descuento_cliente > 0) respuesta.descuento = clienteCompleto.descuento_cliente;
+        if (clienteCompleto.Acepta_uso_datos) respuesta.acepta_uso_datos = clienteCompleto.Acepta_uso_datos;
+
+        if (clienteCompleto.user.comuna) {
+            respuesta.direccion = {
+                id_comuna: clienteCompleto.user.comuna.id_comuna,
+                comuna: clienteCompleto.user.comuna.nombre_comuna
+            };
+            
+            if (clienteCompleto.user.comuna.provincia) {
+                respuesta.direccion.provincia = clienteCompleto.user.comuna.provincia.nombre_provincia;
+                
+                if (clienteCompleto.user.comuna.provincia.region) {
+                    respuesta.direccion.region = clienteCompleto.user.comuna.provincia.region.nombre_region;
+                    
+                    if (clienteCompleto.user.comuna.provincia.region.pais) {
+                        respuesta.direccion.pais = clienteCompleto.user.comuna.provincia.region.pais.nombre_pais;
+                    }
+                }
+            }
+        }
+
+        respuesta.fecha_creacion = clienteCompleto.user.createdAt;
+        respuesta.fecha_actualizacion = clienteCompleto.user.updatedAt;
+
+        return [respuesta, null];
+
+    } catch (error) {
+        await queryRunner.rollbackTransaction();
+        console.error("Error al crear cliente:", error);
+        return [null, "Error interno del servidor al crear cliente"];
+    } finally {
+        await queryRunner.release();
     }
+}
 
-    // Soft delete
-    await cliente.update({ activo: false });
+//Trabajador actualiza datos con rol cliente.
 
-    return res.status(200).json({
-      success: true,
-      message: 'Cliente desactivado exitosamente'
-    });
-  } catch (error) {
-    console.error('Error al desactivar cliente:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error al desactivar cliente'
-    });
-  }
-}; 
+export async function createCliente(datosCliente) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+        const userRepository = queryRunner.manager.getRepository("User");
+        const clienteRepository = queryRunner.manager.getRepository("Cliente");
+
+        // Validar datos obligatorios
+        if (!datosCliente.rut || !datosCliente.nombreCompleto || !datosCliente.email || !datosCliente.password) {
+            await queryRunner.rollbackTransaction();
+            return [null, "Faltan datos obligatorios: rut, nombreCompleto, email y password"];
+        }
+
+        // Verificar si el RUT ya existe
+        const rutExistente = await userRepository.findOne({
+            where: { rut: datosCliente.rut }
+        });
+
+        if (rutExistente) {
+            await queryRunner.rollbackTransaction();
+            return [null, "El RUT ya está registrado"];
+        }
+
+        // Verificar si el email ya existe
+        const emailExistente = await userRepository.findOne({
+            where: { email: datosCliente.email }
+        });
+
+        if (emailExistente) {
+            await queryRunner.rollbackTransaction();
+            return [null, "El email ya está registrado"];
+        }
+
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(datosCliente.email)) {
+            await queryRunner.rollbackTransaction();
+            return [null, "Formato de email inválido"];
+        }
+
+        // Validar formato de RUT (básico)
+        const rutRegex = /^[0-9]+-[0-9kK]$/;
+        if (!rutRegex.test(datosCliente.rut)) {
+            await queryRunner.rollbackTransaction();
+            return [null, "Formato de RUT inválido. Debe ser: 12345678-9"];
+        }
+
+        // Si se proporciona id_comuna, verificar que existe
+        if (datosCliente.id_comuna) {
+            const comunaRepository = queryRunner.manager.getRepository("Comuna");
+            const comunaExiste = await comunaRepository.findOne({
+                where: { id_comuna: datosCliente.id_comuna }
+            });
+
+            if (!comunaExiste) {
+                await queryRunner.rollbackTransaction();
+                return [null, "La comuna especificada no existe"];
+            }
+        }
+
+        // Encriptar contraseña
+        const hashedPassword = await bcrypt.hash(datosCliente.password, 10);
+
+        // Crear usuario
+        const nuevoUser = userRepository.create({
+            rut: datosCliente.rut,
+            nombreCompleto: datosCliente.nombreCompleto,
+            email: datosCliente.email,
+            password: hashedPassword,
+            rol: "cliente",
+            telefono: datosCliente.telefono || null,
+            comuna: datosCliente.id_comuna ? { id_comuna: datosCliente.id_comuna } : null
+        });
+
+        const userGuardado = await userRepository.save(nuevoUser);
+
+        // Crear registro de cliente
+        const nuevoCliente = clienteRepository.create({
+            user: userGuardado,
+            cumpleanos_cliente: datosCliente.cumpleanos || null,
+            whatsapp_cliente: datosCliente.whatsapp || null,
+            correo_alterno_cliente: datosCliente.correo_alterno || null,
+            categoria_cliente: datosCliente.categoria || "regular",
+            descuento_cliente: datosCliente.descuento || 0,
+            Acepta_uso_datos: datosCliente.acepta_uso_datos || false
+        });
+
+        const clienteGuardado = await clienteRepository.save(nuevoCliente);
+
+        await queryRunner.commitTransaction();
+
+        // Obtener el cliente completo con sus relaciones
+        const clienteCompleto = await clienteRepository.findOne({
+            where: { id_cliente: clienteGuardado.id_cliente },
+            relations: {
+                user: {
+                    comuna: {
+                        provincia: {
+                            region: {
+                                pais: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Formatear respuesta (sin incluir el password)
+        const respuesta = {
+            id_cliente: clienteCompleto.id_cliente,
+            id_user: clienteCompleto.user.id,
+            rut: clienteCompleto.user.rut,
+            nombreCompleto: clienteCompleto.user.nombreCompleto,
+            email: clienteCompleto.user.email,
+            rol: clienteCompleto.user.rol
+        };
+
+        // Agregar campos opcionales si existen
+        if (clienteCompleto.user.telefono) respuesta.telefono = clienteCompleto.user.telefono;
+        if (clienteCompleto.cumpleanos_cliente) respuesta.cumpleanos = clienteCompleto.cumpleanos_cliente;
+        if (clienteCompleto.whatsapp_cliente) respuesta.whatsapp = clienteCompleto.whatsapp_cliente;
+        if (clienteCompleto.correo_alterno_cliente) respuesta.correo_alterno = clienteCompleto.correo_alterno_cliente;
+        if (clienteCompleto.categoria_cliente) respuesta.categoria = clienteCompleto.categoria_cliente;
+        if (clienteCompleto.descuento_cliente > 0) respuesta.descuento = clienteCompleto.descuento_cliente;
+        if (clienteCompleto.Acepta_uso_datos) respuesta.acepta_uso_datos = clienteCompleto.Acepta_uso_datos;
+
+        if (clienteCompleto.user.comuna) {
+            respuesta.direccion = {
+                id_comuna: clienteCompleto.user.comuna.id_comuna,
+                comuna: clienteCompleto.user.comuna.nombre_comuna
+            };
+            
+            if (clienteCompleto.user.comuna.provincia) {
+                respuesta.direccion.provincia = clienteCompleto.user.comuna.provincia.nombre_provincia;
+                
+                if (clienteCompleto.user.comuna.provincia.region) {
+                    respuesta.direccion.region = clienteCompleto.user.comuna.provincia.region.nombre_region;
+                    
+                    if (clienteCompleto.user.comuna.provincia.region.pais) {
+                        respuesta.direccion.pais = clienteCompleto.user.comuna.provincia.region.pais.nombre_pais;
+                    }
+                }
+            }
+        }
+
+        respuesta.fecha_creacion = clienteCompleto.user.createdAt;
+        respuesta.fecha_actualizacion = clienteCompleto.user.updatedAt;
+
+        return [respuesta, null];
+
+    } catch (error) {
+        await queryRunner.rollbackTransaction();
+        console.error("Error al crear cliente:", error);
+        return [null, "Error interno del servidor al crear cliente"];
+    } finally {
+        await queryRunner.release();
+    }
+}
+
+
+//Trabajador ingresa encuesta de los clientes. (No seguro)
+//Quizas
+
+
+
+//Tabalajor puede ver toda la informacion asociada a operaciones con un cliente
+
+
+
+// Puede gestionar encuestas, como ver las respondidas por los clientes, etc.
+
+
+
+
