@@ -1,5 +1,17 @@
 import axios from './root.service.js';
 
+//Probar dashboard
+export async function getDashboardStats() {
+    try {
+        const response = await axios.get('/trabajador-tienda/dashboard');
+        return response.data;
+    } catch (error) {
+        return error.response.data;
+    }
+}
+
+
+
 // === MIS OPERACIONES ===
 export async function getMyOperations() {
     try {

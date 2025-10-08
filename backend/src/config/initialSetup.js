@@ -1,43 +1,41 @@
 "use strict";
 import User from "../entity/personas/user.entity.js";
-import { PaisSchema } from "../entity/direccion/pais.entity.js";
 import { AppDataSource } from "./configDb.js";
 import { encryptPassword } from "../helpers/bcrypt.helper.js";
-import { ProvinciaSchema } from "../entity/direccion/provincia.entity.js";
-import { RegionSchema } from "../entity/direccion/region.entity.js";
-import { ComunaSchema } from "../entity/direccion/comuna.entity.js";
-import { proveedoresSchema } from "../entity/proveedores.entity.js";
-import { MaterialesSchema } from "../entity/materiales.entity.js";
-import { CostoTercerosSchema } from "../entity/costoTerceros.entity.js";
-import { ProductoSchema } from "../entity/producto.entity.js";
 
+/**
+ * Utilidad para verificar si ya existen registros en una entidad
+ */
+async function existenRegistros(nombreEntidad, mensajeOmision) {
+  const repository = AppDataSource.getRepository(nombreEntidad);
+  const count = await repository.count();
+  if (count > 0) {
+    console.log(`* => ${mensajeOmision}`);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Crear países iniciales
+ */
 async function createPaises() {
   try {
-    const paisRepository = AppDataSource.getRepository("Pais");
-    
-    const count = await paisRepository.count();
-    if (count > 0) {
-      console.log("* => Países ya existen, omitiendo creación");
+    if (await existenRegistros("Pais", "Países ya existen, omitiendo creación")) {
       return;
     }
 
-    await Promise.all([
-      paisRepository.save(
-        paisRepository.create({
-          nombre_pais: "Chile"
-        })
-      ),
-      paisRepository.save(
-        paisRepository.create({
-          nombre_pais: "Argentina"
-        })
-      ),
-      paisRepository.save(
-        paisRepository.create({
-          nombre_pais: "Perú"
-        })
-      )
-    ]);
+    const paisRepository = AppDataSource.getRepository("Pais");
+    
+    const paises = [
+      { nombre_pais: "Chile" },
+      { nombre_pais: "Argentina" },
+      { nombre_pais: "Perú" }
+    ];
+
+    await Promise.all(
+      paises.map(pais => paisRepository.save(paisRepository.create(pais)))
+    );
     
     console.log("* => Países creados exitosamente");
   } catch (error) {
@@ -46,20 +44,20 @@ async function createPaises() {
   }
 }
 
+/**
+ * Crear regiones de Chile
+ */
 async function createRegiones() {
   try {
-    const regionRepository = AppDataSource.getRepository("Region");
-    const paisRepository = AppDataSource.getRepository("Pais");
-    
-    const count = await regionRepository.count();
-    if (count > 0) {
-      console.log("* => Regiones ya existen, omitiendo creación");
+    if (await existenRegistros("Region", "Regiones ya existen, omitiendo creación")) {
       return;
     }
 
+    const regionRepository = AppDataSource.getRepository("Region");
+    const paisRepository = AppDataSource.getRepository("Pais");
+    
     const chile = await paisRepository.findOne({ where: { nombre_pais: "Chile" } });
     if (!chile) {
-      console.error("No se encontró el país Chile para crear regiones");
       throw new Error("País Chile no encontrado");
     }
 
@@ -100,23 +98,23 @@ async function createRegiones() {
   }
 }
 
+/**
+ * Crear provincias del Biobío
+ */
 async function createProvincias() {
   try {
-    const provinciaRepository = AppDataSource.getRepository("Provincia");
-    const regionRepository = AppDataSource.getRepository("Region");
-    
-    const count = await provinciaRepository.count();
-    if (count > 0) {
-      console.log("* => Provincias ya existen, omitiendo creación");
+    if (await existenRegistros("Provincia", "Provincias ya existen, omitiendo creación")) {
       return;
     }
 
+    const provinciaRepository = AppDataSource.getRepository("Provincia");
+    const regionRepository = AppDataSource.getRepository("Region");
+    
     const biobio = await regionRepository.findOne({ 
       where: { nombre_region: "Región del Biobío" } 
     });
     
     if (!biobio) {
-      console.error("No se encontró la Región del Biobío para crear provincias");
       throw new Error("Región del Biobío no encontrada");
     }
 
@@ -144,23 +142,23 @@ async function createProvincias() {
   }
 }
 
+/**
+ * Crear comunas de Concepción
+ */
 async function createComunas() {
   try {
-    const comunaRepository = AppDataSource.getRepository("Comuna");
-    const provinciaRepository = AppDataSource.getRepository("Provincia");
-    
-    const count = await comunaRepository.count();
-    if (count > 0) {
-      console.log("* => Comunas ya existen, omitiendo creación");
+    if (await existenRegistros("Comuna", "Comunas ya existen, omitiendo creación")) {
       return;
     }
 
+    const comunaRepository = AppDataSource.getRepository("Comuna");
+    const provinciaRepository = AppDataSource.getRepository("Provincia");
+    
     const concepcion = await provinciaRepository.findOne({ 
       where: { nombre_provincia: "Provincia de Concepción" } 
     });
     
     if (!concepcion) {
-      console.error("No se encontró la Provincia de Concepción para crear comunas");
       throw new Error("Provincia de Concepción no encontrada");
     }
 
@@ -197,62 +195,61 @@ async function createComunas() {
   }
 }
 
+/**
+ * Crear proveedores iniciales
+ */
 async function createProveedores() {
   try {
-    const proveedorRepository = AppDataSource.getRepository("Proveedores");
-    
-    const count = await proveedorRepository.count();
-    if (count > 0) {
-      console.log("* => Proveedores ya existen, omitiendo creación");
+    if (await existenRegistros("Proveedores", "Proveedores ya existen, omitiendo creación")) {
       return;
     }
 
-    await Promise.all([
-      proveedorRepository.save(
-        proveedorRepository.create({
-          rol_proveedor: "Materiales de Construcción",
-          rut_proveedor: "76.123.456-7",
-          nombre_representanter: "Carlos",
-          apellido_representante: "Mendoza",
-          rut_representante: "12.345.678-9",
-          fono_proveedor: "+56912345678",
-          correo_proveedor: "contacto@maderasur.cl"
-        })
-      ),
-      proveedorRepository.save(
-        proveedorRepository.create({
-          rol_proveedor: "Vidrios y Cristales",
-          rut_proveedor: "77.987.654-3",
-          nombre_representanter: "María",
-          apellido_representante: "González",
-          rut_representante: "19.876.543-2",
-          fono_proveedor: "+56987654321",
-          correo_proveedor: "ventas@vidrioscentro.cl"
-        })
-      ),
-      proveedorRepository.save(
-        proveedorRepository.create({
-          rol_proveedor: "Telas y Tapicería",
-          rut_proveedor: "75.555.666-K",
-          nombre_representanter: "Roberto",
-          apellido_representante: "Silva",
-          rut_representante: "16.555.777-8",
-          fono_proveedor: "+56955577788",
-          correo_proveedor: "info@telasdecor.cl"
-        })
-      ),
-      proveedorRepository.save(
-        proveedorRepository.create({
-          rol_proveedor: "Herrajes y Accesorios",
-          rut_proveedor: "78.111.222-4",
-          nombre_representanter: "Ana",
-          apellido_representante: "Rodríguez",
-          rut_representante: "14.222.333-5",
-          fono_proveedor: "+56933344455",
-          correo_proveedor: "ventas@herrajeschile.cl"
-        })
+    const proveedorRepository = AppDataSource.getRepository("Proveedores");
+
+    const proveedores = [
+      {
+        rol_proveedor: "Materiales de Construcción",
+        rut_proveedor: "76.123.456-7",
+        nombre_representanter: "Carlos",
+        apellido_representante: "Mendoza",
+        rut_representante: "12.345.678-9",
+        fono_proveedor: "+56912345678",
+        correo_proveedor: "contacto@maderasur.cl"
+      },
+      {
+        rol_proveedor: "Vidrios y Cristales",
+        rut_proveedor: "77.987.654-3",
+        nombre_representanter: "María",
+        apellido_representante: "González",
+        rut_representante: "19.876.543-2",
+        fono_proveedor: "+56987654321",
+        correo_proveedor: "ventas@vidrioscentro.cl"
+      },
+      {
+        rol_proveedor: "Telas y Tapicería",
+        rut_proveedor: "75.555.666-K",
+        nombre_representanter: "Roberto",
+        apellido_representante: "Silva",
+        rut_representante: "16.555.777-8",
+        fono_proveedor: "+56955577788",
+        correo_proveedor: "info@telasdecor.cl"
+      },
+      {
+        rol_proveedor: "Herrajes y Accesorios",
+        rut_proveedor: "78.111.222-4",
+        nombre_representanter: "Ana",
+        apellido_representante: "Rodríguez",
+        rut_representante: "14.222.333-5",
+        fono_proveedor: "+56933344455",
+        correo_proveedor: "ventas@herrajeschile.cl"
+      }
+    ];
+
+    await Promise.all(
+      proveedores.map(proveedor =>
+        proveedorRepository.save(proveedorRepository.create(proveedor))
       )
-    ]);
+    );
     
     console.log("* => Proveedores creados exitosamente");
   } catch (error) {
@@ -261,17 +258,18 @@ async function createProveedores() {
   }
 }
 
+/**
+ * Crear materiales asociados a proveedores
+ */
 async function createMateriales() {
   try {
-    const materialRepository = AppDataSource.getRepository("Materiales");
-    const proveedorRepository = AppDataSource.getRepository("Proveedores");
-    
-    const count = await materialRepository.count();
-    if (count > 0) {
-      console.log("* => Materiales ya existen, omitiendo creación");
+    if (await existenRegistros("Materiales", "Materiales ya existen, omitiendo creación")) {
       return;
     }
 
+    const materialRepository = AppDataSource.getRepository("Materiales");
+    const proveedorRepository = AppDataSource.getRepository("Proveedores");
+    
     const proveedorMadera = await proveedorRepository.findOne({ 
       where: { rol_proveedor: "Materiales de Construcción" } 
     });
@@ -289,112 +287,98 @@ async function createMateriales() {
       throw new Error("No se encontraron todos los proveedores necesarios");
     }
 
-    await Promise.all([
+    const materiales = [
       // Materiales de madera
-      materialRepository.save(
-        materialRepository.create({
-          nombre_material: "Tablero MDF 18mm",
-          existencia_material: 50,
-          unidad_medida: "plancha",
-          precio_unitario: 25000,
-          stock_minimo: 10,
-          proveedor: proveedorMadera
-        })
-      ),
-      materialRepository.save(
-        materialRepository.create({
-          nombre_material: "Tablero Aglomerado 15mm",
-          existencia_material: 30,
-          unidad_medida: "plancha",
-          precio_unitario: 18000,
-          stock_minimo: 8,
-          proveedor: proveedorMadera
-        })
-      ),
-      materialRepository.save(
-        materialRepository.create({
-          nombre_material: "Madera Pino Radiata 2x4",
-          existencia_material: 100,
-          unidad_medida: "metro",
-          precio_unitario: 3500,
-          stock_minimo: 20,
-          proveedor: proveedorMadera
-        })
-      ),
+      {
+        nombre_material: "Tablero MDF 18mm",
+        existencia_material: 50,
+        unidad_medida: "unidad",
+        precio_unitario: 25000,
+        stock_minimo: 10,
+        proveedor: proveedorMadera
+      },
+      {
+        nombre_material: "Tablero Aglomerado 15mm",
+        existencia_material: 30,
+        unidad_medida: "unidad",
+        precio_unitario: 18000,
+        stock_minimo: 8,
+        proveedor: proveedorMadera
+      },
+      {
+        nombre_material: "Madera Pino Radiata 2x4",
+        existencia_material: 100,
+        unidad_medida: "m",
+        precio_unitario: 3500,
+        stock_minimo: 20,
+        proveedor: proveedorMadera
+      },
       // Materiales de vidrio
-      materialRepository.save(
-        materialRepository.create({
-          nombre_material: "Vidrio Transparente 4mm",
-          existencia_material: 25,
-          unidad_medida: "m2",
-          precio_unitario: 12000,
-          stock_minimo: 5,
-          proveedor: proveedorVidrio
-        })
-      ),
-      materialRepository.save(
-        materialRepository.create({
-          nombre_material: "Espejo 3mm",
-          existencia_material: 15,
-          unidad_medida: "m2",
-          precio_unitario: 18000,
-          stock_minimo: 3,
-          proveedor: proveedorVidrio
-        })
-      ),
+      {
+        nombre_material: "Vidrio Transparente 4mm",
+        existencia_material: 25,
+        unidad_medida: "m",
+        precio_unitario: 12000,
+        stock_minimo: 5,
+        proveedor: proveedorVidrio
+      },
+      {
+        nombre_material: "Espejo 3mm",
+        existencia_material: 15,
+        unidad_medida: "m",
+        precio_unitario: 18000,
+        stock_minimo: 3,
+        proveedor: proveedorVidrio
+      },
       // Materiales de tapicería
-      materialRepository.save(
-        materialRepository.create({
-          nombre_material: "Tela Chenille",
-          existencia_material: 200,
-          unidad_medida: "metro",
-          precio_unitario: 8500,
-          stock_minimo: 20,
-          proveedor: proveedorTela
-        })
-      ),
-      materialRepository.save(
-        materialRepository.create({
-          nombre_material: "Espuma Tapicería 5cm",
-          existencia_material: 80,
-          unidad_medida: "m2",
-          precio_unitario: 6000,
-          stock_minimo: 15,
-          proveedor: proveedorTela
-        })
-      ),
+      {
+        nombre_material: "Tela Chenille",
+        existencia_material: 200,
+        unidad_medida: "m",
+        precio_unitario: 8500,
+        stock_minimo: 20,
+        proveedor: proveedorTela
+      },
+      {
+        nombre_material: "Espuma Tapicería 5cm",
+        existencia_material: 80,
+        unidad_medida: "m",
+        precio_unitario: 6000,
+        stock_minimo: 15,
+        proveedor: proveedorTela
+      },
       // Herrajes
-      materialRepository.save(
-        materialRepository.create({
-          nombre_material: "Bisagras Piano 1.5m",
-          existencia_material: 40,
-          unidad_medida: "unidad",
-          precio_unitario: 4500,
-          stock_minimo: 10,
-          proveedor: proveedorHerrajes
-        })
-      ),
-      materialRepository.save(
-        materialRepository.create({
-          nombre_material: "Tornillos Madera 4x40",
-          existencia_material: 500,
-          unidad_medida: "unidad",
-          precio_unitario: 50,
-          stock_minimo: 100,
-          proveedor: proveedorHerrajes
-        })
-      ),
-      materialRepository.save(
-        materialRepository.create({
-          nombre_material: "Cola Fría 1kg",
-          existencia_material: 20,
-          unidad_medida: "kg",
-          precio_unitario: 3500,
-          stock_minimo: 5,
-          proveedor: proveedorMadera
-        })
+      {
+        nombre_material: "Bisagras Piano 1.5m",
+        existencia_material: 40,
+        unidad_medida: "unidad",
+        precio_unitario: 4500,
+        stock_minimo: 10,
+        proveedor: proveedorHerrajes
+      },
+      {
+        nombre_material: "Tornillos Madera 4x40",
+        existencia_material: 500,
+        unidad_medida: "unidad",
+        precio_unitario: 50,
+        stock_minimo: 100,
+        proveedor: proveedorHerrajes
+      },
+      {
+        nombre_material: "Cola Fría 1kg",
+        existencia_material: 20,
+        unidad_medida: "kg",
+        precio_unitario: 3500,
+        stock_minimo: 5,
+        proveedor: proveedorMadera
+      }
+    ];
+
+    await Promise.all(
+      materiales.map(material =>
+        materialRepository.save(materialRepository.create(material))
       )
-    ]);
+    );
     
     console.log("* => Materiales creados exitosamente");
   } catch (error) {
@@ -403,32 +387,35 @@ async function createMateriales() {
   }
 }
 
+/**
+ * Crear costos de terceros
+ */
 async function createCostosTerceros() {
   try {
-    const costoTercerosRepository = AppDataSource.getRepository("CostoTerceros");
-    
-    const count = await costoTercerosRepository.count();
-    if (count > 0) {
-      console.log("* => Costos terceros ya existen, omitiendo creación");
+    if (await existenRegistros("CostoTerceros", "Costos terceros ya existen, omitiendo creación")) {
       return;
     }
 
-    await Promise.all([
-      costoTercerosRepository.save(
-        costoTercerosRepository.create({
-          gastos_fijos_ind: 150000,
-          gastos_fijos_dir: 200000,
-          anno: 2024
-        })
-      ),
-      costoTercerosRepository.save(
-        costoTercerosRepository.create({
-          gastos_fijos_ind: 160000,
-          gastos_fijos_dir: 220000,
-          anno: 2025
-        })
+    const costoTercerosRepository = AppDataSource.getRepository("CostoTerceros");
+
+    const costos = [
+      {
+        gastos_fijos_ind: 150000,
+        gastos_fijos_dir: 200000,
+        anno: 2024
+      },
+      {
+        gastos_fijos_ind: 160000,
+        gastos_fijos_dir: 220000,
+        anno: 2025
+      }
+    ];
+
+    await Promise.all(
+      costos.map(costo =>
+        costoTercerosRepository.save(costoTercerosRepository.create(costo))
       )
-    ]);
+    );
     
     console.log("* => Costos terceros creados exitosamente");
   } catch (error) {
@@ -437,17 +424,18 @@ async function createCostosTerceros() {
   }
 }
 
+/**
+ * Crear productos con sus costos
+ */
 async function createProductos() {
   try {
-    const productoRepository = AppDataSource.getRepository("Producto");
-    const costoTercerosRepository = AppDataSource.getRepository("CostoTerceros");
-    
-    const count = await productoRepository.count();
-    if (count > 0) {
-      console.log("* => Productos ya existen, omitiendo creación");
+    if (await existenRegistros("Producto", "Productos ya existen, omitiendo creación")) {
       return;
     }
 
+    const productoRepository = AppDataSource.getRepository("Producto");
+    const costoTercerosRepository = AppDataSource.getRepository("CostoTerceros");
+    
     const costoTerceros2024 = await costoTercerosRepository.findOne({
       where: { anno: 2024 }
     });
@@ -456,133 +444,123 @@ async function createProductos() {
       throw new Error("No se encontraron costos terceros para 2024");
     }
 
-    await Promise.all([
+    const productos = [
       // Muebles
-      productoRepository.save(
-        productoRepository.create({
-          nombre_producto: "Mesa de Comedor 6 personas",
-          categoria_producto: "Mesas",
-          descripcion_producto: "Mesa de comedor rectangular para 6 personas, madera MDF con acabado laqueado",
-          costo_fabricacion: 80000,
-          costo_barnizador: 15000,
-          costo_vidrio: 25000,
-          costo_tela: 0,
-          costo_materiales_otros: 10000,
-          precio_venta: 180000,
-          margen_ganancia: 38.46,
-          costoTerceros: costoTerceros2024
-        })
-      ),
-      productoRepository.save(
-        productoRepository.create({
-          nombre_producto: "Silla Tapizada Clásica",
-          categoria_producto: "Sillas",
-          descripcion_producto: "Silla con estructura de madera y tapizado en tela chenille",
-          costo_fabricacion: 35000,
-          costo_barnizador: 8000,
-          costo_vidrio: 0,
-          costo_tela: 12000,
-          costo_materiales_otros: 5000,
-          precio_venta: 85000,
-          margen_ganancia: 41.76,
-          costoTerceros: costoTerceros2024
-        })
-      ),
-      productoRepository.save(
-        productoRepository.create({
-          nombre_producto: "Ropero 3 Puertas con Espejo",
-          categoria_producto: "Armarios",
-          descripcion_producto: "Ropero de 3 puertas, 2 compartimentos y puerta central con espejo",
-          costo_fabricacion: 120000,
-          costo_barnizador: 20000,
-          costo_vidrio: 35000,
-          costo_tela: 0,
-          costo_materiales_otros: 15000,
-          precio_venta: 280000,
-          margen_ganancia: 47.37,
-          costoTerceros: costoTerceros2024
-        })
-      ),
-      productoRepository.save(
-        productoRepository.create({
-          nombre_producto: "Cómoda 4 Cajones",
-          categoria_producto: "Cómodas",
-          descripcion_producto: "Cómoda con 4 cajones amplios, ideal para dormitorio",
-          costo_fabricacion: 60000,
-          costo_barnizador: 12000,
-          costo_vidrio: 0,
-          costo_tela: 0,
-          costo_materiales_otros: 8000,
-          precio_venta: 120000,
-          margen_ganancia: 33.33,
-          costoTerceros: costoTerceros2024
-        })
-      ),
-      productoRepository.save(
-        productoRepository.create({
-          nombre_producto: "Estante Biblioteca 5 Niveles",
-          categoria_producto: "Estanterías",
-          descripcion_producto: "Estante de 5 niveles para libros, con respaldo",
-          costo_fabricacion: 45000,
-          costo_barnizador: 10000,
-          costo_vidrio: 0,
-          costo_tela: 0,
-          costo_materiales_otros: 5000,
-          precio_venta: 95000,
-          margen_ganancia: 36.84,
-          costoTerceros: costoTerceros2024
-        })
-      ),
+      {
+        nombre_producto: "Mesa de Comedor 6 personas",
+        categoria_producto: "Mesas",
+        descripcion_producto: "Mesa de comedor rectangular para 6 personas, madera MDF con acabado laqueado",
+        costo_fabricacion: 80000,
+        costo_barnizador: 15000,
+        costo_vidrio: 25000,
+        costo_tela: 0,
+        costo_materiales_otros: 10000,
+        precio_venta: 180000,
+        margen_ganancia: 38.46,
+        costoTerceros: costoTerceros2024
+      },
+      {
+        nombre_producto: "Silla Tapizada Clásica",
+        categoria_producto: "Sillas",
+        descripcion_producto: "Silla con estructura de madera y tapizado en tela chenille",
+        costo_fabricacion: 35000,
+        costo_barnizador: 8000,
+        costo_vidrio: 0,
+        costo_tela: 12000,
+        costo_materiales_otros: 5000,
+        precio_venta: 85000,
+        margen_ganancia: 41.76,
+        costoTerceros: costoTerceros2024
+      },
+      {
+        nombre_producto: "Ropero 3 Puertas con Espejo",
+        categoria_producto: "Armarios",
+        descripcion_producto: "Ropero de 3 puertas, 2 compartimentos y puerta central con espejo",
+        costo_fabricacion: 120000,
+        costo_barnizador: 20000,
+        costo_vidrio: 35000,
+        costo_tela: 0,
+        costo_materiales_otros: 15000,
+        precio_venta: 280000,
+        margen_ganancia: 47.37,
+        costoTerceros: costoTerceros2024
+      },
+      {
+        nombre_producto: "Cómoda 4 Cajones",
+        categoria_producto: "Cómodas",
+        descripcion_producto: "Cómoda con 4 cajones amplios, ideal para dormitorio",
+        costo_fabricacion: 60000,
+        costo_barnizador: 12000,
+        costo_vidrio: 0,
+        costo_tela: 0,
+        costo_materiales_otros: 8000,
+        precio_venta: 120000,
+        margen_ganancia: 33.33,
+        costoTerceros: costoTerceros2024
+      },
+      {
+        nombre_producto: "Estante Biblioteca 5 Niveles",
+        categoria_producto: "Estanterías",
+        descripcion_producto: "Estante de 5 niveles para libros, con respaldo",
+        costo_fabricacion: 45000,
+        costo_barnizador: 10000,
+        costo_vidrio: 0,
+        costo_tela: 0,
+        costo_materiales_otros: 5000,
+        precio_venta: 95000,
+        margen_ganancia: 36.84,
+        costoTerceros: costoTerceros2024
+      },
       // Servicios
-      productoRepository.save(
-        productoRepository.create({
-          nombre_producto: "Reparación de Silla",
-          categoria_producto: "Reparaciones",
-          descripcion_producto: "Servicio de reparación de sillas (estructura, tapizado, etc)",
-          costo_fabricacion: 15000,
-          costo_barnizador: 5000,
-          costo_vidrio: 0,
-          costo_tela: 8000,
-          costo_materiales_otros: 2000,
-          precio_venta: 45000,
-          margen_ganancia: 50.00,
-          servicio: true,
-          costoTerceros: costoTerceros2024
-        })
-      ),
-      productoRepository.save(
-        productoRepository.create({
-          nombre_producto: "Restauración de Mesa Antigua",
-          categoria_producto: "Restauraciones",
-          descripcion_producto: "Servicio completo de restauración de mesas antiguas",
-          costo_fabricacion: 40000,
-          costo_barnizador: 25000,
-          costo_vidrio: 0,
-          costo_tela: 0,
-          costo_materiales_otros: 10000,
-          precio_venta: 120000,
-          margen_ganancia: 60.00,
-          servicio: true,
-          costoTerceros: costoTerceros2024
-        })
-      ),
-      productoRepository.save(
-        productoRepository.create({
-          nombre_producto: "Mueble a Medida",
-          categoria_producto: "Personalizados",
-          descripcion_producto: "Diseño y fabricación de mueble personalizado según especificaciones del cliente",
-          costo_fabricacion: 100000,
-          costo_barnizador: 20000,
-          costo_vidrio: 15000,
-          costo_tela: 10000,
-          costo_materiales_otros: 15000,
-          precio_venta: 250000,
-          margen_ganancia: 56.00,
-          servicio: true,
-          costoTerceros: costoTerceros2024
-        })
+      {
+        nombre_producto: "Reparación de Silla",
+        categoria_producto: "Reparaciones",
+        descripcion_producto: "Servicio de reparación de sillas (estructura, tapizado, etc)",
+        costo_fabricacion: 15000,
+        costo_barnizador: 5000,
+        costo_vidrio: 0,
+        costo_tela: 8000,
+        costo_materiales_otros: 2000,
+        precio_venta: 45000,
+        margen_ganancia: 50.00,
+        servicio: true,
+        costoTerceros: costoTerceros2024
+      },
+      {
+        nombre_producto: "Restauración de Mesa Antigua",
+        categoria_producto: "Restauraciones",
+        descripcion_producto: "Servicio completo de restauración de mesas antiguas",
+        costo_fabricacion: 40000,
+        costo_barnizador: 25000,
+        costo_vidrio: 0,
+        costo_tela: 0,
+        costo_materiales_otros: 10000,
+        precio_venta: 120000,
+        margen_ganancia: 60.00,
+        servicio: true,
+        costoTerceros: costoTerceros2024
+      },
+      {
+        nombre_producto: "Mueble a Medida",
+        categoria_producto: "Personalizados",
+        descripcion_producto: "Diseño y fabricación de mueble personalizado según especificaciones del cliente",
+        costo_fabricacion: 100000,
+        costo_barnizador: 20000,
+        costo_vidrio: 15000,
+        costo_tela: 10000,
+        costo_materiales_otros: 15000,
+        precio_venta: 250000,
+        margen_ganancia: 56.00,
+        servicio: true,
+        costoTerceros: costoTerceros2024
+      }
+    ];
+
+    await Promise.all(
+      productos.map(producto =>
+        productoRepository.save(productoRepository.create(producto))
       )
-    ]);
+    );
     
     console.log("* => Productos creados exitosamente");
   } catch (error) {
@@ -591,6 +569,9 @@ async function createProductos() {
   }
 }
 
+/**
+ * Crear usuario administrador
+ */
 async function createUsers() {
   try {
     const userRepository = AppDataSource.getRepository(User);
@@ -619,17 +600,18 @@ async function createUsers() {
   }
 }
 
+/**
+ * Crear clientes de ejemplo
+ */
 async function createClientes() {
   try {
-    const clienteRepository = AppDataSource.getRepository("Cliente");
-    const userRepository = AppDataSource.getRepository("User");
-    
-    const count = await clienteRepository.count();
-    if (count > 0) {
-      console.log("* => Clientes ya existen, omitiendo creación");
+    if (await existenRegistros("Cliente", "Clientes ya existen, omitiendo creación")) {
       return;
     }
 
+    const clienteRepository = AppDataSource.getRepository("Cliente");
+    const userRepository = AppDataSource.getRepository("User");
+    
     // Crear usuarios cliente primero
     const usuariosCliente = [
       {
@@ -683,7 +665,6 @@ async function createClientes() {
         descuento_cliente: 15.00,
         user: usuariosCreados[0],
         Acepta_uso_datos: true
-
       },
       {
         cumpleanos_cliente: new Date('1978-07-22'),
@@ -716,9 +697,7 @@ async function createClientes() {
 
     await Promise.all(
       clientesData.map(clienteData =>
-        clienteRepository.save(
-          clienteRepository.create(clienteData)
-        )
+        clienteRepository.save(clienteRepository.create(clienteData))
       )
     );
     
@@ -729,17 +708,18 @@ async function createClientes() {
   }
 }
 
+/**
+ * Crear personal de tienda
+ */
 async function createPersonasTienda() {
   try {
-    const personaTiendaRepository = AppDataSource.getRepository("PersonaTienda");
-    const userRepository = AppDataSource.getRepository("User");
-    
-    const count = await personaTiendaRepository.count();
-    if (count > 0) {
-      console.log("* => Personas de tienda ya existen, omitiendo creación");
+    if (await existenRegistros("PersonaTienda", "Personas de tienda ya existen, omitiendo creación")) {
       return;
     }
 
+    const personaTiendaRepository = AppDataSource.getRepository("PersonaTienda");
+    const userRepository = AppDataSource.getRepository("User");
+    
     // Crear usuarios del personal de tienda
     const usuariosPersonal = [
       {
@@ -802,9 +782,7 @@ async function createPersonasTienda() {
 
     await Promise.all(
       personalData.map(personalInfo =>
-        personaTiendaRepository.save(
-          personaTiendaRepository.create(personalInfo)
-        )
+        personaTiendaRepository.save(personaTiendaRepository.create(personalInfo))
       )
     );
     
@@ -815,18 +793,18 @@ async function createPersonasTienda() {
   }
 }
 
+/**
+ * Crear representantes de proveedores
+ */
 async function createRepresentantes() {
   try {
-    const representanteRepository = AppDataSource.getRepository("Representante");
-    const proveedorRepository = AppDataSource.getRepository("Proveedores");
-    
-    const count = await representanteRepository.count();
-    if (count > 0) {
-      console.log("* => Representantes ya existen, omitiendo creación");
+    if (await existenRegistros("Representante", "Representantes ya existen, omitiendo creación")) {
       return;
     }
 
-    // Obtener proveedores existentes
+    const representanteRepository = AppDataSource.getRepository("Representante");
+    const proveedorRepository = AppDataSource.getRepository("Proveedores");
+    
     const proveedores = await proveedorRepository.find();
     
     if (proveedores.length === 0) {
@@ -841,7 +819,7 @@ async function createRepresentantes() {
         cargo_representante: "Gerente de Ventas",
         fono_representante: "+56912345678",
         correo_representante: "c.mendoza@maderasur.cl",
-        proveedores: proveedores[0] // Materiales de Construcción
+        proveedores: proveedores[0]
       },
       {
         nombre_representante: "María Fernanda",
@@ -850,7 +828,7 @@ async function createRepresentantes() {
         cargo_representante: "Ejecutiva Comercial",
         fono_representante: "+56987654321",
         correo_representante: "m.gonzalez@vidrioscentro.cl",
-        proveedores: proveedores[1] // Vidrios y Cristales
+        proveedores: proveedores[1]
       },
       {
         nombre_representante: "Roberto Antonio",
@@ -859,7 +837,7 @@ async function createRepresentantes() {
         cargo_representante: "Representante de Ventas",
         fono_representante: "+56955577788",
         correo_representante: "r.silva@telasdecor.cl",
-        proveedores: proveedores[2] // Telas y Tapicería
+        proveedores: proveedores[2]
       },
       {
         nombre_representante: "Ana Beatriz",
@@ -868,15 +846,13 @@ async function createRepresentantes() {
         cargo_representante: "Coordinadora Comercial",
         fono_representante: "+56933344455",
         correo_representante: "a.rodriguez@herrajeschile.cl",
-        proveedores: proveedores[3] // Herrajes y Accesorios
+        proveedores: proveedores[3]
       }
     ];
 
     await Promise.all(
       representantesData.map(repData =>
-        representanteRepository.save(
-          representanteRepository.create(repData)
-        )
+        representanteRepository.save(representanteRepository.create(repData))
       )
     );
     
@@ -887,18 +863,19 @@ async function createRepresentantes() {
   }
 }
 
+/**
+ * Crear relaciones producto-materiales
+ */
 async function createProductoMateriales() {
   try {
+    if (await existenRegistros("ProductoMateriales", "Relaciones producto-materiales ya existen, omitiendo creación")) {
+      return;
+    }
+
     const productoMaterialesRepository = AppDataSource.getRepository("ProductoMateriales");
     const productoRepository = AppDataSource.getRepository("Producto");
     const materialRepository = AppDataSource.getRepository("Materiales");
     
-    const count = await productoMaterialesRepository.count();
-    if (count > 0) {
-      console.log("* => Relaciones producto-materiales ya existen, omitiendo creación");
-      return;
-    }
-
     const productos = await productoRepository.find();
     const materiales = await materialRepository.find();
     
@@ -906,7 +883,6 @@ async function createProductoMateriales() {
       throw new Error("No se encontraron productos o materiales para crear relaciones");
     }
 
-    // Asignar materiales específicos a cada producto
     const relacionesData = [
       // Mesa de Comedor 6 personas
       {
@@ -980,14 +956,11 @@ async function createProductoMateriales() {
       }
     ];
 
-    // Filtrar relaciones válidas (donde se encontraron tanto producto como material)
     const relacionesValidas = relacionesData.filter(rel => rel.producto && rel.material);
 
     await Promise.all(
       relacionesValidas.map(relacion =>
-        productoMaterialesRepository.save(
-          productoMaterialesRepository.create(relacion)
-        )
+        productoMaterialesRepository.save(productoMaterialesRepository.create(relacion))
       )
     );
     
@@ -998,18 +971,18 @@ async function createProductoMateriales() {
   }
 }
 
+/**
+ * Crear operaciones de ejemplo
+ */
 async function createOperaciones() {
   try {
-    const operacionRepository = AppDataSource.getRepository("Operacion");
-    const userRepository = AppDataSource.getRepository("User");
-    
-    const count = await operacionRepository.count();
-    if (count > 0) {
-      console.log("* => Operaciones ya existen, omitiendo creación");
+    if (await existenRegistros("Operacion", "Operaciones ya existen, omitiendo creación")) {
       return;
     }
 
-    // Obtener clientes existentes
+    const operacionRepository = AppDataSource.getRepository("Operacion");
+    const userRepository = AppDataSource.getRepository("User");
+    
     const clientes = await userRepository.find({
       where: { rol: "cliente" }
     });
@@ -1022,7 +995,6 @@ async function createOperaciones() {
     const operacionesData = [
       {
         estado_operacion: "completada",
-        tipo_servicio: false,
         costo_operacion: 180000,
         cantidad_abono: 90000,
         descripcion_operacion: "Mesa de comedor para 6 personas, madera MDF con vidrio temperado",
@@ -1031,7 +1003,6 @@ async function createOperaciones() {
       },
       {
         estado_operacion: "en_proceso",
-        tipo_servicio: false,
         costo_operacion: 340000,
         cantidad_abono: 170000,
         descripcion_operacion: "Set de 4 sillas tapizadas + mesa auxiliar",
@@ -1040,7 +1011,6 @@ async function createOperaciones() {
       },
       {
         estado_operacion: "pendiente",
-        tipo_servicio: true,
         costo_operacion: 120000,
         cantidad_abono: 0,
         descripcion_operacion: "Restauración completa de mesa antigua familiar",
@@ -1049,16 +1019,14 @@ async function createOperaciones() {
       },
       {
         estado_operacion: "completada",
-        tipo_servicio: false,
         costo_operacion: 280000,
         cantidad_abono: 280000,
         descripcion_operacion: "Ropero 3 puertas con espejo central",
         fecha_entrega_estimada: new Date('2024-11-25'),
-        cliente: clientes[3]
+        cliente: clientes[3] || clientes[0]
       },
       {
         estado_operacion: "en_proceso",
-        tipo_servicio: true,
         costo_operacion: 250000,
         cantidad_abono: 125000,
         descripcion_operacion: "Mueble a medida - Estantería esquinera para sala",
@@ -1069,9 +1037,7 @@ async function createOperaciones() {
 
     await Promise.all(
       operacionesData.map(operacionData =>
-        operacionRepository.save(
-          operacionRepository.create(operacionData)
-        )
+        operacionRepository.save(operacionRepository.create(operacionData))
       )
     );
     
@@ -1082,18 +1048,19 @@ async function createOperaciones() {
   }
 }
 
+/**
+ * Crear productos-operación
+ */
 async function createProductosOperacion() {
   try {
+    if (await existenRegistros("ProductoOperacion", "Productos-operación ya existen, omitiendo creación")) {
+      return;
+    }
+
     const productoOperacionRepository = AppDataSource.getRepository("ProductoOperacion");
     const operacionRepository = AppDataSource.getRepository("Operacion");
     const productoRepository = AppDataSource.getRepository("Producto");
     
-    const count = await productoOperacionRepository.count();
-    if (count > 0) {
-      console.log("* => Productos-operación ya existen, omitiendo creación");
-      return;
-    }
-
     const operaciones = await operacionRepository.find();
     const productos = await productoRepository.find();
     
@@ -1103,7 +1070,6 @@ async function createProductosOperacion() {
     }
 
     const productosOperacionData = [
-      // Operación 1: Mesa de comedor
       {
         operacion: operaciones[0],
         producto: productos.find(p => p.nombre_producto === "Mesa de Comedor 6 personas"),
@@ -1112,7 +1078,6 @@ async function createProductosOperacion() {
         precio_total: 180000,
         especificaciones: "Acabado en roble, vidrio temperado de 6mm"
       },
-      // Operación 2: Set de sillas + mesa
       {
         operacion: operaciones[1],
         producto: productos.find(p => p.nombre_producto === "Silla Tapizada Clásica"),
@@ -1121,7 +1086,6 @@ async function createProductosOperacion() {
         precio_total: 340000,
         especificaciones: "Tapizado en tela beige, patas de madera natural"
       },
-      // Operación 3: Servicio de restauración
       {
         operacion: operaciones[2],
         producto: productos.find(p => p.nombre_producto === "Restauración de Mesa Antigua"),
@@ -1130,7 +1094,6 @@ async function createProductosOperacion() {
         precio_total: 120000,
         especificaciones: "Lijado completo, barnizado y reparación de patas"
       },
-      // Operación 4: Ropero
       {
         operacion: operaciones[3],
         producto: productos.find(p => p.nombre_producto === "Ropero 3 Puertas con Espejo"),
@@ -1139,7 +1102,6 @@ async function createProductosOperacion() {
         precio_total: 280000,
         especificaciones: "Color nogal, espejo biselado, organizadores internos"
       },
-      // Operación 5: Mueble a medida
       {
         operacion: operaciones[4],
         producto: productos.find(p => p.nombre_producto === "Mueble a Medida"),
@@ -1150,14 +1112,11 @@ async function createProductosOperacion() {
       }
     ];
 
-    // Filtrar solo los productos-operación válidos
     const productosValidos = productosOperacionData.filter(po => po.producto && po.operacion);
 
     await Promise.all(
       productosValidos.map(poData =>
-        productoOperacionRepository.save(
-          productoOperacionRepository.create(poData)
-        )
+        productoOperacionRepository.save(productoOperacionRepository.create(poData))
       )
     );
     
@@ -1168,17 +1127,18 @@ async function createProductosOperacion() {
   }
 }
 
+/**
+ * Crear historial de operaciones
+ */
 async function createHistorial() {
   try {
-    const historialRepository = AppDataSource.getRepository("Historial");
-    const operacionRepository = AppDataSource.getRepository("Operacion");
-    
-    const count = await historialRepository.count();
-    if (count > 0) {
-      console.log("* => Historial ya existe, omitiendo creación");
+    if (await existenRegistros("Historial", "Historial ya existe, omitiendo creación")) {
       return;
     }
 
+    const historialRepository = AppDataSource.getRepository("Historial");
+    const operacionRepository = AppDataSource.getRepository("Operacion");
+    
     const operaciones = await operacionRepository.find();
     
     if (operaciones.length === 0) {
@@ -1188,10 +1148,8 @@ async function createHistorial() {
 
     const historialData = [];
 
-    // Crear historial para cada operación
     operaciones.forEach((operacion, index) => {
       if (operacion.estado_operacion === "completada") {
-        // Operación completada - todos los pasos true
         historialData.push({
           operacion: operacion,
           cotizacion: true,
@@ -1199,10 +1157,9 @@ async function createHistorial() {
           terminada: true,
           pagada: true,
           entregada: true,
-          fecha_cambio: new Date(Date.now() - (7 - index) * 24 * 60 * 60 * 1000) // Fechas escalonadas
+          fecha_cambio: new Date(Date.now() - (7 - index) * 24 * 60 * 60 * 1000)
         });
       } else if (operacion.estado_operacion === "en_proceso") {
-        // Operación en proceso
         historialData.push({
           operacion: operacion,
           cotizacion: true,
@@ -1213,7 +1170,6 @@ async function createHistorial() {
           fecha_cambio: new Date(Date.now() - (5 - index) * 24 * 60 * 60 * 1000)
         });
       } else if (operacion.estado_operacion === "pendiente") {
-        // Operación pendiente
         historialData.push({
           operacion: operacion,
           cotizacion: true,
@@ -1228,9 +1184,7 @@ async function createHistorial() {
 
     await Promise.all(
       historialData.map(histData =>
-        historialRepository.save(
-          historialRepository.create(histData)
-        )
+        historialRepository.save(historialRepository.create(histData))
       )
     );
     
@@ -1241,18 +1195,18 @@ async function createHistorial() {
   }
 }
 
+/**
+ * Crear encuestas de satisfacción
+ */
 async function createEncuestas() {
   try {
-    const encuestaRepository = AppDataSource.getRepository("Encuesta");
-    const operacionRepository = AppDataSource.getRepository("Operacion");
-    
-    const count = await encuestaRepository.count();
-    if (count > 0) {
-      console.log("* => Encuestas ya existen, omitiendo creación");
+    if (await existenRegistros("Encuesta", "Encuestas ya existen, omitiendo creación")) {
       return;
     }
 
-    // Solo crear encuestas para operaciones completadas
+    const encuestaRepository = AppDataSource.getRepository("Encuesta");
+    const operacionRepository = AppDataSource.getRepository("Operacion");
+    
     const operacionesCompletadas = await operacionRepository.find({
       where: { estado_operacion: "completada" }
     });
@@ -1281,9 +1235,7 @@ async function createEncuestas() {
 
     await Promise.all(
       encuestasData.map(encuestaData =>
-        encuestaRepository.save(
-          encuestaRepository.create(encuestaData)
-        )
+        encuestaRepository.save(encuestaRepository.create(encuestaData))
       )
     );
     
@@ -1294,10 +1246,12 @@ async function createEncuestas() {
   }
 }
 
-
-// Función principal que ejecuta todo el setup inicial
+/**
+ * Función principal que ejecuta todo el setup inicial
+ */
 export async function runInitialSetup() {
   console.log("🚀 Iniciando configuración inicial de la base de datos...");
+  console.log("⏳ Este proceso puede tardar algunos minutos...\n");
   
   try {
     // Ejecutar en orden de dependencias
@@ -1319,14 +1273,15 @@ export async function runInitialSetup() {
     await createHistorial();
     await createEncuestas();
     
-    console.log("✅ Configuración inicial completada exitosamente");
+    console.log("\n✅ Configuración inicial completada exitosamente");
+    console.log("📊 Base de datos lista para usar\n");
   } catch (error) {
-    console.error("❌ Error durante la configuración inicial:", error);
+    console.error("\n❌ Error durante la configuración inicial:", error);
     throw error;
   }
 }
 
-
+// Exportar todas las funciones individuales
 export {
   createPaises,
   createRegiones,
@@ -1344,7 +1299,5 @@ export {
   createOperaciones,
   createProductosOperacion,
   createHistorial,
-  createEncuestas 
-
-  
+  createEncuestas
 };

@@ -2,12 +2,19 @@
 import { Router } from "express";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isEmployee } from "../middlewares/authorization.middleware.js";
+import { getDashboard } from "../controllers/trabajadorTienda.controller.js";
+
 
 const router = Router();
 
 // Aplicar middlewares
 router.use(authenticateJwt);
 router.use(isEmployee);
+
+
+router.get("/dashboard", getDashboard);
+
+
 
 // Rutas para gestión operativa
 router
