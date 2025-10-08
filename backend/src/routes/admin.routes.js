@@ -8,6 +8,13 @@ import {
   getUsers,
   updateUser,
 } from "../controllers/user.controller.js";
+import {
+  getAuditLogs,
+  getUserActivity,
+  getFailedLogins,
+  getEntityAuditHistory
+} from "../controllers/audit.controller.js";
+
 
 const router = Router();
 
@@ -21,6 +28,13 @@ router
   .get("/users/detail", getUser)              // Ver detalle de un usuario
   .patch("/users/detail", updateUser)         // Actualizar cualquier usuario
   .delete("/users/detail", deleteUser);       // Eliminar cualquier usuario
+
+
+router
+  .get("/audit/logs", getAuditLogs)                    
+  .get("/audit/user/:id", getUserActivity)             
+  .get("/audit/failed-logins", getFailedLogins)        
+  .get("/audit/entity/:entidad/:id", getEntityAuditHistory);
 
 // TODO: Agregar rutas para:
 // - Gestión de productos

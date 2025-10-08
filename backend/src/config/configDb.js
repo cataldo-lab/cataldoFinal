@@ -19,7 +19,7 @@ import { representanteSchema } from "../entity/respresentante.entity.js";
 import { historialSchema } from "../entity/historial.entity.js";
 import { EncuestaSchema } from "../entity/encuesta.entity.js";
 import { CostoTercerosSchema } from "../entity/costoTerceros.entity.js";
-
+import { AuditLogSchema } from "../entity/audit_log.entity.js"; 
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -48,7 +48,8 @@ export const AppDataSource = new DataSource({
     representanteSchema,
     historialSchema,
     EncuestaSchema,
-    CostoTercerosSchema
+    CostoTercerosSchema,
+    AuditLogSchema
   ]
 });
 
