@@ -96,7 +96,7 @@ export const MaterialesSchema = new EntitySchema({
         stock_minimo: {
             type: "int",
             nullable: false,
-            default: 10
+            default: 1
         },
         activo: {
             type: "boolean",

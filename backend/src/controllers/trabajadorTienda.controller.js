@@ -11,6 +11,11 @@ export async function getDashboard(req, res) {
             return handleErrorServer(res, 500, error);
         }
         
+        // Validar que stats existe y tiene datos
+        if (!stats || stats.length === 0) {
+            return handleSuccess(res, 200, "No hay estadísticas disponibles", null);
+        }
+        
         handleSuccess(res, 200, "Estadísticas obtenidas", stats[0]);
     } catch (error) {
         handleErrorServer(res, 500, error.message);

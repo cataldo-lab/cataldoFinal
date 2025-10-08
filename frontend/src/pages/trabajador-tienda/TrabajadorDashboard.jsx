@@ -1,6 +1,7 @@
 // frontend/src/pages/TrabajadorDashboard.jsx
 import { useState, useEffect } from 'react';
-import '../../styles/dasboard.css'
+import '../../styles/trabajadorTienda/dasboard.css'
+import { } from '../../hooks/trabajadorTienda/useTrabajadorDashborad.jsx'
 
 const TrabajadorDashboard = () => {
     const [stats, setStats] = useState({

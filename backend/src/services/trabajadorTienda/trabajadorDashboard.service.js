@@ -1,11 +1,12 @@
 // backend/src/services/trabajadorTienda/trabajadorDashboard.service.js
 import { AppDataSource } from "../../config/configDb.js";
+import ProductoSchema from "../../entity/producto.entity.js";
 
 export async function getDashboardStats() {
     try {
         const operacionRepository = AppDataSource.getRepository("Operacion");
-        const productoRepository = AppDataSource.getRepository("Producto");
         const materialRepository = AppDataSource.getRepository("Materiales");
+        const productoRepository = AppDataSource.getRepository(ProductoSchema);
         
         // Contar operaciones por estado
         const operacionesPendientes = await operacionRepository.count({
@@ -15,9 +16,12 @@ export async function getDashboardStats() {
         const operacionesEnProceso = await operacionRepository.count({
             where: { estado_operacion: "en_proceso" }
         });
+
         
-        // Total de productos
-        const productosTotal = await productoRepository.count();
+         const productoCount = await productoRepository.createQueryBuilder("producto")
+            .select("COUNT(DISTINCT producto.id_producto)", "count")
+            .getRawOne()
+            .then(result => parseInt(result.count));
         
         // Materiales bajo stock
         const materiales = await materialRepository.find();
@@ -28,7 +32,7 @@ export async function getDashboardStats() {
         return [{
             operacionesPendientes,
             operacionesEnProceso,
-            productosTotal,
+            productoCount,
             materialesBajoStock
         }, null];
     } catch (error) {

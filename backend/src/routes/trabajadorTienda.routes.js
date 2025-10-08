@@ -12,7 +12,8 @@ router.use(authenticateJwt);
 router.use(isEmployee);
 
 
-router.get("/dashboard", getDashboard);
+router.get("/dashboard", authenticateJwt, getDashboard);
+
 
 
 
