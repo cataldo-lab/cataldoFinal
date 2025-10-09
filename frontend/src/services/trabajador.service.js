@@ -1,12 +1,17 @@
 import axios from './root.service.js';
 
-//Probar dashboard
 export async function getDashboardStats() {
     try {
+        console.log('🌐 Llamando a /trabajador-tienda/dashboard');
         const response = await axios.get('/trabajador-tienda/dashboard');
+        console.log('📦 Respuesta del servidor:', response.data);
         return response.data;
     } catch (error) {
-        return error.response.data;
+        console.error('❌ Error en getDashboardStats:', error);
+        return error.response?.data || { 
+            status: 'error', 
+            message: 'Error de conexión' 
+        };
     }
 }
 

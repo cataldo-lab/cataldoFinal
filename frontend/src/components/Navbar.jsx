@@ -79,7 +79,7 @@ const Navbar = () => {
         });
     };
 
-    // ⭐ OBTENER RUTAS SEGÚN EL ROL ACTIVO
+    //  OBTENER RUTAS SEGÚN EL ROL ACTIVO
     const getRoutesByRole = () => {
         if (!activeRole) return [];
 
@@ -118,7 +118,6 @@ const Navbar = () => {
         // Rutas para cliente (todos tienen acceso)
         if (activeRole === "cliente" && rolesDisponibles.includes("cliente")) {
             routes.push(
-                { path: "/cliente/catalog", label: "Catálogo" },
                 { path: "/cliente/orders", label: "Mis Pedidos" },
                 { path: "/cliente/profile", label: "Mi Perfil" }
             );

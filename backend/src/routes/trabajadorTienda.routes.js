@@ -12,7 +12,7 @@ router.use(authenticateJwt);
 router.use(isEmployee);
 
 
-router.get("/dashboard", authenticateJwt, getDashboard);
+router.get("/dashboard", getDashboard);
 
 
 

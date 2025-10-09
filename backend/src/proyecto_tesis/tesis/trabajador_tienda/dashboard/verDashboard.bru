@@ -5,9 +5,13 @@ meta {
 }
 
 get {
-  url: 
+  url: http://localhost:3000/api/trabajador-tienda/dashboard
   body: none
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub21icmVDb21wbGV0byI6IkZlcm5hbmRvIEpvc8OpIEhlcnJlcmEgR8OzbWV6IiwiZW1haWwiOiJmZXJuYW5kby5oZXJyZXJhQGdtYWlsLmNsIiwicnV0IjoiMTIuMzQ1LjY3OC05Iiwicm9sIjoidHJhYmFqYWRvcl90aWVuZGEiLCJpYXQiOjE3NTk5NTYwMjgsImV4cCI6MTc2MDA0MjQyOH0.Xb56bphWLfZ3b79A7bSVTAcwvZ26CP-Wv9qNnhs9ZwI
 }
 
 settings {
