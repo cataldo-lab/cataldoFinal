@@ -9,6 +9,15 @@ import {
   getUsers,
   updateUser,
 } from "../controllers/user.controller.js";
+import {
+  getAuditLogs,
+  getUserActivity,
+  getFailedLogins,
+  getEntityAuditHistory
+} from "../controllers/audit.controller.js";
+
+
+
 
 const router = Router();
 
@@ -22,5 +31,13 @@ router
   .patch("/detail/", updateUser)
   .post("/create/",createUser)
   .delete("/detail/", deleteUser);
+
+
+router
+  .get("/audit/logs", getAuditLogs)
+  .get("/audit/user/:id", getUserActivity)
+  .get("/audit/failed-logins", getFailedLogins)
+  .get("/audit/entity/:entidad/:id", getEntityAuditHistory)
+  //.get("/audit/dashboard", getAuditDashboard);
 
 export default router;

@@ -9,6 +9,7 @@ import Error404 from '@pages/Error404';
 import Navbar from '@components/Navbar';
 import ProtectedRoute from '@components/ProtectedRoute';
 import TrabajadorDashboard from '@pages/trabajador-tienda/TrabajadorDashboard';
+import AuditoriaAdm from '@pages/adm/AuditLogs';
 
 // Importar los estilos principales (que incluyen Tailwind)
 import '@styles/main.css';
@@ -78,6 +79,7 @@ const router = createBrowserRouter([
             element: (
               <ProtectedRoute allowedRoles={['administrador']}>
                 <Users />
+                <AuditoriaAdm />
               </ProtectedRoute>
             )
           },
