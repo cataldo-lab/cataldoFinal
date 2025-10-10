@@ -1,7 +1,6 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { logout } from '@services/auth.service.js';
 import { useAuth } from '@context/AuthContext';
-import '@styles/navbar.css';
 import { useState, useEffect } from "react";
 
 // ⭐ ROLES CONSISTENTES CON EL BACKEND
@@ -57,29 +56,10 @@ const Navbar = () => {
     };
 
     const toggleMenu = () => {
-        if (!menuOpen) {
-            removeActiveClass();
-        } else {
-            addActiveClass();
-        }
         setMenuOpen(!menuOpen);
     };
 
-    const removeActiveClass = () => {
-        const activeLinks = document.querySelectorAll('.nav-menu ul li a.active');
-        activeLinks.forEach(link => link.classList.remove('active'));
-    };
-
-    const addActiveClass = () => {
-        const links = document.querySelectorAll('.nav-menu ul li a');
-        links.forEach(link => {
-            if (link.getAttribute('href') === location.pathname) {
-                link.classList.add('active');
-            }
-        });
-    };
-
-    //  OBTENER RUTAS SEGÚN EL ROL ACTIVO
+    // OBTENER RUTAS SEGÚN EL ROL ACTIVO
     const getRoutesByRole = () => {
         if (!activeRole) return [];
 
@@ -92,7 +72,7 @@ const Navbar = () => {
         if (activeRole === "administrador") {
             routes.push(
                 { path: "/users", label: "Usuarios" },
-                { path: "/admin/dashboard", label: "Panel Admin" }
+                { path: "/admin/auditoria", label: "Panel Logs" }
             );
         }
 
@@ -144,68 +124,98 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="navbar">
-            <div className="navbar-user-info">
-                <div className="user-avatar">
+        <nav className="fixed w-full top-0 left-0 flex items-center justify-between bg-stone-600 h-[9vh] z-[1000] px-4 md:px-6 lg:px-8">
+            {/* ⭐ INFORMACIÓN DEL USUARIO */}
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/10 rounded-lg transition-colors duration-300 hover:bg-white/15">
+                {/* Avatar */}
+                <div className="w-[35px] h-[35px] md:w-[38px] md:h-[38px] lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-[#ffc107] to-[#ff8f00] flex items-center justify-center text-[#036] font-bold text-base md:text-lg lg:text-xl shadow-md">
                     {userName.charAt(0).toUpperCase()}
                 </div>
-                <div className="user-details">
-                    <span className="user-name">{userName}</span>
+                
+                {/* Detalles del usuario */}
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-white font-semibold text-[0.85rem] md:text-[0.9rem] lg:text-[0.95rem] leading-tight max-w-[120px] md:max-w-none overflow-hidden text-ellipsis whitespace-nowrap">
+                        {userName}
+                    </span>
                     
                     {/* ⭐ Selector de rol si tiene múltiples roles */}
                     {rolesDisponibles.length > 1 ? (
                         <select 
-                            className="role-selector"
+                            className="bg-white/15 text-[#ffc107] border border-[#ffc107]/30 rounded-md px-2 py-1 text-[0.7rem] md:text-xs font-medium cursor-pointer transition-all duration-300 outline-none hover:bg-white/25 hover:border-[#ffc107]/50 focus:bg-white/30 focus:border-[#ffc107] focus:ring-2 focus:ring-[#ffc107]/20"
                             value={activeRole}
                             onChange={(e) => setActiveRole(e.target.value)}
                         >
                             {rolesDisponibles.map(role => (
-                                <option key={role} value={role}>
+                                <option key={role} value={role} className="bg-[#036] text-white py-2">
                                     {roleLabels[role] || role}
                                 </option>
                             ))}
                         </select>
                     ) : (
-                        <span className="user-role">{roleLabels[userRole] || userRole}</span>
+                        <span className="text-[#ffc107] text-[0.7rem] md:text-xs capitalize font-medium">
+                            {roleLabels[userRole] || userRole}
+                        </span>
                     )}
                 </div>
             </div>
 
-            <div className={`nav-menu ${menuOpen ? 'activado' : ''}`}>
-                <ul>
+            {/* ⭐ MENÚ DE NAVEGACIÓN */}
+            <div className={`${menuOpen ? 'flex' : 'hidden'} md:flex flex-col md:flex-row absolute md:relative top-[9vh] md:top-0 left-0 w-full md:w-auto bg-[#eef7ff] md:bg-transparent`}>
+                <ul className="flex flex-col md:flex-row justify-center md:justify-end items-center list-none m-0 p-0 md:pr-8 w-full md:w-auto">
                     {availableRoutes.map((route) => (
-                        <li key={route.path}>
+                        <li key={route.path} className="w-full md:w-auto h-[60px] md:h-full flex items-center md:px-[30px]">
                             <NavLink 
                                 to={route.path} 
-                                onClick={() => { 
-                                    setMenuOpen(false); 
-                                    addActiveClass();
-                                }} 
-                                className={({ isActive }) => isActive ? 'active' : ''}
+                                onClick={() => setMenuOpen(false)} 
+                                className={({ isActive }) => 
+                                    `relative text-sm no-underline px-2.5 pb-0.5 transition-all duration-300 ${
+                                        isActive 
+                                            ? 'text-[#036] font-bold md:bg-[#eef7ff] md:text-[#002651] md:h-full md:leading-[9.1vh] md:font-bold md:m-0 md:pb-0 md:border-0' 
+                                            : 'text-[#036] font-bold md:text-white md:font-normal md:before:content-[""] md:before:absolute md:before:bottom-0 md:before:left-0 md:before:w-full md:before:h-[3px] md:before:bg-[#006edf] md:before:scale-x-0 md:before:origin-bottom md:before:transition-transform md:before:duration-300 md:hover:before:scale-x-100'
+                                    }`
+                                }
                             >
                                 {route.label}
                             </NavLink>
                         </li>
                     ))}
-                    <li>
-                        <NavLink 
-                            to="/auth" 
+                    <li className="w-full md:w-auto h-[60px] md:h-full flex items-center md:px-[30px]">
+                        <button
                             onClick={(e) => { 
                                 e.preventDefault();
                                 logoutSubmit(); 
                                 setMenuOpen(false); 
-                            }} 
+                            }}
+                            className="text-[#036] font-bold md:text-white md:font-normal text-sm no-underline relative px-2.5 pb-0.5 transition-all duration-300 md:before:content-[''] md:before:absolute md:before:bottom-0 md:before:left-0 md:before:w-full md:before:h-[3px] md:before:bg-[#006edf] md:before:scale-x-0 md:before:origin-bottom md:before:transition-transform md:before:duration-300 md:hover:before:scale-x-100 cursor-pointer bg-transparent border-0"
                         >
                             Cerrar sesión
-                        </NavLink>
+                        </button>
                     </li>
                 </ul>
             </div>
-            <div className="hamburger" onClick={toggleMenu}>
-                <span className="bar"></span>
-                <span className="bar"></span>
-                <span className="bar"></span>
-            </div>
+
+            {/* ⭐ HAMBURGER MENU */}
+            <button 
+                className="flex md:hidden flex-col cursor-pointer z-[1001]" 
+                onClick={toggleMenu}
+                aria-label="Toggle menu"
+            >
+                <span className={`w-6 h-[3px] bg-white my-1 transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+                <span className={`w-6 h-[3px] bg-white my-1 transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`}></span>
+                <span className={`w-6 h-[3px] bg-white my-1 transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+            </button>
+
+            <style>{`
+                @keyframes heartbeat {
+                    0%, 50%, 100% { transform: scaleX(1); }
+                    25%, 75% { transform: scaleX(1.2); }
+                }
+                @media (min-width: 768px) {
+                    .md\\:hover\\:before\\:scale-x-100:hover::before {
+                        animation: heartbeat 5s ease-in-out infinite;
+                    }
+                }
+            `}</style>
         </nav>
     );
 };

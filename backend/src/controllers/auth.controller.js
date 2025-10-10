@@ -1,4 +1,4 @@
-// backend/src/controllers/auth.controller.js
+
 "use strict";
 import { loginService, registerService } from "../services/auth.service.js";
 import {
