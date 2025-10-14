@@ -64,12 +64,12 @@ const TrabajadorDashboard = () => {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                     <div>
-                        <h1 className="text-4xl font-bold text-blue-900 mb-2">Panel de Trabajador</h1>
+                        <h1 className="text-4xl font-bold text-stone-700 mb-2">Panel de Trabajador</h1>
                         <p className="text-gray-600">Dashboard de gestión y estadísticas</p>
                     </div>
                     <button 
                         onClick={reloadStats}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 
+                        className="flex items-center gap-2 bg-stone-600 hover:bg-stone-800 
                         text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 
                         transform hover:scale-105 hover:shadow-lg"
                     >
@@ -81,7 +81,7 @@ const TrabajadorDashboard = () => {
                 {/* Grid de Estadísticas */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     {/* Operaciones Pendientes */}
-                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 border-orange-500 transform hover:-translate-y-1">
+                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 border-stone-500 transform hover:-translate-y-1">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                                 Pendientes
@@ -95,7 +95,7 @@ const TrabajadorDashboard = () => {
                     </div>
 
                     {/* En Proceso */}
-                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 border-blue-500 transform hover:-translate-y-1">
+                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 border-stone-500 transform hover:-translate-y-1">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                                 En Proceso
@@ -109,7 +109,7 @@ const TrabajadorDashboard = () => {
                     </div>
 
                     {/* Total Productos */}
-                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 border-green-500 transform hover:-translate-y-1">
+                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 border-stone-500 transform hover:-translate-y-1">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                                 Productos
@@ -124,7 +124,7 @@ const TrabajadorDashboard = () => {
 
                     {/* Materiales Bajo Stock */}
                     <div className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 ${
-                        stats.materialesBajoStock > 0 ? 'border-red-500 bg-red-50' : 'border-green-500'
+                        stats.materialesBajoStock > 0 ? 'border-red-500 bg-red-50' : 'border-stone-500'
                     } transform hover:-translate-y-1`}>
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
@@ -149,7 +149,7 @@ const TrabajadorDashboard = () => {
 
                 {/* Ingresos del Mes */}
                 {stats.ingresosMesActual !== undefined && (
-                    <div className="bg-gradient-to-r from-green-500 to-emerald-600
+                    <div className="bg-gradient-to-r from-green-600 to-emerald-600
                      rounded-2xl shadow-xl p-8 mb-8 text-white transform hover:scale-[1.02] transition-all duration-300">
                         <div className="flex items-center justify-between">
                             <div>
@@ -172,14 +172,14 @@ const TrabajadorDashboard = () => {
 
                 {/* Accesos Rápidos */}
                 <div className="bg-white rounded-2xl shadow-lg p-8">
-                    <h2 className="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-2">
+                    <h2 className="text-2xl font-bold text-stone-900 mb-6 flex items-center gap-2">
                         <span className="text-3xl"></span>
                         Accesos Rápidos
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <button 
                             onClick={() => window.location.href = '/trabajador-tienda/operations'}
-                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+                            className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
                             <span className="text-2xl">📋</span>
                             <span>Ver Operaciones</span>
@@ -187,7 +187,7 @@ const TrabajadorDashboard = () => {
                         
                         <button 
                             onClick={() => window.location.href = '/trabajador-tienda/products'}
-                            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+                            className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
                             <span className="text-2xl">📦</span>
                             <span>Gestionar Productos</span>
@@ -195,7 +195,7 @@ const TrabajadorDashboard = () => {
                         
                         <button 
                             onClick={() => window.location.href = '/trabajador-tienda/materials'}
-                            className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+                            className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-orange-700 hover:to-orange-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
                             <span className="text-2xl">🔧</span>
                             <span>Ver Materiales</span>
@@ -203,7 +203,7 @@ const TrabajadorDashboard = () => {
                         
                         <button 
                             onClick={() => window.location.href = '/trabajador-tienda/clients'}
-                            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+                            className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
                             <span className="text-2xl">👥</span>
                             <span>Ver Clientes</span>
