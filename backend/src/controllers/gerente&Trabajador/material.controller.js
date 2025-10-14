@@ -8,12 +8,12 @@ import {
     deleteMaterialService,
     getMaterialesBajoStockService,
     getAlertasStockService
-} from "../services/trabajadorTienda/material.service.js";
+} from "../../services/gerente&Trabajador/material.service.js"; 
 import {
     handleErrorClient,
     handleErrorServer,
     handleSuccess
-} from "../handlers/responseHandlers.js";
+} from "../../handlers/responseHandlers.js";
 
 /**
  * POST /api/materiales
