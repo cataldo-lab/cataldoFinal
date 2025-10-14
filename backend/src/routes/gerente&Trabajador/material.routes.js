@@ -20,11 +20,9 @@ const router = Router();
 // Middleware de autenticación para todas las rutas
 router.use(authenticateJwt);
 
-/**
- * Rutas de alertas (deben ir primero para evitar conflictos con /:id)
- */
 
-// GET /api/materiales/alertas/bajo-stock - Materiales con stock bajo
+
+
 router.get(
     "/alertas/bajo-stock",
     isEmployee,

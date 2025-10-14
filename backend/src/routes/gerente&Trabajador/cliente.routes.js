@@ -15,8 +15,9 @@ import { isEmployee } from "../../middlewares/authorization.middleware.js";
 const router = Router();
 
 // Middleware de autenticación para todas las rutas
-router.use(authenticateJwt);
-router.use(isEmployee);
+router
+    .use(authenticateJwt)
+    .use(isEmployee);
 
 /**
  * Rutas especiales (deben ir primero para evitar conflictos con /:id)
