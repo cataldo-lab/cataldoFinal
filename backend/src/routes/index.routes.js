@@ -6,6 +6,7 @@ import adminRoutes from "./admin.routes.js";
 import gerenteRoutes from "./gerente.routes.js";
 import trabajadorTiendaRoutes from "./trabajadorTienda.routes.js";
 import clienteRoutes from "./cliente.routes.js";
+import operacionRoutes from "./operacion.routes.js";
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router
     .use("/admin", adminRoutes)
     .use("/gerente", gerenteRoutes)
     .use("/trabajador-tienda", trabajadorTiendaRoutes)
-    .use("/cliente", clienteRoutes);
+    .use("/cliente", clienteRoutes)
+    .use("/operaciones", operacionRoutes);
 
 export default router;
