@@ -8,9 +8,9 @@ import {
     updateOperacion,
     deleteOperacion,
     getDashboardStats
-} from "controllers/operacion.controller.js";
-import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { isGerente, isTrabajadorTienda } from "../middlewares/authorization.middleware.js";
+} from "../../controllers/gerente&Trabajador/operacion.controller.js";  
+import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
+import { isManager, isEmployee } from "../../middlewares/authorization.middleware.js";  // 👈 Cambié los nombres
 
 const router = Router();
 
@@ -24,21 +24,21 @@ router.use(authenticateJwt);
 // GET /api/operaciones/dashboard/stats - Estadísticas del dashboard
 router.get(
     "/dashboard/stats",
-    isTrabajadorTienda,
+    isEmployee,  // 👈 Cambié a isEmployee
     getDashboardStats
 );
 
 // GET /api/operaciones - Obtener todas las operaciones
 router.get(
     "/",
-    isTrabajadorTienda,
+    isEmployee,
     getOperaciones
 );
 
 // GET /api/operaciones/:id - Obtener una operación por ID
 router.get(
     "/:id",
-    isTrabajadorTienda,
+    isEmployee,
     getOperacionById
 );
 
@@ -49,21 +49,21 @@ router.get(
 // POST /api/operaciones - Crear nueva operación
 router.post(
     "/",
-    isTrabajadorTienda,
+    isEmployee,
     createOperacion
 );
 
 // PATCH /api/operaciones/:id/estado - Actualizar estado
 router.patch(
     "/:id/estado",
-    isTrabajadorTienda,
+    isEmployee,
     updateEstadoOperacion
 );
 
 // PUT /api/operaciones/:id - Actualizar operación
 router.put(
     "/:id",
-    isTrabajadorTienda,
+    isEmployee,
     updateOperacion
 );
 
@@ -74,7 +74,7 @@ router.put(
 // DELETE /api/operaciones/:id - Anular operación
 router.delete(
     "/:id",
-    isGerente,
+    isManager,  
     deleteOperacion
 );
 

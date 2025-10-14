@@ -7,12 +7,12 @@ import {
     updateOperacionService,
     deleteOperacionService,
     getDashboardStatsService
-} from "../services/operacion.service.js";
+} from "../../services/gerente&Trabajador/operacion.service.js";
 import {
     handleErrorClient,
     handleErrorServer,
     handleSuccess
-} from "../handlers/responseHandlers.js";
+} from "../../handlers/responseHandlers.js";
 
 /**
  * POST /api/operaciones

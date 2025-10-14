@@ -1,10 +1,8 @@
 "use strict";
-import { AppDataSource } from "../config/configDb.js";
-import { Operacion } from "../entity/operacion.entity.js";
-import { ProductoOperacion } from "../entity/producto_operacion.entity.js";
-import { Historial } from "../entity/historial.entity.js";
-import { Producto } from "../entity/producto.entity.js";
-import { User } from "../entity/personas/user.entity.js";
+import { AppDataSource } from "../../config/configDb.js";
+// Puede ser usado tanto por gerente como empleado
+
+
 
 /**
  * Crear una nueva operación con sus productos
