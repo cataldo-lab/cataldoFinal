@@ -36,11 +36,6 @@ router
   .get("/audit/failed-logins", getFailedLogins)        
   .get("/audit/entity/:entidad/:id", getEntityAuditHistory);
 
-// TODO: Agregar rutas para:
-// - Gestión de productos
-// - Gestión de proveedores
-// - Gestión de materiales
-// - Reportes del sistema
-// - Configuración de costos terceros
+
 
 export default router;

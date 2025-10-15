@@ -19,16 +19,15 @@ router
     .use(authenticateJwt)
     .use(isEmployee);
 
-/**
- * Rutas especiales (deben ir primero para evitar conflictos con /:id)
- */
+// Rutas especiales (deben ir primero para evitar conflictos con /:id)
+
 
 // GET /api/clientes/categorias - Obtener categorías
 router.get("/categorias", getCategorias);
 
-/**
- * Rutas CRUD
- */
+
+//Rutas CRUD
+
 
 // GET /api/clientes - Obtener todos los clientes
 router.get("/", getClientes);
@@ -42,9 +41,9 @@ router.post("/", createCliente);
 // PUT /api/clientes/:id - Actualizar cliente
 router.put("/:id", updateCliente);
 
-/**
- * Rutas de información adicional
- */
+
+// Rutas de información adicional
+ 
 
 // GET /api/clientes/:id/operaciones - Historial de operaciones
 router.get("/:id/operaciones", getHistorialOperaciones);
