@@ -10,7 +10,7 @@ import {
     getDashboardStats
 } from "../../controllers/gerente&Trabajador/operacion.controller.js";  
 import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
-import { isManager, isEmployee } from "../../middlewares/authorization.middleware.js";  // 👈 Cambié los nombres
+import { isManager, isEmployee } from "../../middlewares/authorization.middleware.js";  
 
 const router = Router();
 
