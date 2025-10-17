@@ -1,13 +1,18 @@
 // frontend/src/pages/trabajador-tienda/Productos.jsx
 import { useState } from 'react';
 import { useProductos, useFormatPrecio } from '@hooks/productos/useProductos';
-import PopupCreateProducto from '@components/popup/trabajadorTienda/PopupCreateProducto';
-import PopupUpdateProducto from '@components/popup/trabajadorTienda/PopupUpdateProducto';
+import PopupCreateProducto from '@components/trabajadorTienda/PopupCreateProducto';
+import PopupUpdateProducto from '@components/trabajadorTienda/PopupUpdateProducto';
+import Search from '@components/Search';
+import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
+
+// Icons
 import AddIcon from '@assets/AddIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
 import DeleteIcon from '@assets/deleteIcon.svg';
 import UpdateIconDisable from '@assets/updateIconDisabled.svg';
 import DeleteIconDisable from '@assets/deleteIconDisabled.svg';
+import SearchIcon from '@assets/SearchIcon.svg';
 
 export default function Productos() {
   const {
@@ -19,14 +24,15 @@ export default function Productos() {
     limpiarFiltros,
     handleCreateProducto,
     handleUpdateProducto,
-    handleDeleteProducto
+    handleDeleteProducto,
+    fetchProductos
   } = useProductos();
 
   const { formatPrecio } = useFormatPrecio();
-
   const [showCreatePopup, setShowCreatePopup] = useState(false);
   const [showUpdatePopup, setShowUpdatePopup] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [selectedItems, setSelectedItems] = useState([]);
 
   const handleEdit = (producto) => {
     setProductoSeleccionado(producto);
@@ -34,12 +40,52 @@ export default function Productos() {
   };
 
   const handleDelete = async (id) => {
-    await handleDeleteProducto(id);
+    try {
+      const result = await deleteDataAlert();
+      if (result.isConfirmed) {
+        await handleDeleteProducto(id);
+        setSelectedItems([]);
+      }
+    } catch (error) {
+      showErrorAlert('Error', 'No se pudo desactivar el producto');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+    
+    try {
+      const result = await deleteDataAlert();
+      if (result.isConfirmed) {
+        const promises = selectedItems.map(id => handleDeleteProducto(id));
+        await Promise.all(promises);
+        showSuccessAlert('Éxito', `${selectedItems.length} productos desactivados correctamente`);
+        setSelectedItems([]);
+      }
+    } catch (error) {
+      showErrorAlert('Error', 'No se pudieron desactivar los productos seleccionados');
+    }
+  };
+
+  const toggleSelectItem = (id) => {
+    if (selectedItems.includes(id)) {
+      setSelectedItems(selectedItems.filter(itemId => itemId !== id));
+    } else {
+      setSelectedItems([...selectedItems, id]);
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.length === productos.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(productos.map(p => p.id_producto));
+    }
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
         <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
         <p className="text-gray-600 text-lg font-medium">Cargando productos...</p>
       </div>
@@ -47,26 +93,38 @@ export default function Productos() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto pt-20">
+    <div className="min-h-screen bg-gray-50 pb-8">
+      {/* Content container with proper margin to avoid navbar overlap */}
+      <div className="pt-[calc(9vh+1rem)] px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-2 flex items-center gap-3">
-              <span className="text-5xl">📦</span>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 flex items-center gap-3">
+              <span className="text-4xl md:text-5xl">📦</span>
               Gestión de Productos
             </h1>
             <p className="text-gray-600">
               Administra el catálogo de productos y servicios - Total: {productos.length}
             </p>
           </div>
-          <button
-            onClick={() => setShowCreatePopup(true)}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition-all duration-300 flex items-center gap-2"
-          >
-            <img src={AddIcon} alt="Agregar" className="w-5 h-5 filter brightness-0 invert" />
-            Nuevo Producto
-          </button>
+          <div className="flex gap-3">
+            {selectedItems.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2"
+              >
+                <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5 filter brightness-0 invert" />
+                Desactivar ({selectedItems.length})
+              </button>
+            )}
+            <button
+              onClick={() => setShowCreatePopup(true)}
+              className="bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 hover:to-stone-800 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2"
+            >
+              <img src={AddIcon} alt="Agregar" className="w-5 h-5 filter brightness-0 invert" />
+              Nuevo Producto
+            </button>
+          </div>
         </div>
 
         {/* Filtros */}
@@ -79,7 +137,7 @@ export default function Productos() {
               <select
                 value={filtros.categoria}
                 onChange={(e) => handleFiltroChange('categoria', e.target.value)}
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:outline-none"
               >
                 <option value="">Todas las categorías</option>
                 {categorias.map((cat, i) => (
@@ -93,69 +151,90 @@ export default function Productos() {
                 Estado:
               </label>
               <select
-                value={filtros.activo}
+                value={filtros.activo.toString()}
                 onChange={(e) => handleFiltroChange('activo', e.target.value === 'true')}
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:outline-none"
               >
                 <option value="true">✓ Activos</option>
                 <option value="false">✗ Inactivos</option>
               </select>
             </div>
 
-            <div className="lg:col-span-2">
+            <div>
+              <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                Tipo:
+              </label>
+              <select
+                value={filtros.servicio?.toString() || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  handleFiltroChange('servicio', val === "" ? undefined : val === 'true');
+                }}
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:outline-none"
+              >
+                <option value="">Todos los tipos</option>
+                <option value="false">Productos</option>
+                <option value="true">Servicios</option>
+              </select>
+            </div>
+
+            <div>
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
                 🔍 Buscar:
               </label>
-              <input
-                type="text"
-                placeholder="Buscar por nombre..."
-                value={filtros.busqueda}
-                onChange={(e) => handleFiltroChange('busqueda', e.target.value)}
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre..."
+                  value={filtros.busqueda}
+                  onChange={(e) => handleFiltroChange('busqueda', e.target.value)}
+                  className="w-full px-4 py-2.5 pl-10 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:outline-none"
+                />
+                <img 
+                  src={SearchIcon} 
+                  alt="Buscar" 
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" 
+                />
+              </div>
             </div>
           </div>
           <button
             onClick={limpiarFiltros}
-            className="mt-4 bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg transition-colors"
+            className="mt-4 bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg transition-colors text-sm"
           >
             🔄 Limpiar filtros
           </button>
         </div>
 
         {/* Tabla de productos */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-800 text-white">
+              <thead className="bg-stone-600 text-white">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
-                    ID
+                  <th className="px-3 py-4 text-left">
+                    <div className="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedItems.length === productos.length && productos.length > 0}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 accent-stone-400 cursor-pointer"
+                      />
+                    </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
-                    Nombre
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
-                    Categoría
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
-                    Tipo
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
-                    Precio
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
-                    Estado
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">
-                    Acciones
-                  </th>
+                  <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">ID</th>
+                  <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Nombre</th>
+                  <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Categoría</th>
+                  <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Tipo</th>
+                  <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Precio</th>
+                  <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Estado</th>
+                  <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {productos.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
                       <div className="flex flex-col items-center gap-2">
                         <span className="text-4xl">📭</span>
                         <p className="text-lg">No hay productos que mostrar</p>
@@ -166,24 +245,34 @@ export default function Productos() {
                 ) : (
                   productos.map((producto) => (
                     <tr key={producto.id_producto} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-900">
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedItems.includes(producto.id_producto)}
+                          onChange={() => toggleSelectItem(producto.id_producto)}
+                          className="w-4 h-4 accent-stone-400 cursor-pointer"
+                        />
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                         #{producto.id_producto}
                       </td>
-                      <td className="px-6 py-4 font-semibold text-gray-900">
-                        {producto.nombre_producto}
-                        {producto.oferta && (
-                          <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
-                            🔥 Oferta
-                          </span>
-                        )}
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-gray-900">{producto.nombre_producto}</span>
+                          {producto.oferta && (
+                            <span className="ml-0 mt-1 px-2 py-0.5 bg-red-100 text-red-800 text-xs rounded-full w-fit">
+                              🔥 Oferta
+                            </span>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                           {producto.categoria_producto}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           producto.servicio 
                             ? 'bg-purple-100 text-purple-800' 
                             : 'bg-gray-100 text-gray-800'
@@ -191,11 +280,11 @@ export default function Productos() {
                           {producto.servicio ? '🛠️ Servicio' : '📦 Producto'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-bold text-green-600">
+                      <td className="px-3 py-4 whitespace-nowrap font-semibold text-green-600">
                         {formatPrecio(producto.precio_venta)}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           producto.activo 
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
@@ -203,11 +292,11 @@ export default function Productos() {
                           {producto.activo ? '✓ Activo' : '✗ Inactivo'}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-4 whitespace-nowrap">
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleEdit(producto)}
-                            className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
+                            className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
                             title="Editar"
                           >
                             <img src={UpdateIcon} alt="Editar" className="w-5 h-5" />
@@ -215,9 +304,9 @@ export default function Productos() {
                           <button
                             onClick={() => handleDelete(producto.id_producto)}
                             className="p-2 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Desactivar"
+                            title={producto.activo ? "Desactivar" : "Activar"}
                           >
-                            <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5" />
+                            <img src={DeleteIcon} alt="Eliminar/Activar" className="w-5 h-5" />
                           </button>
                         </div>
                       </td>
@@ -232,7 +321,7 @@ export default function Productos() {
         {/* Footer con contador */}
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600 bg-white inline-block px-6 py-3 rounded-full shadow-sm">
-            Mostrando <span className="font-bold text-blue-600">{productos.length}</span> productos
+            Mostrando <span className="font-bold text-stone-600">{productos.length}</span> productos
           </p>
         </div>
       </div>

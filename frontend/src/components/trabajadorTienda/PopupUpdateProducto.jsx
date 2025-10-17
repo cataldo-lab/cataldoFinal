@@ -1,6 +1,6 @@
-// frontend/src/components/popup/trabajadorTienda/PopupUpdateProducto.jsx
+// frontend/src/components/trabajadorTienda/PopupUpdateProducto.jsx
 import { useState, useEffect } from 'react';
-import Form from '../../Form';
+import Form from '@components/Form';  // Use the alias path instead of relative path
 import '@styles/popup.css';
 import CloseIcon from '@assets/XIcon.svg';
 import QuestionIcon from '@assets/QuestionCircleIcon.svg';
@@ -45,7 +45,7 @@ export default function PopupUpdateProducto({
 
   return (
     <div className="bg">
-      <div className="popup" style={{ height: '750px' }}>
+      <div className="popup" style={{ height: '750px', maxWidth: '90vw', overflowY: 'auto' }}>
         <button className='close' onClick={() => setShow(false)}>
           <img src={CloseIcon} alt="Cerrar" />
         </button>
