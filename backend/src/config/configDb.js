@@ -20,6 +20,7 @@ import { historialSchema } from "../entity/historial.entity.js";
 import { EncuestaSchema } from "../entity/encuesta.entity.js";
 import { CostoTercerosSchema } from "../entity/costoTerceros.entity.js";
 import { AuditLogSchema } from "../entity/audit_log.entity.js"; 
+import { CompraMaterialSchema } from "../entity/compraMaterial.entity.js";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -49,7 +50,8 @@ export const AppDataSource = new DataSource({
     historialSchema,
     EncuestaSchema,
     CostoTercerosSchema,
-    AuditLogSchema
+    AuditLogSchema,
+    CompraMaterialSchema
   ]
 });
 

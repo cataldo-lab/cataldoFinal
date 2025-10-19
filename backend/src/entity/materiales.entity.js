@@ -115,7 +115,8 @@ export const MaterialesSchema = new EntitySchema({
             target: "Proveedores",
             joinColumn: { name: "id_proveedor" },
             nullable: true
-        }
+        },
+        
     }
 });
 
