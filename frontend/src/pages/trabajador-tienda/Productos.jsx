@@ -129,7 +129,7 @@ export default function Productos() {
 
         {/* Filtros */}
         <div className="bg-white p-6 rounded-xl shadow-md mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
                 Categoría:
@@ -160,23 +160,7 @@ export default function Productos() {
               </select>
             </div>
 
-            <div>
-              <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                Tipo:
-              </label>
-              <select
-                value={filtros.servicio?.toString() || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  handleFiltroChange('servicio', val === "" ? undefined : val === 'true');
-                }}
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:outline-none"
-              >
-                <option value="">Todos los tipos</option>
-                <option value="false">Productos</option>
-                <option value="true">Servicios</option>
-              </select>
-            </div>
+            
 
             <div>
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
@@ -222,7 +206,7 @@ export default function Productos() {
                       />
                     </div>
                   </th>
-                  <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">ID</th>
+                 
                   <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Nombre</th>
                   <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Categoría</th>
                   <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Tipo</th>
@@ -253,9 +237,7 @@ export default function Productos() {
                           className="w-4 h-4 accent-stone-400 cursor-pointer"
                         />
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                        #{producto.id_producto}
-                      </td>
+                      
                       <td className="px-3 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
                           <span className="font-semibold text-gray-900">{producto.nombre_producto}</span>

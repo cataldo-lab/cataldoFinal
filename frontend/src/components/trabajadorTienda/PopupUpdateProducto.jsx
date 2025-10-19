@@ -1,6 +1,6 @@
 // frontend/src/components/trabajadorTienda/PopupUpdateProducto.jsx
 import { useState, useEffect } from 'react';
-import Form from '@components/Form';  // Use the alias path instead of relative path
+import Form from '@components/Form';
 import '@styles/popup.css';
 import CloseIcon from '@assets/XIcon.svg';
 import QuestionIcon from '@assets/QuestionCircleIcon.svg';
@@ -13,23 +13,60 @@ export default function PopupUpdateProducto({
   onSubmit 
 }) {
   const [esServicio, setEsServicio] = useState(false);
+  const [costos, setCostos] = useState({
+    costo_fabricacion: 0,
+    costo_barnizador: 0,
+    costo_vidrio: 0,
+    costo_tela: 0,
+    costo_materiales_otros: 0
+  });
+  const [margenGanancia, setMargenGanancia] = useState(30);
+  const [precioVentaCalculado, setPrecioVentaCalculado] = useState(0);
 
+  // Inicializar valores cuando cambia el producto
   useEffect(() => {
     if (producto) {
       setEsServicio(producto.servicio || false);
+      const nuevosCostos = {
+        costo_fabricacion: parseFloat(producto.costo_fabricacion) || 0,
+        costo_barnizador: parseFloat(producto.costo_barnizador) || 0,
+        costo_vidrio: parseFloat(producto.costo_vidrio) || 0,
+        costo_tela: parseFloat(producto.costo_tela) || 0,
+        costo_materiales_otros: parseFloat(producto.costo_materiales_otros) || 0
+      };
+      setCostos(nuevosCostos);
+      setMargenGanancia(parseFloat(producto.margen_ganancia) || 30);
     }
   }, [producto]);
+
+  // Calcular precio de venta automáticamente
+  useEffect(() => {
+    const costoTotal = Object.values(costos).reduce((sum, costo) => sum + costo, 0);
+    const precioCalculado = costoTotal * (1 + margenGanancia / 100);
+    setPrecioVentaCalculado(precioCalculado);
+  }, [costos, margenGanancia]);
+
+  const handleCostoChange = (nombre, valor) => {
+    setCostos(prev => ({
+      ...prev,
+      [nombre]: parseFloat(valor) || 0
+    }));
+  };
+
+  const handleMargenChange = (valor) => {
+    setMargenGanancia(parseFloat(valor) || 0);
+  };
 
   const handleSubmit = async (formData) => {
     const productoData = {
       ...formData,
-      costo_fabricacion: parseFloat(formData.costo_fabricacion) || 0,
-      costo_barnizador: parseFloat(formData.costo_barnizador) || 0,
-      costo_vidrio: parseFloat(formData.costo_vidrio) || 0,
-      costo_tela: parseFloat(formData.costo_tela) || 0,
-      costo_materiales_otros: parseFloat(formData.costo_materiales_otros) || 0,
-      precio_venta: parseFloat(formData.precio_venta),
-      margen_ganancia: parseFloat(formData.margen_ganancia) || 30,
+      costo_fabricacion: costos.costo_fabricacion,
+      costo_barnizador: costos.costo_barnizador,
+      costo_vidrio: costos.costo_vidrio,
+      costo_tela: costos.costo_tela,
+      costo_materiales_otros: costos.costo_materiales_otros,
+      precio_venta: precioVentaCalculado,
+      margen_ganancia: margenGanancia,
       servicio: esServicio,
       oferta: formData.oferta === 'true',
       activo: formData.activo === 'true'
@@ -42,6 +79,8 @@ export default function PopupUpdateProducto({
   };
 
   if (!show || !producto) return null;
+
+  const costoTotal = Object.values(costos).reduce((sum, costo) => sum + costo, 0);
 
   return (
     <div className="bg">
@@ -105,6 +144,7 @@ export default function PopupUpdateProducto({
               type: "number",
               required: true,
               min: 0,
+              onChange: (e) => handleCostoChange('costo_fabricacion', e.target.value)
             },
             {
               label: "Costo Barnizado",
@@ -115,6 +155,7 @@ export default function PopupUpdateProducto({
               type: "number",
               required: false,
               min: 0,
+              onChange: (e) => handleCostoChange('costo_barnizador', e.target.value)
             },
             {
               label: "Costo Vidrio",
@@ -125,6 +166,7 @@ export default function PopupUpdateProducto({
               type: "number",
               required: false,
               min: 0,
+              onChange: (e) => handleCostoChange('costo_vidrio', e.target.value)
             },
             {
               label: "Costo Tela",
@@ -135,6 +177,7 @@ export default function PopupUpdateProducto({
               type: "number",
               required: false,
               min: 0,
+              onChange: (e) => handleCostoChange('costo_tela', e.target.value)
             },
             {
               label: "Otros Costos",
@@ -145,16 +188,17 @@ export default function PopupUpdateProducto({
               type: "number",
               required: false,
               min: 0,
+              onChange: (e) => handleCostoChange('costo_materiales_otros', e.target.value)
             },
             {
-              label: "Precio de Venta",
-              name: "precio_venta",
-              defaultValue: producto.precio_venta,
-              placeholder: '0',
-              fieldType: 'input',
-              type: "number",
-              required: true,
-              min: 0,
+              label: (
+                <div style={{ marginBottom: '10px' }}>
+                  <strong>Costo Total: ${costoTotal.toFixed(2)}</strong>
+                </div>
+              ),
+              name: "costo_total_display",
+              fieldType: 'custom',
+              customRender: () => null
             },
             {
               label: (
@@ -162,7 +206,7 @@ export default function PopupUpdateProducto({
                   Margen de Ganancia (%)
                   <span className='tooltip-icon'>
                     <img src={QuestionIcon} alt="Ayuda" />
-                    <span className='tooltip-text'>Porcentaje de ganancia esperado</span>
+                    <span className='tooltip-text'>Porcentaje de ganancia sobre el costo total</span>
                   </span>
                 </span>
               ),
@@ -174,6 +218,17 @@ export default function PopupUpdateProducto({
               required: false,
               min: 0,
               max: 100,
+              onChange: (e) => handleMargenChange(e.target.value)
+            },
+            {
+              label: (
+                <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e8f5e9', borderRadius: '5px' }}>
+                  <strong>Precio de Venta Calculado: ${precioVentaCalculado.toFixed(2)}</strong>
+                </div>
+              ),
+              name: "precio_venta_display",
+              fieldType: 'custom',
+              customRender: () => null
             },
             {
               label: "¿Producto en Oferta?",
