@@ -47,6 +47,13 @@ router.get(
     getAlertasStock
 );
 
+// GET /api/materiales/proveedores/:id/analisis - Análisis de proveedor
+router.get(
+    "/proveedores/:id/analisis",
+    isEmployee,
+    getAnalisisProveedor
+);
+
 /**
  * Rutas de consulta (todos los trabajadores)
  */
