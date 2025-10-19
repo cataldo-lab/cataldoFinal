@@ -1,3 +1,4 @@
+// backend/src/controllers/gerente&Trabajador/material.controller.js
 "use strict";
 import {
     createMaterialService,
@@ -7,7 +8,10 @@ import {
     updateStockMaterialService,
     deleteMaterialService,
     getMaterialesBajoStockService,
-    getAlertasStockService
+    getAlertasStockService,
+    getMaterialDetalleCompletoService,
+    getMaterialesConResumenService,
+    getAnalisisProveedorService
 } from "../../services/gerente&Trabajador/material.service.js"; 
 import {
     handleErrorClient,
@@ -36,7 +40,7 @@ export async function createMaterial(req, res) {
 
 /**
  * GET /api/materiales
- * Obtener todos los materiales
+ * Obtener todos los materiales (versión básica sin resumen)
  */
 export async function getMateriales(req, res) {
     try {
@@ -64,8 +68,37 @@ export async function getMateriales(req, res) {
 }
 
 /**
+ * GET /api/materiales/con-resumen
+ * Obtener materiales CON resumen de compras y proveedor
+ */
+export async function getMaterialesConResumen(req, res) {
+    try {
+        const filtros = {
+            categoria_unidad: req.query.categoria_unidad,
+            activo: req.query.activo !== undefined ? req.query.activo === 'true' : undefined,
+            bajo_stock: req.query.bajo_stock,
+            id_proveedor: req.query.id_proveedor ? parseInt(req.query.id_proveedor) : undefined
+        };
+
+        // Limpiar filtros vacíos
+        Object.keys(filtros).forEach(key => {
+            if (filtros[key] === undefined) delete filtros[key];
+        });
+
+        const [materiales, error] = await getMaterialesConResumenService(filtros);
+
+        if (error) return handleErrorServer(res, 500, error);
+
+        handleSuccess(res, 200, "Materiales obtenidos con resumen", materiales);
+
+    } catch (error) {
+        handleErrorServer(res, 500, error.message);
+    }
+}
+
+/**
  * GET /api/materiales/:id
- * Obtener un material por ID
+ * Obtener un material por ID (versión básica)
  */
 export async function getMaterialById(req, res) {
     try {
@@ -76,6 +109,25 @@ export async function getMaterialById(req, res) {
         if (error) return handleErrorClient(res, 404, error);
 
         handleSuccess(res, 200, "Material obtenido exitosamente", material);
+
+    } catch (error) {
+        handleErrorServer(res, 500, error.message);
+    }
+}
+
+/**
+ * GET /api/materiales/:id/detalle-completo
+ * Obtener material con TODO: proveedor, compras, productos que lo usan
+ */
+export async function getMaterialDetalleCompleto(req, res) {
+    try {
+        const { id } = req.params;
+
+        const [detalle, error] = await getMaterialDetalleCompletoService(parseInt(id));
+
+        if (error) return handleErrorClient(res, 404, error);
+
+        handleSuccess(res, 200, "Detalle completo del material obtenido", detalle);
 
     } catch (error) {
         handleErrorServer(res, 500, error.message);
@@ -185,6 +237,26 @@ export async function getAlertasStock(req, res) {
         if (error) return handleErrorServer(res, 500, error);
 
         handleSuccess(res, 200, "Alertas de stock obtenidas", alertas);
+
+    } catch (error) {
+        handleErrorServer(res, 500, error.message);
+    }
+}
+
+/**
+ * GET /api/proveedores/:id/analisis
+ * Obtener análisis completo de un proveedor
+ * (cuánto y qué materiales le hemos comprado)
+ */
+export async function getAnalisisProveedor(req, res) {
+    try {
+        const { id } = req.params;
+
+        const [analisis, error] = await getAnalisisProveedorService(parseInt(id));
+
+        if (error) return handleErrorClient(res, 404, error);
+
+        handleSuccess(res, 200, "Análisis del proveedor obtenido", analisis);
 
     } catch (error) {
         handleErrorServer(res, 500, error.message);

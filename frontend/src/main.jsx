@@ -11,6 +11,7 @@ import ProtectedRoute from '@components/ProtectedRoute';
 import TrabajadorDashboard from '@pages/trabajador-tienda/TrabajadorDashboard';
 import AuditLogs from '@pages/adm/AuditLogs';
 import ProductosTrabajador from '@pages/trabajador-tienda/Productos';
+import MaterialesTrabajador from '@pages/trabajador-tienda/Materiales'
 
 // Importar los estilos principales (que incluyen Tailwind)
 import '@styles/main.css';
@@ -105,6 +106,14 @@ const router = createBrowserRouter([
             element:(
               <ProtectedRoute allowedRoles={['administrador', 'gerente', 'trabajador_tienda']}>
                 <ProductosTrabajador />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/trabajador/materiales',
+            element:(
+              <ProtectedRoute allowedRoles={['administrador', 'gerente', 'trabajador_tienda']}>
+                <MaterialesTrabajador />
               </ProtectedRoute>
             )
           }

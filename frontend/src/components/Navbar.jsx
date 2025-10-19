@@ -91,7 +91,7 @@ const Navbar = () => {
                 { path: "/trabajador/dashboard", label: "Dashboard" },
                 { path: "/trabajador/operations", label: "Operaciones" },
                 { path: "/trabajador/products", label: "Productos" },
-                { path: "/trabajador/materials", label: "Materiales" }
+                { path: "/trabajador/materiales", label: "Materiales" }
             );
         }
 
