@@ -8,74 +8,85 @@ import {
     updateOperacion,
     deleteOperacion,
     getDashboardStats
-} from "../../controllers/staff/operacion.controller.js";  
+} from "../../controllers/staff/operacion.controller.js";
 import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
-import { isManager, isEmployee } from "../../middlewares/authorization.middleware.js";  
+import { isManager, isEmployee } from "../../middlewares/authorization.middleware.js";
 
 const router = Router();
 
-// Middleware de autenticación para todas las rutas
+// ✅ Aplicar autenticación a TODAS las rutas
 router.use(authenticateJwt);
 
-/**
- * Rutas públicas para trabajadores (lectura)
- */
-
-// GET /api/operaciones/dashboard/stats - Estadísticas del dashboard
-router.get(
-    "/dashboard/stats",
-    isEmployee,  // 👈 Cambié a isEmployee
-    getDashboardStats
-);
-
-// GET /api/operaciones - Obtener todas las operaciones
-router.get(
-    "/",
-    isEmployee,
-    getOperaciones
-);
-
-// GET /api/operaciones/:id - Obtener una operación por ID
-router.get(
-    "/:id",
-    isEmployee,
-    getOperacionById
-);
+// ========================================
+// RUTAS ESPECÍFICAS (deben ir PRIMERO)
+// ========================================
+// ⚠️ IMPORTANTE: Las rutas con paths fijos deben ir ANTES de las rutas con parámetros
+// para evitar que Express las confunda con :id
 
 /**
- * Rutas de escritura (crear/actualizar)
+ * GET /api/operaciones/dashboard/stats
+ * Obtener estadísticas para el dashboard
+ * Acceso: Empleados y superiores
  */
+router.get("/dashboard/stats", isEmployee, getDashboardStats);
 
-// POST /api/operaciones - Crear nueva operación
-router.post(
-    "/",
-    isEmployee,
-    createOperacion
-);
-
-// PATCH /api/operaciones/:id/estado - Actualizar estado
-router.patch(
-    "/:id/estado",
-    isEmployee,
-    updateEstadoOperacion
-);
-
-// PUT /api/operaciones/:id - Actualizar operación
-router.put(
-    "/:id",
-    isEmployee,
-    updateOperacion
-);
+// ========================================
+// RUTAS CON PARÁMETROS - ESPECÍFICAS
+// ========================================
+// ⚠️ Estas deben ir ANTES de GET /:id
 
 /**
- * Rutas de eliminación (solo gerente/admin)
+ * PATCH /api/operaciones/:id/estado
+ * Actualizar estado de una operación
+ * Body: { estado: "nuevo_estado" }
+ * Acceso: Empleados y superiores
  */
+router.patch("/:id/estado", isEmployee, updateEstadoOperacion);
 
-// DELETE /api/operaciones/:id - Anular operación
-router.delete(
-    "/:id",
-    isManager,  
-    deleteOperacion
-);
+// ========================================
+// RUTAS CON PARÁMETROS - GENERALES
+// ========================================
+
+/**
+ * GET /api/operaciones/:id
+ * Obtener una operación por ID con todos sus detalles
+ * Acceso: Empleados y superiores
+ */
+router.get("/:id", isEmployee, getOperacionById);
+
+/**
+ * PUT /api/operaciones/:id
+ * Actualizar datos de una operación
+ * Acceso: Empleados y superiores
+ */
+router.put("/:id", isEmployee, updateOperacion);
+
+/**
+ * DELETE /api/operaciones/:id
+ * Anular una operación (cambiar estado a "anulada")
+ * ⚠️ SOLO GERENTES pueden anular operaciones
+ * Acceso: Solo gerentes
+ */
+router.delete("/:id", isManager, deleteOperacion);
+
+// ========================================
+// RUTAS DE COLECCIÓN
+// ========================================
+
+/**
+ * GET /api/operaciones
+ * Obtener todas las operaciones con filtros opcionales
+ * Query params: estado_operacion, id_cliente, fecha_desde, fecha_hasta
+ * Acceso: Empleados y superiores
+ */
+router.get("/", isEmployee, getOperaciones);
+
+/**
+ * POST /api/operaciones
+ * Crear una nueva operación
+ * Body: { id_cliente, productos: [...], descripcion_operacion, ... }
+ * Acceso: Empleados y superiores
+ */
+router.post("/", isEmployee, createOperacion);
 
 export default router;

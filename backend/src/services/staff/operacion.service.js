@@ -23,6 +23,11 @@ import { logAuditEvent, TipoEvento, NivelSeveridad } from "../audit.service.js";
  */
 export async function createOperacionService(operacionData, usuarioEmail) {
     try {
+
+        if (!usuarioEmail) {
+            return [null, "Se requiere email del usuario para crear la operación"];
+        }
+
         const operacionRepository = AppDataSource.getRepository("Operacion");
         const productoOperacionRepository = AppDataSource.getRepository("ProductoOperacion");
         const historialRepository = AppDataSource.getRepository("Historial");
@@ -123,6 +128,8 @@ export async function createOperacionService(operacionData, usuarioEmail) {
             operacion: operacionGuardada,
             ...estadoInicial
         });
+
+await historialRepository.save(historial);
 
         await historialRepository.save(historial);
 
