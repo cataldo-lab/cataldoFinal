@@ -13,7 +13,7 @@ import {
     getMaterialesBajoStock,
     getAlertasStock,
     getAnalisisProveedor
-} from "../../controllers/gerente&Trabajador/material.controller.js";
+} from "../../controllers/staff/material.controller.js";
 import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
 import { isEmployee, isManager } from "../../middlewares/authorization.middleware.js";
 

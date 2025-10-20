@@ -8,7 +8,7 @@ import {
     getHistorialOperaciones,
     getEstadisticasCliente,
     getCategorias
-} from "../../controllers/gerente&Trabajador/cliente.controller.js";
+} from "../../controllers/staff/cliente.controller.js";
 import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
 import { isEmployee } from "../../middlewares/authorization.middleware.js";
 

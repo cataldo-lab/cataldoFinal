@@ -12,7 +12,7 @@ import {
     getMaterialDetalleCompletoService,
     getMaterialesConResumenService,
     getAnalisisProveedorService
-} from "../../services/gerente&Trabajador/material.service.js"; 
+} from "../../services/staff/material.service.js"; 
 import {
     handleErrorClient,
     handleErrorServer,

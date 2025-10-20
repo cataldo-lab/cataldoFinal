@@ -1,6 +1,6 @@
 // frontend/src/hooks/trabajadorTienda/useTrabajadorDashborad.jsx
 import { useState, useEffect } from 'react';
-import { getDashboardStats } from '@services/trabajador.service.js';
+import { getDashboardStats } from '@services/trabajadorTienda.service.js';
 
 export const useTrabajadorDashboard = () => {
     const [stats, setStats] = useState(null);

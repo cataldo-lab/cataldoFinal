@@ -7,7 +7,7 @@ import {
     updateProducto,
     deleteProducto,
     getCategorias
-} from "../../controllers/gerente&Trabajador/producto.controller.js";
+} from "../../controllers/staff/producto.controller.js";
 import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
 import { isEmployee, isManager } from "../../middlewares/authorization.middleware.js";
 

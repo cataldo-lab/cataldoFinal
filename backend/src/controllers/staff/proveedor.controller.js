@@ -10,7 +10,7 @@ import {
     getRepresentantesByProveedorService,
     updateRepresentanteService,
     deleteRepresentanteService
-} from "../../services/gerente&Trabajador/proveedor.service.js";
+} from "../../services/staff/proveedor.service.js";
 import {
     handleErrorClient,
     handleErrorServer,

@@ -51,7 +51,7 @@ export const proveedoresSchema = new EntitySchema({
         materiales:{
             type: "one-to-many",
             target: "Materiales",
-            inverseSide: "proveedores",
+            inverseSide: "proveedor",
             //cascade: true
         }
     }

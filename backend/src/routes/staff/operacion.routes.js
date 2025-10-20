@@ -8,7 +8,7 @@ import {
     updateOperacion,
     deleteOperacion,
     getDashboardStats
-} from "../../controllers/gerente&Trabajador/operacion.controller.js";  
+} from "../../controllers/staff/operacion.controller.js";  
 import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
 import { isManager, isEmployee } from "../../middlewares/authorization.middleware.js";  
 

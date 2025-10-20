@@ -28,7 +28,7 @@ export async function createProveedorService(proveedorData) {
             return [null, "El correo del proveedor es obligatorio"];
         }
 
-        if (!proveedorData.nombre_representanter) {
+        if (!proveedorData.nombre_representante) {  // ✅ CORREGIDO
             return [null, "El nombre del representante es obligatorio"];
         }
 
@@ -49,7 +49,7 @@ export async function createProveedorService(proveedorData) {
         const nuevoProveedor = proveedorRepository.create({
             rol_proveedor: proveedorData.rol_proveedor,
             rut_proveedor: proveedorData.rut_proveedor,
-            nombre_representanter: proveedorData.nombre_representanter,
+            nombre_representante: proveedorData.nombre_representante,  // ✅ CORREGIDO
             apellido_representante: proveedorData.apellido_representante,
             rut_representante: proveedorData.rut_representante,
             fono_proveedor: proveedorData.fono_proveedor,
@@ -87,7 +87,7 @@ export async function getProveedoresService(filtros = {}) {
 
         if (filtros.search) {
             queryBuilder.andWhere(
-                "(proveedor.nombre_representanter ILIKE :search OR " +
+                "(proveedor.nombre_representante ILIKE :search OR " +  // ✅ CORREGIDO
                 "proveedor.apellido_representante ILIKE :search OR " +
                 "proveedor.correo_proveedor ILIKE :search OR " +
                 "proveedor.rut_proveedor ILIKE :search OR " +
@@ -127,7 +127,7 @@ export async function getProveedorByIdService(id) {
 
         // Obtener representantes del proveedor
         const representantes = await representanteRepository.find({
-            where: { proveedores: { id_proveedor: id } },
+            where: { proveedor: { id_proveedor: id } },  // ✅ CORREGIDO: proveedor en singular
             order: { creado_en: "DESC" }
         });
 
@@ -207,8 +207,8 @@ export async function getProveedorByIdService(id) {
                 id_proveedor: proveedor.id_proveedor,
                 rol_proveedor: proveedor.rol_proveedor,
                 rut_proveedor: proveedor.rut_proveedor,
-                nombre_completo: `${proveedor.nombre_representanter} ${proveedor.apellido_representante}`,
-                nombre_representanter: proveedor.nombre_representanter,
+                nombre_completo: `${proveedor.nombre_representante} ${proveedor.apellido_representante}`,  // ✅ CORREGIDO
+                nombre_representante: proveedor.nombre_representante,  // ✅ CORREGIDO
                 apellido_representante: proveedor.apellido_representante,
                 rut_representante: proveedor.rut_representante,
                 fono_proveedor: proveedor.fono_proveedor,
@@ -278,7 +278,7 @@ export async function updateProveedorService(id, datosActualizados) {
         const camposActualizables = [
             'rol_proveedor',
             'rut_proveedor',
-            'nombre_representanter',
+            'nombre_representante',  // ✅ CORREGIDO
             'apellido_representante',
             'rut_representante',
             'fono_proveedor',
@@ -385,7 +385,7 @@ export async function createRepresentanteService(id_proveedor, representanteData
             cargo_representante: representanteData.cargo_representante,
             fono_representante: representanteData.fono_representante,
             correo_representante: representanteData.correo_representante,
-            proveedores: proveedor
+            proveedor: proveedor  // ✅ CORREGIDO: proveedor en singular
         });
 
         const representanteGuardado = await representanteRepository.save(nuevoRepresentante);
@@ -417,7 +417,7 @@ export async function getRepresentantesByProveedorService(id_proveedor) {
 
         // Obtener representantes
         const representantes = await representanteRepository.find({
-            where: { proveedores: { id_proveedor: id_proveedor } },
+            where: { proveedor: { id_proveedor: id_proveedor } },  // ✅ CORREGIDO: proveedor en singular
             order: { creado_en: "DESC" }
         });
 

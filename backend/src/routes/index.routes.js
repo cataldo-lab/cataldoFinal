@@ -6,11 +6,11 @@ import adminRoutes from "./admin.routes.js";
 import gerenteRoutes from "./gerente.routes.js";
 import trabajadorTiendaRoutes from "./trabajadorTienda.routes.js";
 import clienteRoutes from "./cliente.routes.js";
-import operacionRoutes from "./gerente&Trabajador/operacion.routes.js";
-import productoRoutes from "./gerente&Trabajador/producto.routes.js";
-import materialRoutes from "./gerente&Trabajador/material.routes.js";
-import clienteGTRoutes from "./gerente&Trabajador/cliente.routes.js";
-import proveedorRoutes from "./gerente&Trabajador/proveedor.routes.js";
+import operacionRoutes from "./staff/operacion.routes.js";
+import productoRoutes from "./staff/producto.routes.js";
+import materialRoutes from "./staff/material.routes.js";
+import clienteGTRoutes from "./staff/cliente.routes.js";
+import proveedorRoutes from "./staff/proveedor.routes.js";
 
 const router = Router();
 

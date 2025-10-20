@@ -6,7 +6,7 @@ import {
     updateProductoService,
     deleteProductoService,
     getCategoriasService
-} from "../../services/gerente&Trabajador/producto.service.js";
+} from "../../services/staff/producto.service.js";
 import {
     handleErrorClient,
     handleErrorServer,

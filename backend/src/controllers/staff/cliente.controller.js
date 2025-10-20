@@ -7,7 +7,7 @@ import {
     getHistorialOperacionesService,
     getEstadisticasClienteService,
     getCategoriasClienteService
-} from "../../services/gerente&Trabajador/cliente.service.js";
+} from "../../services/staff/cliente.service.js";
 import {
     handleErrorClient,
     handleErrorServer,

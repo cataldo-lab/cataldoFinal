@@ -47,7 +47,7 @@ export const representanteSchema = new EntitySchema({
         }
     },
     relations: {
-        proveedores:{
+        proveedor:{
             type: "many-to-one",
             target: "Proveedores",
             joinColumn: { name: "id_proveedor" },

@@ -7,7 +7,7 @@ import {
     updateOperacionService,
     deleteOperacionService,
     getDashboardStatsService
-} from "../../services/gerente&Trabajador/operacion.service.js";
+} from "../../services/staff/operacion.service.js";
 import {
     handleErrorClient,
     handleErrorServer,
