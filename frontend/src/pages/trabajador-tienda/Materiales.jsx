@@ -203,26 +203,9 @@ export default function Materiales() {
             <span>🔍</span> Filtros de búsqueda
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Filtro de Categoría */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 block">
-                📦 Categoría
-              </label>
-              <select
-                value={filtros.categoria_unidad}
-                onChange={(e) => handleFiltroChange('categoria_unidad', e.target.value)}
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg 
-                focus:border-stone-500 focus:ring-2 focus:ring-stone-200 focus:outline-none transition-all"
-              >
-                <option value="">Todas las categorías</option>
-                {categorias.map((cat, i) => (
-                  <option key={i} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
+            
 
             {/* Filtro de Estado */}
             <div className="space-y-2">
