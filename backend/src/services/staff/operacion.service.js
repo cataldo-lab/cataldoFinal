@@ -1,13 +1,27 @@
 "use strict";
 import { AppDataSource } from "../../config/configDb.js";
-// Puede ser usado tanto por gerente como empleado
-
-
+import { logAuditEvent, TipoEvento, NivelSeveridad } from "../audit.service.js";
 
 /**
- * Crear una nueva operación con sus productos
+ * ========================================
+ * SERVICIOS DE OPERACIONES
+ * Para uso de EMPLEADOS y GERENTES
+ * ========================================
  */
-export async function createOperacionService(operacionData) {
+
+/**
+ * Crear una nueva operación
+ * @param {Object} operacionData - Datos de la operación
+ * @param {number} operacionData.id_cliente - ID del cliente
+ * @param {Array} operacionData.productos - Array de productos [{id_producto, cantidad, precio_unitario?, especificaciones?}]
+ * @param {string} operacionData.estado_operacion - Estado inicial (default: "pendiente")
+ * @param {number} operacionData.cantidad_abono - Abono inicial (default: 0)
+ * @param {string} operacionData.descripcion_operacion - Descripción
+ * @param {Date} operacionData.fecha_entrega_estimada - Fecha estimada de entrega
+ * @param {string} usuarioEmail - Email del empleado/gerente que crea
+ * @returns {Promise<[Object|null, string|null]>}
+ */
+export async function createOperacionService(operacionData, usuarioEmail) {
     try {
         const operacionRepository = AppDataSource.getRepository("Operacion");
         const productoOperacionRepository = AppDataSource.getRepository("ProductoOperacion");
@@ -15,29 +29,37 @@ export async function createOperacionService(operacionData) {
         const userRepository = AppDataSource.getRepository("User");
         const productoRepository = AppDataSource.getRepository("Producto");
 
-        // Validar que el cliente existe y tiene rol cliente
+        // ===== VALIDACIÓN 1: Cliente existe y tiene rol correcto =====
         const cliente = await userRepository.findOne({
             where: { id: operacionData.id_cliente }
         });
 
         if (!cliente) {
+            await logAuditEvent({
+                tipo: TipoEvento.OPERATION_CREATED,
+                email: usuarioEmail,
+                descripcion: `Intento fallido: cliente ${operacionData.id_cliente} no encontrado`,
+                nivel: NivelSeveridad.WARNING,
+                exito: false
+            });
             return [null, "Cliente no encontrado"];
         }
 
         if (cliente.rol !== "cliente") {
-            return [null, "El usuario seleccionado no es un cliente"];
+            return [null, "El usuario seleccionado no es un cliente válido"];
         }
 
-        // Validar que los productos existen
+        // ===== VALIDACIÓN 2: Hay productos en la operación =====
         if (!operacionData.productos || operacionData.productos.length === 0) {
             return [null, "Debe agregar al menos un producto a la operación"];
         }
 
-        // Calcular costo total de la operación
+        // ===== VALIDACIÓN 3: Productos existen y están activos =====
         let costoTotal = 0;
         const productosValidados = [];
 
         for (const prod of operacionData.productos) {
+            // Buscar producto en BD
             const producto = await productoRepository.findOne({
                 where: { id_producto: prod.id_producto }
             });
@@ -47,15 +69,17 @@ export async function createOperacionService(operacionData) {
             }
 
             if (!producto.activo) {
-                return [null, `El producto ${producto.nombre_producto} no está activo`];
+                return [null, `El producto "${producto.nombre_producto}" no está activo`];
             }
 
-            const precioUnitario = prod.precio_unitario || producto.precio_venta;
+            // Calcular precios
             const cantidad = prod.cantidad || 1;
+            const precioUnitario = prod.precio_unitario || producto.precio_venta;
             const precioTotal = precioUnitario * cantidad;
 
             costoTotal += precioTotal;
 
+            // Guardar datos validados
             productosValidados.push({
                 producto: producto,
                 cantidad: cantidad,
@@ -65,7 +89,7 @@ export async function createOperacionService(operacionData) {
             });
         }
 
-        // Crear la operación
+        // ===== CREAR OPERACIÓN =====
         const nuevaOperacion = operacionRepository.create({
             cliente: cliente,
             estado_operacion: operacionData.estado_operacion || "pendiente",
@@ -77,7 +101,7 @@ export async function createOperacionService(operacionData) {
 
         const operacionGuardada = await operacionRepository.save(nuevaOperacion);
 
-        // Crear los registros en producto_operacion
+        // ===== CREAR RELACIONES PRODUCTO-OPERACIÓN =====
         for (const prodValidado of productosValidados) {
             const productoOperacion = productoOperacionRepository.create({
                 operacion: operacionGuardada,
@@ -91,7 +115,7 @@ export async function createOperacionService(operacionData) {
             await productoOperacionRepository.save(productoOperacion);
         }
 
-        // Crear registro en historial
+        // ===== CREAR REGISTRO EN HISTORIAL =====
         const estadoInicial = {};
         estadoInicial[operacionGuardada.estado_operacion] = true;
 
@@ -102,22 +126,57 @@ export async function createOperacionService(operacionData) {
 
         await historialRepository.save(historial);
 
-        // Retornar operación completa con relaciones
+        // ===== AUDITORÍA =====
+        await logAuditEvent({
+            tipo: TipoEvento.OPERATION_CREATED,
+            email: usuarioEmail,
+            descripcion: `Operación #${operacionGuardada.id_operacion} creada para ${cliente.nombreCompleto}`,
+            entidad: "Operacion",
+            idEntidad: operacionGuardada.id_operacion,
+            datosDespues: {
+                id_operacion: operacionGuardada.id_operacion,
+                cliente_id: cliente.id,
+                cliente_nombre: cliente.nombreCompleto,
+                costo_total: costoTotal,
+                cantidad_productos: productosValidados.length,
+                estado: operacionGuardada.estado_operacion
+            },
+            nivel: NivelSeveridad.INFO,
+            exito: true
+        });
+
+        // ===== RETORNAR OPERACIÓN COMPLETA =====
         const operacionCompleta = await operacionRepository.findOne({
             where: { id_operacion: operacionGuardada.id_operacion },
-            relations: ["cliente", "productosOperacion", "productosOperacion.producto", "historial"]
+            relations: [
+                "cliente",
+                "productosOperacion",
+                "productosOperacion.producto",
+                "historial"
+            ]
         });
 
         return [operacionCompleta, null];
 
     } catch (error) {
         console.error("Error al crear operación:", error);
+        
+        await logAuditEvent({
+            tipo: TipoEvento.OPERATION_CREATED,
+            email: usuarioEmail,
+            descripcion: `Error al crear operación: ${error.message}`,
+            nivel: NivelSeveridad.ERROR,
+            exito: false
+        });
+        
         return [null, "Error interno del servidor"];
     }
 }
 
 /**
- * Obtener todas las operaciones con filtros opcionales
+ * Obtener todas las operaciones con filtros
+ * @param {Object} filtros - Filtros opcionales
+ * @returns {Promise<[Array|null, string|null]>}
  */
 export async function getOperacionesService(filtros = {}) {
     try {
@@ -168,6 +227,8 @@ export async function getOperacionesService(filtros = {}) {
 
 /**
  * Obtener una operación por ID
+ * @param {number} id - ID de la operación
+ * @returns {Promise<[Object|null, string|null]>}
  */
 export async function getOperacionByIdService(id) {
     try {
@@ -200,9 +261,13 @@ export async function getOperacionByIdService(id) {
 }
 
 /**
- * Actualizar estado de operación
+ * Actualizar estado de una operación
+ * @param {number} id - ID de la operación
+ * @param {string} nuevoEstado - Nuevo estado
+ * @param {string} usuarioEmail - Email del empleado/gerente
+ * @returns {Promise<[Object|null, string|null]>}
  */
-export async function updateEstadoOperacionService(id, nuevoEstado) {
+export async function updateEstadoOperacionService(id, nuevoEstado, usuarioEmail) {
     try {
         const operacionRepository = AppDataSource.getRepository("Operacion");
         const historialRepository = AppDataSource.getRepository("Historial");
@@ -229,8 +294,10 @@ export async function updateEstadoOperacionService(id, nuevoEstado) {
         ];
 
         if (!estadosValidos.includes(nuevoEstado)) {
-            return [null, "Estado no válido"];
+            return [null, `Estado no válido. Estados permitidos: ${estadosValidos.join(", ")}`];
         }
+
+        const estadoAnterior = operacion.estado_operacion;
 
         // Actualizar estado
         operacion.estado_operacion = nuevoEstado;
@@ -247,6 +314,19 @@ export async function updateEstadoOperacionService(id, nuevoEstado) {
 
         await historialRepository.save(historial);
 
+        // Auditoría
+        await logAuditEvent({
+            tipo: TipoEvento.OPERATION_STATUS_CHANGED,
+            email: usuarioEmail,
+            descripcion: `Operación #${id}: ${estadoAnterior} → ${nuevoEstado}`,
+            entidad: "Operacion",
+            idEntidad: id,
+            datosAntes: { estado: estadoAnterior },
+            datosDespues: { estado: nuevoEstado },
+            nivel: NivelSeveridad.INFO,
+            exito: true
+        });
+
         // Retornar operación actualizada
         const operacionActualizada = await operacionRepository.findOne({
             where: { id_operacion: id },
@@ -262,9 +342,13 @@ export async function updateEstadoOperacionService(id, nuevoEstado) {
 }
 
 /**
- * Actualizar operación completa
+ * Actualizar datos de la operación
+ * @param {number} id - ID de la operación
+ * @param {Object} datosActualizados - Datos a actualizar
+ * @param {string} usuarioEmail - Email del empleado/gerente
+ * @returns {Promise<[Object|null, string|null]>}
  */
-export async function updateOperacionService(id, datosActualizados) {
+export async function updateOperacionService(id, datosActualizados, usuarioEmail) {
     try {
         const operacionRepository = AppDataSource.getRepository("Operacion");
 
@@ -282,6 +366,10 @@ export async function updateOperacionService(id, datosActualizados) {
         }
 
         if (datosActualizados.cantidad_abono !== undefined) {
+            // Validar que el abono no sea mayor que el costo
+            if (datosActualizados.cantidad_abono > operacion.costo_operacion) {
+                return [null, "El abono no puede ser mayor que el costo total"];
+            }
             operacion.cantidad_abono = datosActualizados.cantidad_abono;
         }
 
@@ -290,6 +378,18 @@ export async function updateOperacionService(id, datosActualizados) {
         }
 
         await operacionRepository.save(operacion);
+
+        // Auditoría
+        await logAuditEvent({
+            tipo: TipoEvento.OPERATION_UPDATED,
+            email: usuarioEmail,
+            descripcion: `Operación #${id} actualizada`,
+            entidad: "Operacion",
+            idEntidad: id,
+            datosDespues: datosActualizados,
+            nivel: NivelSeveridad.INFO,
+            exito: true
+        });
 
         const operacionActualizada = await operacionRepository.findOne({
             where: { id_operacion: id },
@@ -305,31 +405,59 @@ export async function updateOperacionService(id, datosActualizados) {
 }
 
 /**
- * Eliminar (anular) operación
+ * Anular operación (solo gerente)
+ * @param {number} id - ID de la operación
+ * @param {string} usuarioEmail - Email del gerente
+ * @returns {Promise<[Object|null, string|null]>}
  */
-export async function deleteOperacionService(id) {
+export async function deleteOperacionService(id, usuarioEmail) {
     try {
         const operacionRepository = AppDataSource.getRepository("Operacion");
 
         const operacion = await operacionRepository.findOne({
-            where: { id_operacion: id }
+            where: { id_operacion: id },
+            relations: ["cliente"]
         });
 
         if (!operacion) {
             return [null, "Operación no encontrada"];
         }
 
-        // En lugar de eliminar, cambiar estado a anulada
-        return await updateEstadoOperacionService(id, "anulada");
+        const datosAntes = {
+            id_operacion: operacion.id_operacion,
+            cliente_id: operacion.cliente.id,
+            cliente_nombre: operacion.cliente.nombreCompleto,
+            costo: operacion.costo_operacion,
+            estado: operacion.estado_operacion
+        };
+
+        // Cambiar estado a anulada (no eliminar físicamente)
+        const resultado = await updateEstadoOperacionService(id, "anulada", usuarioEmail);
+
+        // Auditoría
+        await logAuditEvent({
+            tipo: TipoEvento.OPERATION_CANCELLED,
+            email: usuarioEmail,
+            descripcion: `Operación #${id} anulada por gerente`,
+            entidad: "Operacion",
+            idEntidad: id,
+            datosAntes: datosAntes,
+            datosDespues: { estado: "anulada" },
+            nivel: NivelSeveridad.WARNING,
+            exito: true
+        });
+
+        return resultado;
 
     } catch (error) {
-        console.error("Error al eliminar operación:", error);
+        console.error("Error al anular operación:", error);
         return [null, "Error interno del servidor"];
     }
 }
 
 /**
  * Obtener estadísticas del dashboard
+ * @returns {Promise<[Object|null, string|null]>}
  */
 export async function getDashboardStatsService() {
     try {
@@ -366,7 +494,7 @@ export async function getDashboardStatsService() {
         return [{
             pendientes,
             enProceso,
-            ingresosMes
+            ingresosMes: parseFloat(ingresosMes.toFixed(2))
         }, null];
 
     } catch (error) {
