@@ -1,5 +1,5 @@
 // frontend/src/pages/trabajador-tienda/TrabajadorDashboard.jsx
-import { useTrabajadorDashboard } from '../../hooks/trabajadorTienda/useTrabajadorDashborad.jsx';
+import { useTrabajadorDashboard } from '../../hooks/Dashboard/useTrabajadorDashborad.jsx';
 
 const TrabajadorDashboard = () => {
     const { stats, loading, error, reloadStats } = useTrabajadorDashboard();

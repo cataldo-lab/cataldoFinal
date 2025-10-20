@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Table from '@components/Table';
 import Search from '@components/Search';
-import '@styles/operations.css';
+
 
 const TrabajadorOperations = () => {
     const [operations, setOperations] = useState([]);
@@ -47,7 +47,7 @@ const TrabajadorOperations = () => {
     ];
 
     return (
-        <div className="operations-container">
+        <div className="operations-container pt-40">
             <div className="top-section">
                 <h1>Operaciones</h1>
                 <Search 
