@@ -1,4 +1,4 @@
-// backend/src/controllers/gerente&Trabajador/material.controller.js
+// backend/src/controllers/staff/material.controller.js
 "use strict";
 import {
     createMaterialService,

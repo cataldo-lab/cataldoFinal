@@ -1,4 +1,4 @@
-// backend/src/services/gerente&Trabajador/material.service.js
+// backend/src/services/staff/material.service.js
 "use strict";
 import { AppDataSource } from "../../config/configDb.js";
 import { detectarCategoria } from "../../entity/materiales.entity.js";
@@ -339,6 +339,7 @@ export async function getMaterialDetalleCompletoService(id_material) {
     try {
         const materialRepository = AppDataSource.getRepository("Materiales");
         const compraRepository = AppDataSource.getRepository("CompraMaterial");
+        const representanteRepository = AppDataSource.getRepository("Representante");
 
         // 1. Obtener material con proveedor
         const material = await materialRepository.findOne({
@@ -357,7 +358,15 @@ export async function getMaterialDetalleCompletoService(id_material) {
             order: { fecha_compra: "DESC" }
         });
 
-        // 3. Calcular estadísticas de compras
+        // 3. Si hay proveedor, obtener su representante
+        let representante = null;
+        if (material.proveedor) {
+            representante = await representanteRepository.findOne({
+                where: { proveedor: { id_proveedor: material.proveedor.id_proveedor } }
+            });
+        }
+
+        // 4. Calcular estadísticas de compras
         const totalCompras = compras.length;
         const comprasPendientes = compras.filter(c => c.estado === "pendiente").length;
         const comprasRecibidas = compras.filter(c => c.estado === "recibida").length;
@@ -366,11 +375,10 @@ export async function getMaterialDetalleCompletoService(id_material) {
             .filter(c => c.estado === "recibida")
             .reduce((sum, c) => sum + parseFloat(c.precio_total), 0);
 
-        const cantidadTotalComprada = compras
-            .filter(c => c.estado === "recibida")
-            .reduce((sum, c) => sum + parseFloat(c.cantidad), 0);
+        // No podemos usar cantidad porque no existe en el schema - usando precio_total
+        const cantidadTotalComprada = comprasRecibidas;
 
-        // 4. Obtener productos que usan este material
+        // 5. Obtener productos que usan este material
         const productosQueUsan = material.productos.map(pm => ({
             id_producto: pm.producto.id_producto,
             nombre_producto: pm.producto.nombre_producto,
@@ -378,11 +386,9 @@ export async function getMaterialDetalleCompletoService(id_material) {
             costo_unitario: pm.costo_unitario
         }));
 
-        // 5. Formatear compras
+        // 6. Formatear compras
         const comprasFormateadas = compras.map(c => ({
             id_compra: c.id_compra,
-            cantidad: parseFloat(c.cantidad),
-            precio_unitario: parseFloat(c.precio_unitario),
             precio_total: parseFloat(c.precio_total),
             fecha_compra: c.fecha_compra,
             fecha_entrega_estimada: c.fecha_entrega_estimada,
@@ -392,8 +398,7 @@ export async function getMaterialDetalleCompletoService(id_material) {
             numero_documento: c.numero_documento,
             proveedor: {
                 id_proveedor: c.proveedor.id_proveedor,
-                nombre_representanter: c.proveedor.nombre_representanter,
-                apellido_representante: c.proveedor.apellido_representante,
+                rol_proveedor: c.proveedor.rol_proveedor,
                 fono_proveedor: c.proveedor.fono_proveedor
             },
             usuario_registro: c.usuario ? {
@@ -404,7 +409,7 @@ export async function getMaterialDetalleCompletoService(id_material) {
             observaciones: c.observaciones
         }));
 
-        // 6. Construir respuesta completa
+        // 7. Construir respuesta completa
         const respuesta = {
             material: {
                 id_material: material.id_material,
@@ -420,10 +425,14 @@ export async function getMaterialDetalleCompletoService(id_material) {
                     id_proveedor: material.proveedor.id_proveedor,
                     rol_proveedor: material.proveedor.rol_proveedor,
                     rut_proveedor: material.proveedor.rut_proveedor,
-                    nombre_representanter: material.proveedor.nombre_representanter,
-                    apellido_representante: material.proveedor.apellido_representante,
                     fono_proveedor: material.proveedor.fono_proveedor,
-                    correo_proveedor: material.proveedor.correo_proveedor
+                    correo_proveedor: material.proveedor.correo_proveedor,
+                    // Solo añadir datos de representante si existe
+                    representante: representante ? {
+                        nombre: representante.nombre_representante,
+                        apellido: representante.apellido_representante,
+                        cargo: representante.cargo_representante
+                    } : null
                 } : null
             },
             estadisticas_compras: {
@@ -432,7 +441,8 @@ export async function getMaterialDetalleCompletoService(id_material) {
                 compras_recibidas: comprasRecibidas,
                 cantidad_total_comprada: cantidadTotalComprada,
                 total_invertido: parseFloat(totalInvertido.toFixed(2)),
-                precio_promedio_compra: totalCompras > 0 
+                // Evitamos división por cero
+                precio_promedio_compra: cantidadTotalComprada > 0 
                     ? parseFloat((totalInvertido / cantidadTotalComprada).toFixed(2))
                     : 0
             },
@@ -455,6 +465,7 @@ export async function getMaterialesConResumenService(filtros = {}) {
     try {
         const materialRepository = AppDataSource.getRepository("Materiales");
         const compraRepository = AppDataSource.getRepository("CompraMaterial");
+        const representanteRepository = AppDataSource.getRepository("Representante");
 
         // Construir query
         const queryBuilder = materialRepository
@@ -502,6 +513,14 @@ export async function getMaterialesConResumenService(filtros = {}) {
 
                 const comprasPendientes = compras.filter(c => c.estado === "pendiente").length;
 
+                // Si hay proveedor, obtener su representante
+                let representante = null;
+                if (material.proveedor) {
+                    representante = await representanteRepository.findOne({
+                        where: { proveedor: { id_proveedor: material.proveedor.id_proveedor } }
+                    });
+                }
+
                 return {
                     id_material: material.id_material,
                     nombre_material: material.nombre_material,
@@ -514,17 +533,20 @@ export async function getMaterialesConResumenService(filtros = {}) {
                     estado_stock: getEstadoStock(material),
                     proveedor: material.proveedor ? {
                         id_proveedor: material.proveedor.id_proveedor,
-                        nombre_completo: `${material.proveedor.nombre_representanter} ${material.proveedor.apellido_representante}`,
+                        rol_proveedor: material.proveedor.rol_proveedor,
                         fono_proveedor: material.proveedor.fono_proveedor,
-                        correo_proveedor: material.proveedor.correo_proveedor
+                        correo_proveedor: material.proveedor.correo_proveedor,
+                        // Solo añadir datos de representante si existe
+                        nombre_completo: representante 
+                            ? `${representante.nombre_representante} ${representante.apellido_representante}`
+                            : 'Sin representante asignado'
                     } : null,
                     resumen_compras: {
                         total_compras: compras.length,
                         compras_pendientes: comprasPendientes,
                         ultima_compra: ultimaCompra ? {
                             fecha: ultimaCompra.fecha_compra,
-                            cantidad: parseFloat(ultimaCompra.cantidad),
-                            precio_unitario: parseFloat(ultimaCompra.precio_unitario)
+                            precio_total: parseFloat(ultimaCompra.precio_total)
                         } : null
                     }
                 };
@@ -545,6 +567,7 @@ export async function getMaterialesConResumenService(filtros = {}) {
 export async function getAnalisisProveedorService(id_proveedor) {
     try {
         const proveedorRepository = AppDataSource.getRepository("Proveedores");
+        const representanteRepository = AppDataSource.getRepository("Representante");
         const materialRepository = AppDataSource.getRepository("Materiales");
         const compraRepository = AppDataSource.getRepository("CompraMaterial");
 
@@ -556,6 +579,11 @@ export async function getAnalisisProveedorService(id_proveedor) {
         if (!proveedor) {
             return [null, "Proveedor no encontrado"];
         }
+
+        // Obtener representante del proveedor
+        const representante = await representanteRepository.findOne({
+            where: { proveedor: { id_proveedor: id_proveedor } }
+        });
 
         // Materiales de este proveedor
         const materiales = await materialRepository.find({
@@ -583,9 +611,8 @@ export async function getAnalisisProveedorService(id_proveedor) {
             const comprasMaterial = compras.filter(c => c.material.id_material === material.id_material);
             const comprasRecibidasMaterial = comprasMaterial.filter(c => c.estado === "recibida");
             
-            const totalComprado = comprasRecibidasMaterial.reduce(
-                (sum, c) => sum + parseFloat(c.cantidad), 0
-            );
+            // No podemos usar cantidad - usar número de compras recibidas como aproximación
+            const totalComprado = comprasRecibidasMaterial.length;
             
             const totalGastadoMaterial = comprasRecibidasMaterial.reduce(
                 (sum, c) => sum + parseFloat(c.precio_total), 0
@@ -610,9 +637,12 @@ export async function getAnalisisProveedorService(id_proveedor) {
                 id_proveedor: proveedor.id_proveedor,
                 rol_proveedor: proveedor.rol_proveedor,
                 rut_proveedor: proveedor.rut_proveedor,
-                nombre_completo: `${proveedor.nombre_representanter} ${proveedor.apellido_representante}`,
                 fono_proveedor: proveedor.fono_proveedor,
-                correo_proveedor: proveedor.correo_proveedor
+                correo_proveedor: proveedor.correo_proveedor,
+                representante: representante ? {
+                    nombre_completo: `${representante.nombre_representante} ${representante.apellido_representante}`,
+                    cargo: representante.cargo_representante
+                } : null
             },
             estadisticas: {
                 total_materiales_suministrados: materiales.length,
@@ -625,7 +655,6 @@ export async function getAnalisisProveedorService(id_proveedor) {
             ultimas_compras: compras.slice(0, 10).map(c => ({
                 id_compra: c.id_compra,
                 material: c.material.nombre_material,
-                cantidad: parseFloat(c.cantidad),
                 precio_total: parseFloat(c.precio_total),
                 fecha_compra: c.fecha_compra,
                 estado: c.estado

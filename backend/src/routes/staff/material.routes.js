@@ -1,4 +1,4 @@
-// backend/src/routes/gerente&Trabajador/material.routes.js
+// backend/src/routes/staff/material.routes.js
 "use strict";
 import { Router } from "express";
 import {
@@ -22,97 +22,27 @@ const router = Router();
 // Middleware de autenticación para todas las rutas
 router.use(authenticateJwt);
 
-/**
- * Rutas especiales (deben ir PRIMERO para evitar conflictos con /:id)
- */
+// Rutas especiales (deben ir PRIMERO para evitar conflictos con /:id)
+router
+  .get("/con-resumen", isEmployee, getMaterialesConResumen)          // Materiales con resumen de compras
+  .get("/alertas/bajo-stock", isEmployee, getMaterialesBajoStock)    // Materiales con stock bajo
+  .get("/alertas/stock", isEmployee, getAlertasStock)                // Alertas categorizadas
+  .get("/proveedores/:id/analisis", isEmployee, getAnalisisProveedor); // Análisis de proveedor
 
-// GET /api/materiales/con-resumen - Materiales con resumen de compras
-router.get(
-    "/con-resumen",
-    isEmployee,
-    getMaterialesConResumen
-);
+// Rutas de consulta (todos los trabajadores)
+router
+  .get("/", isEmployee, getMateriales)                               // Obtener todos los materiales
+  .get("/:id/detalle-completo", isEmployee, getMaterialDetalleCompleto) // Detalle completo
+  .get("/:id", isEmployee, getMaterialById);                         // Obtener por ID
 
-// GET /api/materiales/alertas/bajo-stock - Materiales con stock bajo
-router.get(
-    "/alertas/bajo-stock",
-    isEmployee,
-    getMaterialesBajoStock
-);
+// Rutas de escritura (todos los empleados)
+router
+  .post("/", isEmployee, createMaterial)                            // Crear nuevo material
+  .put("/:id", isEmployee, updateMaterial)                          // Actualizar material
+  .patch("/:id/stock", isEmployee, updateStockMaterial);            // Actualizar stock
 
-// GET /api/materiales/alertas/stock - Alertas categorizadas
-router.get(
-    "/alertas/stock",
-    isEmployee,
-    getAlertasStock
-);
-
-// GET /api/materiales/proveedores/:id/analisis - Análisis de proveedor
-router.get(
-    "/proveedores/:id/analisis",
-    isEmployee,
-    getAnalisisProveedor
-);
-
-/**
- * Rutas de consulta (todos los trabajadores)
- */
-
-// GET /api/materiales - Obtener todos los materiales (básico)
-router.get(
-    "/",
-    isEmployee,
-    getMateriales
-);
-
-// GET /api/materiales/:id/detalle-completo - Detalle completo del material
-router.get(
-    "/:id/detalle-completo",
-    isEmployee,
-    getMaterialDetalleCompleto
-);
-
-// GET /api/materiales/:id - Obtener un material por ID (básico)
-router.get(
-    "/:id",
-    isEmployee,
-    getMaterialById
-);
-
-/**
- * Rutas de escritura (trabajadores pueden crear/editar)
- */
-
-// POST /api/materiales - Crear nuevo material
-router.post(
-    "/",
-    isEmployee,
-    createMaterial
-);
-
-// PUT /api/materiales/:id - Actualizar material
-router.put(
-    "/:id",
-    isEmployee,
-    updateMaterial
-);
-
-// PATCH /api/materiales/:id/stock - Actualizar stock
-router.patch(
-    "/:id/stock",
-    isEmployee,
-    updateStockMaterial
-);
-
-/**
- * Rutas de eliminación (solo gerente)
- */
-
-// DELETE /api/materiales/:id - Desactivar material
-router.delete(
-    "/:id",
-    isManager,
-    deleteMaterial
-);
+// Rutas de eliminación (solo gerentes)
+router
+  .delete("/:id", isManager, deleteMaterial);                        // Desactivar material
 
 export default router;
