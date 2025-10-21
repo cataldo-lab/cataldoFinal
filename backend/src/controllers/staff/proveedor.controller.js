@@ -1,4 +1,4 @@
-// backend/src/controllers/gerente&Trabajador/proveedor.controller.js
+// backend/src/controllers/staff/proveedor.controller.js
 "use strict";
 import {
     createProveedorService,

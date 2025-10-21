@@ -2,10 +2,14 @@
 "use strict";
 import { AppDataSource } from "../../config/configDb.js";
 
-
+/**
+ * ========================================
+ * SERVICIOS DE PROVEEDORES
+ * ========================================
+ */
 
 /**
- * Crear un nuevo proveedor con su representante principal
+ * Crear un nuevo proveedor
  */
 export async function createProveedorService(proveedorData) {
     try {
@@ -13,16 +17,12 @@ export async function createProveedorService(proveedorData) {
         const representanteRepository = AppDataSource.getRepository("Representante");
 
         // Validar datos obligatorios del proveedor
-        if (!proveedorData.nombre_empresa) {
-            return [null, "El nombre de la empresa es obligatorio"];
+        if (!proveedorData.rol_proveedor) {
+            return [null, "El rol del proveedor es obligatorio"];
         }
 
         if (!proveedorData.rut_proveedor) {
             return [null, "El RUT del proveedor es obligatorio"];
-        }
-
-        if (!proveedorData.rol_proveedor) {
-            return [null, "El rol del proveedor es obligatorio"];
         }
 
         // Verificar que el RUT no exista
@@ -36,19 +36,19 @@ export async function createProveedorService(proveedorData) {
 
         // Crear proveedor
         const nuevoProveedor = proveedorRepository.create({
-            nombre_empresa: proveedorData.nombre_empresa,
-            rut_proveedor: proveedorData.rut_proveedor,
             rol_proveedor: proveedorData.rol_proveedor,
-            fono_proveedor: proveedorData.fono_proveedor,
-            correo_proveedor: proveedorData.correo_proveedor,
-            direccion: proveedorData.direccion,
-            sitio_web: proveedorData.sitio_web,
-            observaciones: proveedorData.observaciones
+            rut_proveedor: proveedorData.rut_proveedor,
+            fono_proveedor: proveedorData.fono_proveedor || null,
+            correo_proveedor: proveedorData.correo_proveedor || null,
+            nombre_representanter: proveedorData.nombre_representanter || null,
+            apellido_representante: proveedorData.apellido_representante || null,
+            rut_representante: proveedorData.rut_representante || null,
+            activo: true
         });
 
         const proveedorGuardado = await proveedorRepository.save(nuevoProveedor);
 
-        // Si viene información de representante, crearlo automáticamente
+        // Si viene información completa de representante, crear registro en tabla Representante
         if (proveedorData.representante) {
             const rep = proveedorData.representante;
             
@@ -57,9 +57,10 @@ export async function createProveedorService(proveedorData) {
                 apellido_representante: rep.apellido_representante,
                 rut_representante: rep.rut_representante,
                 cargo_representante: rep.cargo_representante,
-                fono_representante: rep.fono_representante,
-                correo_representante: rep.correo_representante,
+                fono_representante: rep.fono_representante || null,
+                correo_representante: rep.correo_representante || null,
                 es_principal: true,
+                activo: true,
                 proveedor: proveedorGuardado
             });
 
@@ -69,7 +70,7 @@ export async function createProveedorService(proveedorData) {
         // Retornar proveedor con sus relaciones
         const proveedorCompleto = await proveedorRepository.findOne({
             where: { id_proveedor: proveedorGuardado.id_proveedor },
-            relations: ["representantes"]
+            relations: ["representantes", "materiales"]
         });
 
         return [proveedorCompleto, null];
@@ -92,7 +93,7 @@ export async function getProveedoresService(filtros = {}) {
             .leftJoinAndSelect("proveedor.representantes", "representantes")
             .leftJoinAndSelect("proveedor.materiales", "materiales")
             .where("proveedor.activo = :activo", { activo: true })
-            .orderBy("proveedor.nombre_empresa", "ASC");
+            .orderBy("proveedor.rol_proveedor", "ASC");
 
         // Aplicar filtros
         if (filtros.rol_proveedor) {
@@ -103,9 +104,11 @@ export async function getProveedoresService(filtros = {}) {
 
         if (filtros.search) {
             queryBuilder.andWhere(
-                "(proveedor.nombre_empresa ILIKE :search OR " +
+                "(proveedor.rol_proveedor ILIKE :search OR " +
                 "proveedor.rut_proveedor ILIKE :search OR " +
                 "proveedor.correo_proveedor ILIKE :search OR " +
+                "proveedor.nombre_representanter ILIKE :search OR " +
+                "proveedor.apellido_representante ILIKE :search OR " +
                 "representantes.nombre_representante ILIKE :search OR " +
                 "representantes.apellido_representante ILIKE :search)",
                 { search: `%${filtros.search}%` }
@@ -114,12 +117,27 @@ export async function getProveedoresService(filtros = {}) {
 
         const proveedores = await queryBuilder.getMany();
 
-        // Formatear respuesta con representante principal
+        // Formatear respuesta
         const proveedoresFormateados = proveedores.map(p => ({
-            ...p,
-            representante_principal: p.representantes?.find(r => r.es_principal) || p.representantes?.[0],
-            total_representantes: p.representantes?.length || 0,
-            total_materiales: p.materiales?.length || 0
+            id_proveedor: p.id_proveedor,
+            rol_proveedor: p.rol_proveedor,
+            rut_proveedor: p.rut_proveedor,
+            fono_proveedor: p.fono_proveedor,
+            correo_proveedor: p.correo_proveedor,
+            // Representante embebido
+            nombre_representanter: p.nombre_representanter,
+            apellido_representante: p.apellido_representante,
+            rut_representante: p.rut_representante,
+            nombre_completo_rep: p.nombre_representanter && p.apellido_representante 
+                ? `${p.nombre_representanter} ${p.apellido_representante}`
+                : null,
+            activo: p.activo,
+            fecha_creacion: p.fecha_creacion,
+            // Relaciones
+            representantes_adicionales: p.representantes || [],
+            total_representantes: (p.representantes || []).length,
+            materiales: p.materiales || [],
+            total_materiales: (p.materiales || []).length
         }));
 
         return [proveedoresFormateados, null];
@@ -136,30 +154,17 @@ export async function getProveedoresService(filtros = {}) {
 export async function getProveedorByIdService(id) {
     try {
         const proveedorRepository = AppDataSource.getRepository("Proveedores");
-        const representanteRepository = AppDataSource.getRepository("Representante");
         const compraRepository = AppDataSource.getRepository("CompraMaterial");
 
-        // Obtener proveedor con materiales
+        // Obtener proveedor con relaciones
         const proveedor = await proveedorRepository.findOne({
             where: { id_proveedor: id },
-            relations: ["materiales"]
+            relations: ["representantes", "materiales"]
         });
 
         if (!proveedor) {
             return [null, "Proveedor no encontrado"];
         }
-
-        // Obtener representantes del proveedor
-        const representantes = await representanteRepository.find({
-            where: { 
-                proveedor: { id_proveedor: id },
-                activo: true
-            },
-            order: { 
-                es_principal: "DESC",
-                creado_en: "DESC" 
-            }
-        });
 
         // Obtener historial de compras
         const compras = await compraRepository.find({
@@ -173,89 +178,63 @@ export async function getProveedorByIdService(id) {
         const totalCompras = compras.length;
         const comprasRecibidas = compras.filter(c => c.estado === "recibida");
         const comprasPendientes = compras.filter(c => c.estado === "pendiente");
-        const comprasCanceladas = compras.filter(c => c.estado === "cancelada");
         
         const totalGastado = comprasRecibidas.reduce(
-            (sum, c) => sum + parseFloat(c.precio_total), 0
+            (sum, c) => sum + parseFloat(c.precio_total || 0), 0
         );
-
-        const cantidadTotalComprada = comprasRecibidas.reduce(
-            (sum, c) => sum + parseFloat(c.cantidad), 0
-        );
-
-        const ultimaCompra = compras.length > 0 ? compras[0] : null;
-
-        // Formatear representantes
-        const representantesFormateados = representantes.map(r => ({
-            id_representante: r.id_representante,
-            nombre_completo: `${r.nombre_representante} ${r.apellido_representante}`,
-            nombre_representante: r.nombre_representante,
-            apellido_representante: r.apellido_representante,
-            rut_representante: r.rut_representante,
-            cargo_representante: r.cargo_representante,
-            fono_representante: r.fono_representante,
-            correo_representante: r.correo_representante,
-            es_principal: r.es_principal,
-            fecha_registro: r.creado_en
-        }));
 
         // Construir respuesta completa
         const respuesta = {
             proveedor: {
                 id_proveedor: proveedor.id_proveedor,
-                nombre_empresa: proveedor.nombre_empresa,
-                rut_proveedor: proveedor.rut_proveedor,
                 rol_proveedor: proveedor.rol_proveedor,
+                rut_proveedor: proveedor.rut_proveedor,
                 fono_proveedor: proveedor.fono_proveedor,
                 correo_proveedor: proveedor.correo_proveedor,
-                direccion: proveedor.direccion,
-                sitio_web: proveedor.sitio_web,
-                observaciones: proveedor.observaciones,
+                // Representante embebido
+                nombre_representanter: proveedor.nombre_representanter,
+                apellido_representante: proveedor.apellido_representante,
+                rut_representante: proveedor.rut_representante,
+                nombre_completo_rep: proveedor.nombre_representanter && proveedor.apellido_representante
+                    ? `${proveedor.nombre_representanter} ${proveedor.apellido_representante}`
+                    : null,
+                activo: proveedor.activo,
                 fecha_creacion: proveedor.fecha_creacion
             },
-            representantes: representantesFormateados,
-            representante_principal: representantesFormateados.find(r => r.es_principal) || representantesFormateados[0],
-            materiales_suministrados: proveedor.materiales.map(m => ({
+            representantes: (proveedor.representantes || []).map(r => ({
+                id_representante: r.id_representante,
+                nombre_completo: `${r.nombre_representante} ${r.apellido_representante}`,
+                nombre_representante: r.nombre_representante,
+                apellido_representante: r.apellido_representante,
+                rut_representante: r.rut_representante,
+                cargo_representante: r.cargo_representante,
+                fono_representante: r.fono_representante,
+                correo_representante: r.correo_representante,
+                es_principal: r.es_principal,
+                activo: r.activo
+            })),
+            materiales_suministrados: (proveedor.materiales || []).map(m => ({
                 id_material: m.id_material,
                 nombre_material: m.nombre_material,
                 unidad_medida: m.unidad_medida,
-                precio_unitario: parseFloat(m.precio_unitario),
+                precio_unitario: parseFloat(m.precio_unitario || 0),
                 existencia_material: m.existencia_material,
                 stock_minimo: m.stock_minimo,
-                activo: m.activo,
-                estado_stock: m.existencia_material <= m.stock_minimo ? "bajo" : "normal"
+                activo: m.activo
             })),
             estadisticas: {
-                total_materiales: proveedor.materiales.length,
-                materiales_activos: proveedor.materiales.filter(m => m.activo).length,
-                materiales_bajo_stock: proveedor.materiales.filter(m => 
-                    m.existencia_material <= m.stock_minimo
-                ).length,
+                total_materiales: (proveedor.materiales || []).length,
                 total_compras: totalCompras,
                 compras_recibidas: comprasRecibidas.length,
                 compras_pendientes: comprasPendientes.length,
-                compras_canceladas: comprasCanceladas.length,
-                cantidad_total_comprada: cantidadTotalComprada,
-                total_gastado: parseFloat(totalGastado.toFixed(2)),
-                precio_promedio: cantidadTotalComprada > 0 
-                    ? parseFloat((totalGastado / cantidadTotalComprada).toFixed(2))
-                    : 0,
-                ultima_compra: ultimaCompra ? {
-                    fecha: ultimaCompra.fecha_compra,
-                    material: ultimaCompra.material?.nombre_material || "N/A",
-                    monto: parseFloat(ultimaCompra.precio_total)
-                } : null
+                total_gastado: parseFloat(totalGastado.toFixed(2))
             },
             ultimas_compras: compras.slice(0, 10).map(c => ({
                 id_compra: c.id_compra,
                 material: c.material?.nombre_material || "N/A",
-                cantidad: parseFloat(c.cantidad),
-                precio_unitario: parseFloat(c.precio_unitario),
-                precio_total: parseFloat(c.precio_total),
+                precio_total: parseFloat(c.precio_total || 0),
                 fecha_compra: c.fecha_compra,
-                estado: c.estado,
-                tipo_documento: c.tipo_documento,
-                numero_documento: c.numero_documento
+                estado: c.estado
             }))
         };
 
@@ -289,21 +268,20 @@ export async function updateProveedorService(id, datosActualizados) {
                 where: { rut_proveedor: datosActualizados.rut_proveedor }
             });
 
-            if (rutExistente) {
+            if (rutExistente && rutExistente.id_proveedor !== id) {
                 return [null, "Ya existe un proveedor con este RUT"];
             }
         }
 
         // Actualizar campos permitidos
         const camposActualizables = [
-            'nombre_empresa',
             'rol_proveedor',
             'rut_proveedor',
             'fono_proveedor',
             'correo_proveedor',
-            'direccion',
-            'sitio_web',
-            'observaciones',
+            'nombre_representanter',
+            'apellido_representante',
+            'rut_representante',
             'activo'
         ];
 
@@ -339,23 +317,21 @@ export async function deleteProveedorService(id) {
 
         const proveedor = await proveedorRepository.findOne({
             where: { id_proveedor: id },
-            relations: ["materiales", "compras"]
+            relations: ["materiales"]
         });
 
         if (!proveedor) {
             return [null, "Proveedor no encontrado"];
         }
 
-        // Verificar si tiene compras activas
-        const comprasPendientes = proveedor.compras?.filter(
-            c => c.estado === "pendiente" || c.estado === "parcial"
-        );
-
-        if (comprasPendientes && comprasPendientes.length > 0) {
-            return [null, `No se puede eliminar. Tiene ${comprasPendientes.length} compra(s) pendiente(s)`];
+        // Verificar si tiene materiales activos
+        const materialesActivos = (proveedor.materiales || []).filter(m => m.activo);
+        
+        if (materialesActivos.length > 0) {
+            return [null, `No se puede eliminar. Tiene ${materialesActivos.length} material(es) activo(s)`];
         }
 
-        // Soft delete (marcar como inactivo)
+        // Soft delete
         proveedor.activo = false;
         proveedor.fecha_actualizacion = new Date();
         await proveedorRepository.save(proveedor);
@@ -392,12 +368,8 @@ export async function createRepresentanteService(id_proveedor, representanteData
         }
 
         // Validar datos obligatorios
-        if (!representanteData.nombre_representante) {
-            return [null, "El nombre del representante es obligatorio"];
-        }
-
-        if (!representanteData.apellido_representante) {
-            return [null, "El apellido del representante es obligatorio"];
+        if (!representanteData.nombre_representante || !representanteData.apellido_representante) {
+            return [null, "Nombre y apellido del representante son obligatorios"];
         }
 
         if (!representanteData.rut_representante) {
@@ -424,9 +396,10 @@ export async function createRepresentanteService(id_proveedor, representanteData
             apellido_representante: representanteData.apellido_representante,
             rut_representante: representanteData.rut_representante,
             cargo_representante: representanteData.cargo_representante,
-            fono_representante: representanteData.fono_representante,
-            correo_representante: representanteData.correo_representante,
+            fono_representante: representanteData.fono_representante || null,
+            correo_representante: representanteData.correo_representante || null,
             es_principal: representanteData.es_principal || false,
+            activo: true,
             proveedor: proveedor
         });
 

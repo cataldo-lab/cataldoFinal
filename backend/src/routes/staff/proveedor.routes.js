@@ -1,4 +1,4 @@
-// backend/src/routes/gerente&Trabajador/proveedor.routes.js
+// backend/src/routes/staff/proveedor.routes.js
 "use strict";
 import { Router } from "express";
 import {
