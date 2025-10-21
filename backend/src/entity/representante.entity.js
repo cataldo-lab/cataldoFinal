@@ -52,7 +52,7 @@ export const representanteSchema = new EntitySchema({
             target: "Proveedores",
             joinColumn: { name: "id_proveedor" },
             nullable: false,
-            cascade: true
+            cascade: false
         }
     }
 });

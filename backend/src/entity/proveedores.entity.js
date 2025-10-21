@@ -20,7 +20,7 @@ export const proveedoresSchema = new EntitySchema({
             length: 12,
             nullable: false,
         },
-        nombre_representanter:{
+        nombre_representante:{
             type: "varchar",
             length: 100,
             nullable: false

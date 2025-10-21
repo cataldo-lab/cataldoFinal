@@ -15,7 +15,7 @@ import { ProductoOperacionSchema } from "../entity/producto_operacion.entity.js"
 import { MaterialesSchema } from "../entity/materiales.entity.js";
 import { ProductoMaterialesSchema } from "../entity/producto_materiales.entity.js";
 import { proveedoresSchema } from "../entity/proveedores.entity.js";
-import { representanteSchema } from "../entity/respresentante.entity.js";
+import { representanteSchema } from "../entity/representante.entity.js";
 import { historialSchema } from "../entity/historial.entity.js";
 import { EncuestaSchema } from "../entity/encuesta.entity.js";
 import { CostoTercerosSchema } from "../entity/costoTerceros.entity.js";
