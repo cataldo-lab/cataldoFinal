@@ -208,10 +208,19 @@ export async function getAnalisisProveedor(id_proveedor) {
  * Obtener lista de proveedores
  */
 export async function getProveedores() {
-    try {
-        const response = await axios.get('/proveedores');
-        return response.data;
-    } catch (error) {
-        return error.response?.data || { status: 'error', message: 'Error de conexión' };
-    }
+  try {
+    const response = await axios.get('/proveedores');
+    return response.data;
+  } catch (error) {
+    console.error('Error al cargar proveedores:', error);
+    
+    // En lugar de devolver el error, devolvemos un objeto con estado de error
+    // pero con un array vacío de datos para que la aplicación pueda continuar
+    return { 
+      status: 'Error', 
+      message: error.response?.data?.message || 'Error al obtener proveedores',
+      details: error.message,
+      data: [] 
+    };
+  }
 }

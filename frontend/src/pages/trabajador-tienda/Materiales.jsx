@@ -4,10 +4,10 @@ import { useGetMateriales } from '@hooks/materiales/useGetMateriales';
 import { useCreateMaterial } from '@hooks/materiales/useCreateMaterial';
 import { useUpdateMaterial } from '@hooks/materiales/useUpdateMaterial';
 //import { useDeleteMaterial } from '@hooks/materiales/useDeleteMaterial';
-import  useGetProveedores  from '@hooks/prooveedores/useGetProveedores';
 import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
 import PopupCreateMaterial from '@components/popup/trabajadorTienda/material/PopupCreateMaterial';
 import PopupUpdateMaterial from '@components/popup/trabajadorTienda/material/PopupUpdateMaterial';
+import useProveedoresSafe from '@hooks/prooveedores/useProveedoresSafe';
 
 import AddIcon from '@assets/AddIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
@@ -26,7 +26,7 @@ export default function Materiales() {
   const { createMaterial, loading: loadingCreate } = useCreateMaterial();
   const { updateMaterial, loading: loadingUpdate } = useUpdateMaterial();
   //const { deleteMaterial, loading: loadingDelete } = useDeleteMaterial();
-  const { proveedores, fetchProveedores } = useGetProveedores();
+ 
 
   // ===== ESTADOS LOCALES =====
   const [selectedItems, setSelectedItems] = useState([]);
@@ -41,6 +41,9 @@ export default function Materiales() {
     busqueda: '',
     bajo_stock: false
   });
+
+ const { proveedores, loading: loadingProveedores, fetchProveedores, hasProveedores } = useProveedoresSafe();
+
 
   // ===== EFECTOS =====
   useEffect(() => {
