@@ -178,7 +178,7 @@ const TrabajadorDashboard = () => {
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <button 
-                            onClick={() => window.location.href = '/trabajador-tienda/operations'}
+                            onClick={() => window.location.href = '/trabajador/operations'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
                             <span className="text-2xl">📋</span>

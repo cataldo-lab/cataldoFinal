@@ -1,8 +1,12 @@
-// frontend/src/pages/trabajador-tienda/Materiales.jsx
-import { useState } from 'react';
-import { useMateriales, useFormatPrecio } from '@hooks/materiales/useMateriales';
+import { useState, useEffect } from 'react';
+import { useGetMateriales } from '@hooks/materiales/useGetMateriales';
+import { useCreateMaterial } from '@hooks/materiales/useCreateMaterial';
+import { useUpdateMaterial } from '@hooks/materiales/useUpdateMaterial';
+import { useDeleteMaterial } from '@hooks/materiales/useDeleteMaterial';
+import { useGetProveedores } from '@hooks/proveedores/useGetProveedores';
 import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
-import { useNavigate } from 'react-router-dom';
+import PopupCreateMaterial from '@components/popup/trabajadorTienda/material/PopupCreateMaterial';
+import PopupUpdateMaterial from '@components/popup/trabajadorTienda/material/PopupUpdateMaterial';
 
 import AddIcon from '@assets/AddIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
@@ -10,49 +14,159 @@ import DeleteIcon from '@assets/deleteIcon.svg';
 import SearchIcon from '@assets/SearchIcon.svg';
 
 export default function Materiales() {
-  const navigate = useNavigate();
-  const {
-    materiales,
-    proveedores,
-    categorias,
-    loading,
-    filtros,
-    handleFiltroChange,
-    limpiarFiltros,
-    handleDeleteMaterial,
-    fetchMateriales
-  } = useMateriales();
+  // ===== HOOKS =====
+  const { 
+    materiales, 
+    loading: loadingMateriales, 
+    error: errorMateriales,
+    fetchMateriales 
+  } = useGetMateriales(true); // true = con resumen
 
-  const { formatPrecio } = useFormatPrecio();
+  const { createMaterial, loading: loadingCreate } = useCreateMaterial();
+  const { updateMaterial, loading: loadingUpdate } = useUpdateMaterial();
+  const { deleteMaterial, loading: loadingDelete } = useDeleteMaterial();
+  const { proveedores, fetchProveedores } = useGetProveedores();
+
+  // ===== ESTADOS LOCALES =====
   const [selectedItems, setSelectedItems] = useState([]);
-
-  // ===== HANDLERS =====
+  const [showCreatePopup, setShowCreatePopup] = useState(false);
+  const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+  const [materialSeleccionado, setMaterialSeleccionado] = useState(null);
+  const [materialesFiltrados, setMaterialesFiltrados] = useState([]);
   
-  const handleDelete = async (id) => {
-    try {
-      const result = await deleteDataAlert();
-      if (result.isConfirmed) {
-        await handleDeleteMaterial(id);
-        setSelectedItems([]);
-      }
-    } catch (error) {
-      showErrorAlert('Error', 'No se pudo desactivar el material');
+  const [filtros, setFiltros] = useState({
+    activo: true,
+    id_proveedor: '',
+    busqueda: '',
+    bajo_stock: false
+  });
+
+  // ===== EFECTOS =====
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  useEffect(() => {
+    aplicarFiltros();
+  }, [materiales, filtros]);
+
+  // ===== FUNCIONES DE CARGA =====
+  const cargarDatos = async () => {
+    const filtrosAPI = {
+      activo: filtros.activo,
+      bajo_stock: filtros.bajo_stock || undefined,
+      id_proveedor: filtros.id_proveedor || undefined
+    };
+    
+    await fetchMateriales(filtrosAPI);
+    await fetchProveedores();
+  };
+
+  const aplicarFiltros = () => {
+    let resultado = [...materiales];
+
+    // Filtro de búsqueda por nombre
+    if (filtros.busqueda) {
+      const busquedaLower = filtros.busqueda.toLowerCase();
+      resultado = resultado.filter(m => 
+        m.nombre_material.toLowerCase().includes(busquedaLower)
+      );
+    }
+
+    setMaterialesFiltrados(resultado);
+  };
+
+  // ===== HANDLERS DE FILTROS =====
+  const handleFiltroChange = (campo, valor) => {
+    setFiltros(prev => ({
+      ...prev,
+      [campo]: valor
+    }));
+
+    // Si cambia un filtro de API, recargar
+    if (['activo', 'bajo_stock', 'id_proveedor'].includes(campo)) {
+      const nuevosFiltros = {
+        ...filtros,
+        [campo]: valor
+      };
+      
+      const filtrosAPI = {
+        activo: nuevosFiltros.activo,
+        bajo_stock: nuevosFiltros.bajo_stock || undefined,
+        id_proveedor: nuevosFiltros.id_proveedor || undefined
+      };
+      
+      fetchMateriales(filtrosAPI);
     }
   };
 
+  const limpiarFiltros = () => {
+    setFiltros({
+      activo: true,
+      id_proveedor: '',
+      busqueda: '',
+      bajo_stock: false
+    });
+    fetchMateriales({ activo: true });
+  };
+
+  // ===== HANDLERS DE CRUD =====
+  const handleCreateMaterial = async (materialData) => {
+    const resultado = await createMaterial(materialData);
+    if (resultado) {
+      setShowCreatePopup(false);
+      cargarDatos();
+    }
+  };
+
+  const handleUpdateMaterial = async (id, materialData) => {
+    const resultado = await updateMaterial(id, materialData);
+    if (resultado) {
+      setShowUpdatePopup(false);
+      setMaterialSeleccionado(null);
+      cargarDatos();
+    }
+  };
+
+  const handleDeleteMaterial = async (id) => {
+    const result = await deleteDataAlert();
+    if (result.isConfirmed) {
+      const exito = await deleteMaterial(id, false); // false = no mostrar confirmación de nuevo
+      if (exito) {
+        setSelectedItems([]);
+        cargarDatos();
+      }
+    }
+  };
+
+  const handleEdit = (material) => {
+    setMaterialSeleccionado(material);
+    setShowUpdatePopup(true);
+  };
+
+  // ===== HANDLERS DE SELECCIÓN =====
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
     
-    try {
-      const result = await deleteDataAlert();
-      if (result.isConfirmed) {
-        const promises = selectedItems.map(id => handleDeleteMaterial(id));
-        await Promise.all(promises);
-        showSuccessAlert('Éxito', `${selectedItems.length} materiales desactivados correctamente`);
-        setSelectedItems([]);
+    const result = await deleteDataAlert();
+    if (result.isConfirmed) {
+      try {
+        const promises = selectedItems.map(id => deleteMaterial(id, false));
+        const resultados = await Promise.all(promises);
+        
+        const exitosos = resultados.filter(r => r === true).length;
+        
+        if (exitosos > 0) {
+          showSuccessAlert(
+            'Éxito', 
+            `${exitosos} material(es) desactivado(s) correctamente`
+          );
+          setSelectedItems([]);
+          cargarDatos();
+        }
+      } catch (error) {
+        showErrorAlert('Error', 'No se pudieron desactivar algunos materiales');
       }
-    } catch (error) {
-      showErrorAlert('Error', 'No se pudieron desactivar los materiales seleccionados');
     }
   };
 
@@ -66,15 +180,23 @@ export default function Materiales() {
 
   const toggleSelectAll = () => {
     setSelectedItems(prev => 
-      prev.length === materiales.length 
+      prev.length === materialesFiltrados.length 
         ? [] 
-        : materiales.map(m => m.id_material)
+        : materialesFiltrados.map(m => m.id_material)
     );
   };
 
   // ===== UTILIDADES =====
-  
+  const formatPrecio = (precio) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP'
+    }).format(precio);
+  };
+
   const getEstadoStockBadge = (estadoStock) => {
+    if (!estadoStock) return null;
+
     const estilos = {
       critico: {
         className: 'bg-red-100 text-red-800 border-red-200',
@@ -116,7 +238,6 @@ export default function Materiales() {
   };
 
   // ===== COMPONENTES =====
-
   const LoadingState = () => (
     <div className="flex flex-col items-center justify-center h-screen gap-4 bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="relative">
@@ -152,8 +273,27 @@ export default function Materiales() {
   );
 
   // ===== RENDER =====
+  if (loadingMateriales) return <LoadingState />;
 
-  if (loading) return <LoadingState />;
+  if (errorMateriales) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md">
+          <div className="text-center">
+            <span className="text-6xl mb-4 block">❌</span>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Error al cargar</h2>
+            <p className="text-gray-600 mb-4">{errorMateriales}</p>
+            <button
+              onClick={cargarDatos}
+              className="bg-stone-600 hover:bg-stone-700 text-white px-6 py-2 rounded-lg transition-colors"
+            >
+              🔄 Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pb-8">
@@ -169,7 +309,7 @@ export default function Materiales() {
             <p className="text-gray-600 flex items-center gap-2">
               <span>Administra el inventario de materiales y suministros</span>
               <span className="px-2 py-0.5 bg-stone-600 text-white rounded-full text-xs font-semibold">
-                {materiales.length} materiales
+                {materialesFiltrados.length} materiales
               </span>
             </p>
           </div>
@@ -178,18 +318,20 @@ export default function Materiales() {
             {selectedItems.length > 0 && (
               <button
                 onClick={handleBulkDelete}
+                disabled={loadingDelete}
                 className="bg-red-600 hover:bg-red-700 text-white font-semibold 
                 px-4 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 
-                flex items-center gap-2 transform hover:scale-105"
+                flex items-center gap-2 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5 filter brightness-0 invert" />
-                Desactivar ({selectedItems.length})
+                {loadingDelete ? 'Desactivando...' : `Desactivar (${selectedItems.length})`}
               </button>
             )}
             <button
-              onClick={() => navigate('/trabajador/materials/create')}
+              onClick={() => setShowCreatePopup(true)}
+              disabled={loadingCreate}
               className="bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 
-              hover:to-stone-800 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 transform hover:scale-105"
+              hover:to-stone-800 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 transform hover:scale-105 disabled:opacity-50"
             >
               <img src={AddIcon} alt="Agregar" className="w-5 h-5 filter brightness-0 invert" />
               Nuevo Material
@@ -204,9 +346,6 @@ export default function Materiales() {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Filtro de Categoría */}
-            
-
             {/* Filtro de Estado */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 block">
@@ -288,11 +427,12 @@ export default function Materiales() {
               <span>🔄</span> Limpiar filtros
             </button>
             <button
-              onClick={fetchMateriales}
+              onClick={cargarDatos}
+              disabled={loadingMateriales}
               className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg 
-              transition-colors text-sm font-medium flex items-center gap-2"
+              transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
             >
-              <span>↻</span> Actualizar
+              <span>↻</span> {loadingMateriales ? 'Actualizando...' : 'Actualizar'}
             </button>
           </div>
         </div>
@@ -306,7 +446,7 @@ export default function Materiales() {
                   <th className="px-4 py-4 text-left">
                     <input 
                       type="checkbox" 
-                      checked={selectedItems.length === materiales.length && materiales.length > 0}
+                      checked={selectedItems.length === materialesFiltrados.length && materialesFiltrados.length > 0}
                       onChange={toggleSelectAll}
                       className="w-4 h-4 accent-stone-400 cursor-pointer"
                     />
@@ -321,10 +461,10 @@ export default function Materiales() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {materiales.length === 0 ? (
+                {materialesFiltrados.length === 0 ? (
                   <EmptyState />
                 ) : (
-                  materiales.map((material, index) => (
+                  materialesFiltrados.map((material, index) => (
                     <tr 
                       key={material.id_material} 
                       className={`hover:bg-gray-50 transition-colors ${
@@ -395,23 +535,18 @@ export default function Materiales() {
                       <td className="px-4 py-4">
                         <div className="flex gap-2 justify-center">
                           <button
-                            onClick={() => navigate(`/trabajador/materials/${material.id_material}`)}
-                            className="p-2.5 hover:bg-blue-50 rounded-lg transition-all duration-200 group"
-                            title="Ver detalle"
-                          >
-                            <span className="text-xl group-hover:scale-110 transition-transform inline-block">👁️</span>
-                          </button>
-                          <button
-                            onClick={() => navigate(`/trabajador/materials/${material.id_material}/edit`)}
-                            className="p-2.5 hover:bg-stone-100 rounded-lg transition-all duration-200"
+                            onClick={() => handleEdit(material)}
+                            disabled={loadingUpdate}
+                            className="p-2.5 hover:bg-stone-100 rounded-lg transition-all duration-200 disabled:opacity-50"
                             title="Editar"
                           >
                             <img src={UpdateIcon} alt="Editar" className="w-5 h-5" />
                           </button>
                           <button
-                            onClick={() => handleDelete(material.id_material)}
-                            className="p-2.5 hover:bg-red-50 rounded-lg transition-all duration-200"
-                            title={material.activo ? "Desactivar" : "Activar"}
+                            onClick={() => handleDeleteMaterial(material.id_material)}
+                            disabled={loadingDelete}
+                            className="p-2.5 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50"
+                            title="Desactivar"
                           >
                             <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5" />
                           </button>
@@ -429,7 +564,7 @@ export default function Materiales() {
         <div className="mt-6 flex justify-between items-center">
           <div className="text-sm text-gray-600 bg-white px-6 py-3 rounded-full 
           shadow-sm border border-gray-100">
-            Mostrando <span className="font-bold text-stone-600">{materiales.length}</span> materiales
+            Mostrando <span className="font-bold text-stone-600">{materialesFiltrados.length}</span> materiales
             {selectedItems.length > 0 && (
               <span className="ml-2 text-orange-600">
                 • <span className="font-bold">{selectedItems.length}</span> seleccionados
@@ -437,15 +572,33 @@ export default function Materiales() {
             )}
           </div>
           
-          {materiales.some(m => m.existencia_material <= m.stock_minimo) && (
+          {materialesFiltrados.some(m => m.existencia_material <= m.stock_minimo) && (
             <div className="bg-orange-100 border border-orange-300 text-orange-800 
             px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
               <span>⚠️</span>
-              {materiales.filter(m => m.existencia_material <= m.stock_minimo).length} materiales requieren atención
+              {materialesFiltrados.filter(m => m.existencia_material <= m.stock_minimo).length} materiales requieren atención
             </div>
           )}
         </div>
       </div>
+
+      {/* ===== POPUPS ===== */}
+      <PopupCreateMaterial
+        show={showCreatePopup}
+        setShow={setShowCreatePopup}
+        proveedores={proveedores}
+        onSubmit={handleCreateMaterial}
+        loading={loadingCreate}
+      />
+
+      <PopupUpdateMaterial
+        show={showUpdatePopup}
+        setShow={setShowUpdatePopup}
+        material={materialSeleccionado}
+        proveedores={proveedores}
+        onSubmit={handleUpdateMaterial}
+        loading={loadingUpdate}
+      />
     </div>
   );
 }

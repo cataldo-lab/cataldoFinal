@@ -7,15 +7,21 @@ import PopupUpdateOperacion from '@components/popup/trabajadorTienda/PopupUpdate
 import AddIcon from '@assets/AddIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
 import DeleteIcon from '@assets/deleteIcon.svg';
+
+// ✅ IMPORTACIONES CORREGIDAS
 import { 
-  getOperations, 
-  createOperation,
+  getOperaciones,           // ✅ Con acento
+  createOperacion,          // ✅ Con acento
   updateOperacion,
   updateEstadoOperacion,
-  deleteOperacion,
-  getProducts,
-  getClients
+  deleteOperacion
 } from '@services/operacion.service';
+
+import { 
+  getProducts, 
+  getClients 
+} from '@services/trabajadorTienda.service';
+
 import { showSuccessAlert, showErrorAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
 
 const TrabajadorOperations = () => {
@@ -45,10 +51,9 @@ const TrabajadorOperations = () => {
     setLoading(true);
     try {
       console.log('📦 Cargando operaciones...');
-      const response = await getOperations();
+      const response = await getOperaciones();  // ✅ CORREGIDO
       
       if (response.status === 'Success') {
-        // ✅ Formatear según estructura del backend
         const formattedOps = (response.data || []).map(op => ({
           id_operacion: op.id_operacion,
           cliente: op.cliente?.nombreCompleto || 'Sin cliente',
@@ -58,7 +63,6 @@ const TrabajadorOperations = () => {
           fecha_entrega: op.fecha_entrega_estimada 
             ? new Date(op.fecha_entrega_estimada).toLocaleDateString('es-CL')
             : 'Sin fecha',
-          // Guardar datos completos para edición
           _raw: op
         }));
         
@@ -81,7 +85,6 @@ const TrabajadorOperations = () => {
       const response = await getClients();
       
       if (response.status === 'Success') {
-        // ✅ Formatear clientes para el select
         const clientesFormateados = (response.data || []).map(cliente => ({
           id_cliente: cliente.id,
           nombre_completo: cliente.nombreCompleto,
@@ -94,7 +97,6 @@ const TrabajadorOperations = () => {
       }
     } catch (error) {
       console.error('❌ Error al cargar clientes:', error);
-      // No mostramos alerta para no bloquear la UI
     }
   };
 
@@ -104,22 +106,19 @@ const TrabajadorOperations = () => {
       const response = await getProducts();
       
       if (response.status === 'Success') {
-        // ✅ Filtrar solo productos activos
         const productosActivos = (response.data || []).filter(p => p.activo);
-        
         console.log('✅ Productos cargados:', productosActivos.length);
         setProductos(productosActivos);
       }
     } catch (error) {
       console.error('❌ Error al cargar productos:', error);
-      // No mostramos alerta para no bloquear la UI
     }
   };
 
   const handleCreateOperation = async (operationData) => {
     try {
       console.log('📤 Creando operación:', operationData);
-      const response = await createOperation(operationData);
+      const response = await createOperacion(operationData);  // ✅ CORREGIDO
       
       if (response.status === 'Success') {
         showSuccessAlert('Éxito', 'Operación creada correctamente');
@@ -328,7 +327,6 @@ const TrabajadorOperations = () => {
           setShowUpdatePopup(true);
         } 
         else if (button.classList.contains('status-btn')) {
-          // ✅ Ciclo de estados según el backend
           const statuses = [
             'cotizacion', 'orden_trabajo', 'pendiente', 
             'en_proceso', 'terminada', 'completada', 
@@ -346,7 +344,6 @@ const TrabajadorOperations = () => {
     }
   ];
 
-  // ✅ Filtrado inteligente
   const operacionesFiltradas = operations.filter(op => {
     const matchEstado = !estadoFilter || op.estado === estadoFilter;
     const matchBusqueda = !filter || 
@@ -365,7 +362,6 @@ const TrabajadorOperations = () => {
           <span className="absolute inset-0 flex items-center justify-center text-3xl">📋</span>
         </div>
         <p className="text-gray-600 text-lg font-semibold animate-pulse">Cargando operaciones...</p>
-        <p className="text-gray-500 text-sm">Obteniendo datos actualizados</p>
       </div>
     );
   }

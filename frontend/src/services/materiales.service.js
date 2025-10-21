@@ -1,4 +1,4 @@
-// frontend/src/services/material.service.js
+// frontend/src/services/materiales.service.js
 import axios from './root.service.js';
 
 // === OBTENER MATERIALES ===
