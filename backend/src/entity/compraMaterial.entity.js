@@ -23,20 +23,6 @@ export const CompraMaterialSchema = new EntitySchema({
             primary: true,
             generated: true,
         },
-        cantidad: {
-            type: "decimal",
-            precision: 10,
-            scale: 2,
-            nullable: false,
-            comment: "Cantidad comprada del material"
-        },
-        precio_unitario: {
-            type: "decimal",
-            precision: 10,
-            scale: 2,
-            nullable: false,
-            comment: "Precio unitario al momento de la compra"
-        },
         precio_total: {
             type: "decimal",
             precision: 10,

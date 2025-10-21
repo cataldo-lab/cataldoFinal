@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { updateMaterial } from '@services/material.service.js';
+import { updateMaterial } from '@services/materiales.service.js';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 
 /**

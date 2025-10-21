@@ -20,21 +20,6 @@ export const proveedoresSchema = new EntitySchema({
             length: 12,
             nullable: false,
         },
-        nombre_representante:{
-            type: "varchar",
-            length: 100,
-            nullable: false
-        },
-        apellido_representante:{
-            type: "varchar",
-            length: 100,
-            nullable: false
-        },
-        rut_representante:{
-            type: "varchar",
-            length: 12,
-            nullable: false
-        },
         fono_proveedor:{
             type: "varchar",
             length: 15,
