@@ -1,3 +1,4 @@
+// frontend/src/pages/trabajador-tienda/Materiales.jsx
 import { useState, useEffect } from 'react';
 import { useGetMateriales } from '@hooks/materiales/useGetMateriales';
 import { useCreateMaterial } from '@hooks/materiales/useCreateMaterial';
@@ -20,7 +21,7 @@ export default function Materiales() {
     loading: loadingMateriales, 
     error: errorMateriales,
     fetchMateriales 
-  } = useGetMateriales(true); // true = con resumen
+  } = useGetMateriales(true);
 
   const { createMaterial, loading: loadingCreate } = useCreateMaterial();
   const { updateMaterial, loading: loadingUpdate } = useUpdateMaterial();
@@ -58,18 +59,25 @@ export default function Materiales() {
       id_proveedor: filtros.id_proveedor || undefined
     };
     
-    await fetchMateriales(filtrosAPI);
-    await fetchProveedores();
+    await Promise.all([
+      fetchMateriales(filtrosAPI),
+      fetchProveedores()
+    ]);
   };
 
   const aplicarFiltros = () => {
+    if (!Array.isArray(materiales)) {
+      setMaterialesFiltrados([]);
+      return;
+    }
+
     let resultado = [...materiales];
 
     // Filtro de búsqueda por nombre
-    if (filtros.busqueda) {
-      const busquedaLower = filtros.busqueda.toLowerCase();
+    if (filtros.busqueda && filtros.busqueda.trim() !== '') {
+      const busquedaLower = filtros.busqueda.toLowerCase().trim();
       resultado = resultado.filter(m => 
-        m.nombre_material.toLowerCase().includes(busquedaLower)
+        m.nombre_material && m.nombre_material.toLowerCase().includes(busquedaLower)
       );
     }
 
@@ -77,37 +85,34 @@ export default function Materiales() {
   };
 
   // ===== HANDLERS DE FILTROS =====
-  const handleFiltroChange = (campo, valor) => {
-    setFiltros(prev => ({
-      ...prev,
+  const handleFiltroChange = async (campo, valor) => {
+    const nuevosFiltros = {
+      ...filtros,
       [campo]: valor
-    }));
+    };
+    
+    setFiltros(nuevosFiltros);
 
     // Si cambia un filtro de API, recargar
     if (['activo', 'bajo_stock', 'id_proveedor'].includes(campo)) {
-      const nuevosFiltros = {
-        ...filtros,
-        [campo]: valor
-      };
-      
       const filtrosAPI = {
         activo: nuevosFiltros.activo,
         bajo_stock: nuevosFiltros.bajo_stock || undefined,
         id_proveedor: nuevosFiltros.id_proveedor || undefined
       };
       
-      fetchMateriales(filtrosAPI);
+      await fetchMateriales(filtrosAPI);
     }
   };
 
-  const limpiarFiltros = () => {
+  const limpiarFiltros = async () => {
     setFiltros({
       activo: true,
       id_proveedor: '',
       busqueda: '',
       bajo_stock: false
     });
-    fetchMateriales({ activo: true });
+    await fetchMateriales({ activo: true });
   };
 
   // ===== HANDLERS DE CRUD =====
@@ -115,8 +120,10 @@ export default function Materiales() {
     const resultado = await createMaterial(materialData);
     if (resultado) {
       setShowCreatePopup(false);
-      cargarDatos();
+      await cargarDatos();
+      return [true, null];
     }
+    return [false, 'Error al crear material'];
   };
 
   const handleUpdateMaterial = async (id, materialData) => {
@@ -124,18 +131,25 @@ export default function Materiales() {
     if (resultado) {
       setShowUpdatePopup(false);
       setMaterialSeleccionado(null);
-      cargarDatos();
+      await cargarDatos();
+      return [true, null];
     }
+    return [false, 'Error al actualizar material'];
   };
 
   const handleDeleteMaterial = async (id) => {
-    const result = await deleteDataAlert();
-    if (result.isConfirmed) {
-      const exito = await deleteMaterial(id, false); // false = no mostrar confirmación de nuevo
-      if (exito) {
-        setSelectedItems([]);
-        cargarDatos();
+    try {
+      const result = await deleteDataAlert();
+      if (result.isConfirmed) {
+        const exito = await deleteMaterial(id, false);
+        if (exito) {
+          setSelectedItems(selectedItems.filter(item => item !== id));
+          await cargarDatos();
+        }
       }
+    } catch (error) {
+      console.error('Error al eliminar material:', error);
+      showErrorAlert('Error', 'No se pudo desactivar el material');
     }
   };
 
@@ -146,11 +160,14 @@ export default function Materiales() {
 
   // ===== HANDLERS DE SELECCIÓN =====
   const handleBulkDelete = async () => {
-    if (selectedItems.length === 0) return;
+    if (selectedItems.length === 0) {
+      showErrorAlert('Error', 'No hay materiales seleccionados');
+      return;
+    }
     
-    const result = await deleteDataAlert();
-    if (result.isConfirmed) {
-      try {
+    try {
+      const result = await deleteDataAlert();
+      if (result.isConfirmed) {
         const promises = selectedItems.map(id => deleteMaterial(id, false));
         const resultados = await Promise.all(promises);
         
@@ -162,11 +179,12 @@ export default function Materiales() {
             `${exitosos} material(es) desactivado(s) correctamente`
           );
           setSelectedItems([]);
-          cargarDatos();
+          await cargarDatos();
         }
-      } catch (error) {
-        showErrorAlert('Error', 'No se pudieron desactivar algunos materiales');
       }
+    } catch (error) {
+      console.error('Error al eliminar materiales:', error);
+      showErrorAlert('Error', 'No se pudieron desactivar algunos materiales');
     }
   };
 
@@ -179,6 +197,8 @@ export default function Materiales() {
   };
 
   const toggleSelectAll = () => {
+    if (!Array.isArray(materialesFiltrados)) return;
+    
     setSelectedItems(prev => 
       prev.length === materialesFiltrados.length 
         ? [] 
@@ -188,14 +208,17 @@ export default function Materiales() {
 
   // ===== UTILIDADES =====
   const formatPrecio = (precio) => {
+    if (precio === null || precio === undefined) return '$0';
+    
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
-      currency: 'CLP'
+      currency: 'CLP',
+      minimumFractionDigits: 0
     }).format(precio);
   };
 
   const getEstadoStockBadge = (estadoStock) => {
-    if (!estadoStock) return null;
+    if (!estadoStock || !estadoStock.nivel) return null;
 
     const estilos = {
       critico: {
@@ -295,6 +318,8 @@ export default function Materiales() {
     );
   }
 
+  const materialesParaMostrar = Array.isArray(materialesFiltrados) ? materialesFiltrados : [];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pb-8">
       <div className="pt-[calc(9vh+1rem)] px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -309,7 +334,7 @@ export default function Materiales() {
             <p className="text-gray-600 flex items-center gap-2">
               <span>Administra el inventario de materiales y suministros</span>
               <span className="px-2 py-0.5 bg-stone-600 text-white rounded-full text-xs font-semibold">
-                {materialesFiltrados.length} materiales
+                {materialesParaMostrar.length} materiales
               </span>
             </p>
           </div>
@@ -372,7 +397,7 @@ export default function Materiales() {
                 className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:ring-2 focus:ring-stone-200 focus:outline-none transition-all"
               >
                 <option value="">Todos los proveedores</option>
-                {proveedores.map((prov) => (
+                {Array.isArray(proveedores) && proveedores.map((prov) => (
                   <option key={prov.id_proveedor} value={prov.id_proveedor}>
                     {prov.nombre_representanter} {prov.apellido_representante}
                   </option>
@@ -421,8 +446,9 @@ export default function Materiales() {
           <div className="mt-4 flex gap-2">
             <button
               onClick={limpiarFiltros}
+              disabled={loadingMateriales}
               className="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg 
-              transition-colors text-sm font-medium flex items-center gap-2"
+              transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
             >
               <span>🔄</span> Limpiar filtros
             </button>
@@ -446,7 +472,7 @@ export default function Materiales() {
                   <th className="px-4 py-4 text-left">
                     <input 
                       type="checkbox" 
-                      checked={selectedItems.length === materialesFiltrados.length && materialesFiltrados.length > 0}
+                      checked={selectedItems.length === materialesParaMostrar.length && materialesParaMostrar.length > 0}
                       onChange={toggleSelectAll}
                       className="w-4 h-4 accent-stone-400 cursor-pointer"
                     />
@@ -461,10 +487,10 @@ export default function Materiales() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {materialesFiltrados.length === 0 ? (
+                {materialesParaMostrar.length === 0 ? (
                   <EmptyState />
                 ) : (
-                  materialesFiltrados.map((material, index) => (
+                  materialesParaMostrar.map((material, index) => (
                     <tr 
                       key={material.id_material} 
                       className={`hover:bg-gray-50 transition-colors ${
@@ -519,9 +545,11 @@ export default function Materiales() {
                             <span className="text-sm font-medium text-gray-900">
                               {material.proveedor.nombre_completo}
                             </span>
-                            <span className="text-xs text-gray-500">
-                              📞 {material.proveedor.fono_proveedor}
-                            </span>
+                            {material.proveedor.fono_proveedor && (
+                              <span className="text-xs text-gray-500">
+                                📞 {material.proveedor.fono_proveedor}
+                              </span>
+                            )}
                           </div>
                         ) : (
                           <span className="text-sm text-gray-400 italic">Sin proveedor</span>
@@ -564,7 +592,7 @@ export default function Materiales() {
         <div className="mt-6 flex justify-between items-center">
           <div className="text-sm text-gray-600 bg-white px-6 py-3 rounded-full 
           shadow-sm border border-gray-100">
-            Mostrando <span className="font-bold text-stone-600">{materialesFiltrados.length}</span> materiales
+            Mostrando <span className="font-bold text-stone-600">{materialesParaMostrar.length}</span> materiales
             {selectedItems.length > 0 && (
               <span className="ml-2 text-orange-600">
                 • <span className="font-bold">{selectedItems.length}</span> seleccionados
@@ -572,11 +600,11 @@ export default function Materiales() {
             )}
           </div>
           
-          {materialesFiltrados.some(m => m.existencia_material <= m.stock_minimo) && (
+          {materialesParaMostrar.some(m => m.existencia_material <= m.stock_minimo) && (
             <div className="bg-orange-100 border border-orange-300 text-orange-800 
             px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
               <span>⚠️</span>
-              {materialesFiltrados.filter(m => m.existencia_material <= m.stock_minimo).length} materiales requieren atención
+              {materialesParaMostrar.filter(m => m.existencia_material <= m.stock_minimo).length} materiales requieren atención
             </div>
           )}
         </div>
@@ -586,18 +614,16 @@ export default function Materiales() {
       <PopupCreateMaterial
         show={showCreatePopup}
         setShow={setShowCreatePopup}
-        proveedores={proveedores}
+        proveedores={Array.isArray(proveedores) ? proveedores : []}
         onSubmit={handleCreateMaterial}
-        loading={loadingCreate}
       />
 
       <PopupUpdateMaterial
         show={showUpdatePopup}
         setShow={setShowUpdatePopup}
         material={materialSeleccionado}
-        proveedores={proveedores}
+        proveedores={Array.isArray(proveedores) ? proveedores : []}
         onSubmit={handleUpdateMaterial}
-        loading={loadingUpdate}
       />
     </div>
   );
