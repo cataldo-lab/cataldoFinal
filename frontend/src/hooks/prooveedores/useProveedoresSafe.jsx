@@ -1,6 +1,6 @@
 // src/hooks/proveedores/useProveedoresSafe.jsx
 import { useState, useEffect } from 'react';
-import { getProveedores } from '@services/Materiales.service.js';
+import { getProveedores } from '@services/proveedor.service.js';
 import { showErrorAlert } from '@helpers/sweetAlert.js';
 
 export const useProveedoresSafe = () => {

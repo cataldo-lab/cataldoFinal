@@ -1,375 +1,523 @@
 "use strict";
 import { AppDataSource } from "../../config/configDb.js";
 import { encryptPassword } from "../../helpers/bcrypt.helper.js";
+import { ClienteSchema } from "../../entity/personas/cliente.entity.js";
+import { UserSchema } from "../../entity/personas/user.entity.js";
 
-/**
- * Crear un nuevo cliente
- */
-export async function createClienteService(clienteData) {
-    try {
-        const userRepository = AppDataSource.getRepository("User");
-        const clienteRepository = AppDataSource.getRepository("Cliente");
-        const comunaRepository = AppDataSource.getRepository("Comuna");
 
-        // Validar datos obligatorios
-        if (!clienteData.nombreCompleto || !clienteData.rut || !clienteData.email) {
-            return [null, "Nombre completo, RUT y email son obligatorios"];
-        }
+const userRepository = AppDataSource.getRepository(UserSchema);
+const clienteRepository = AppDataSource.getRepository(ClienteSchema);
 
-        // Verificar que el email no exista
-        const emailExistente = await userRepository.findOne({
-            where: { email: clienteData.email }
-        });
 
-        if (emailExistente) {
-            return [null, "Ya existe un usuario con este correo electrónico"];
-        }
-
-        // Verificar que el RUT no exista
-        const rutExistente = await userRepository.findOne({
-            where: { rut: clienteData.rut }
-        });
-
-        if (rutExistente) {
-            return [null, "Ya existe un usuario con este RUT"];
-        }
-
-        // Validar comuna (opcional)
-        let comuna = null;
-        if (clienteData.id_comuna) {
-            comuna = await comunaRepository.findOne({
-                where: { id_comuna: clienteData.id_comuna }
-            });
-
-            if (!comuna) {
-                return [null, "Comuna no encontrada"];
-            }
-        }
-
-        // Crear usuario base
-        const nuevoUsuario = userRepository.create({
-            nombreCompleto: clienteData.nombreCompleto,
-            rut: clienteData.rut,
-            email: clienteData.email,
-            password: await encryptPassword(clienteData.password || "cliente2024"),
-            rol: "cliente",
-            telefono: clienteData.telefono || null,
-            comuna: comuna
-        });
-
-        const usuarioGuardado = await userRepository.save(nuevoUsuario);
-
-        // Crear registro de cliente con datos adicionales
-        const nuevoCliente = clienteRepository.create({
-            user: usuarioGuardado,
-            cumpleanos_cliente: clienteData.cumpleanos_cliente || null,
-            whatsapp_cliente: clienteData.whatsapp_cliente || null,
-            correo_alterno_cliente: clienteData.correo_alterno_cliente || null,
-            categoria_cliente: clienteData.categoria_cliente || "regular",
-            descuento_cliente: clienteData.descuento_cliente || 0,
-            Acepta_uso_datos: clienteData.Acepta_uso_datos || false
-        });
-
-        await clienteRepository.save(nuevoCliente);
-
-        // Retornar cliente completo
-        const clienteCompleto = await userRepository.findOne({
-            where: { id: usuarioGuardado.id },
-            relations: ["cliente", "comuna", "comuna.provincia", "comuna.provincia.region"]
-        });
-
-        // Remover password antes de retornar
-        const { password, ...clienteSinPassword } = clienteCompleto;
-
-        return [clienteSinPassword, null];
-
-    } catch (error) {
-        console.error("Error al crear cliente:", error);
-        return [null, "Error interno del servidor"];
+export async function getAllClientes() {
+  return userRepository.find({
+    where: { rol: Role.CLIENTE },
+    order: {
+      nombreCompleto: "ASC"
     }
+  });
 }
 
-/**
- * Obtener todos los clientes
- */
-export async function getClientesService(filtros = {}) {
-    try {
-        const userRepository = AppDataSource.getRepository("User");
-
-        const queryBuilder = userRepository
-            .createQueryBuilder("user")
-            .leftJoinAndSelect("user.cliente", "cliente")
-            .leftJoinAndSelect("user.comuna", "comuna")
-            .leftJoinAndSelect("comuna.provincia", "provincia")
-            .leftJoinAndSelect("provincia.region", "region")
-            .where("user.rol = :rol", { rol: "cliente" })
-            .orderBy("user.nombreCompleto", "ASC");
-
-        // Aplicar filtros
-        if (filtros.categoria_cliente) {
-            queryBuilder.andWhere("cliente.categoria_cliente = :categoria", {
-                categoria: filtros.categoria_cliente
-            });
-        }
-
-        if (filtros.comuna) {
-            queryBuilder.andWhere("comuna.nombre_comuna = :comuna", {
-                comuna: filtros.comuna
-            });
-        }
-
-        if (filtros.search) {
-            queryBuilder.andWhere(
-                "(user.nombreCompleto ILIKE :search OR user.email ILIKE :search OR user.rut ILIKE :search)",
-                { search: `%${filtros.search}%` }
-            );
-        }
-
-        const clientes = await queryBuilder.getMany();
-
-        // Remover passwords
-        const clientesSinPassword = clientes.map(({ password, ...cliente }) => cliente);
-
-        return [clientesSinPassword, null];
-
-    } catch (error) {
-        console.error("Error al obtener clientes:", error);
-        return [null, "Error interno del servidor"];
-    }
+export async function getClienteById(userId) {
+  const cliente = await userRepository.findOne({
+    where: { 
+      id: userId,
+      rol: Role.CLIENTE 
+    },
+    relations: ["cliente"]
+  });
+  
+  return cliente;
 }
 
-/**
- * Obtener un cliente por ID
- */
-export async function getClienteByIdService(id) {
-    try {
-        const userRepository = AppDataSource.getRepository("User");
-
-        const cliente = await userRepository.findOne({
-            where: { id: id, rol: "cliente" },
-            relations: [
-                "cliente",
-                "comuna",
-                "comuna.provincia",
-                "comuna.provincia.region",
-                "operaciones",
-                "operaciones.productosOperacion",
-                "operaciones.productosOperacion.producto"
-            ]
-        });
-
-        if (!cliente) {
-            return [null, "Cliente no encontrado"];
-        }
-
-        // Remover password
-        const { password, ...clienteSinPassword } = cliente;
-
-        return [clienteSinPassword, null];
-
-    } catch (error) {
-        console.error("Error al obtener cliente:", error);
-        return [null, "Error interno del servidor"];
+//Perfil general del cliente parte 1
+export async function getUserById(userId) {
+  return userRepository.findOne({
+    where: { 
+      id: userId,
+      rol: Role.CLIENTE 
     }
+  });
 }
 
-/**
- * Actualizar información del cliente
- */
-export async function updateClienteService(id, datosActualizados) {
-    try {
-        const userRepository = AppDataSource.getRepository("User");
-        const clienteRepository = AppDataSource.getRepository("Cliente");
-
-        const user = await userRepository.findOne({
-            where: { id: id, rol: "cliente" },
-            relations: ["cliente"]
-        });
-
-        if (!user) {
-            return [null, "Cliente no encontrado"];
-        }
-
-        // Actualizar datos de User
-        const camposUser = ['nombreCompleto', 'telefono', 'email'];
-        camposUser.forEach(campo => {
-            if (datosActualizados[campo] !== undefined) {
-                user[campo] = datosActualizados[campo];
-            }
-        });
-
-        // Si hay cambio de email, verificar que no exista
-        if (datosActualizados.email && datosActualizados.email !== user.email) {
-            const emailExistente = await userRepository.findOne({
-                where: { email: datosActualizados.email }
-            });
-
-            if (emailExistente && emailExistente.id !== id) {
-                return [null, "El email ya está en uso"];
-            }
-        }
-
-        await userRepository.save(user);
-
-        // Actualizar datos de Cliente
-        if (user.cliente) {
-            const camposCliente = [
-                'cumpleanos_cliente',
-                'whatsapp_cliente',
-                'correo_alterno_cliente',
-                'categoria_cliente',
-                'descuento_cliente',
-                'Acepta_uso_datos'
-            ];
-
-            camposCliente.forEach(campo => {
-                if (datosActualizados[campo] !== undefined) {
-                    user.cliente[campo] = datosActualizados[campo];
-                }
-            });
-
-            await clienteRepository.save(user.cliente);
-        }
-
-        // Retornar cliente actualizado
-        const clienteActualizado = await userRepository.findOne({
-            where: { id: id },
-            relations: ["cliente", "comuna", "comuna.provincia", "comuna.provincia.region"]
-        });
-
-        const { password, ...clienteSinPassword } = clienteActualizado;
-
-        return [clienteSinPassword, null];
-
-    } catch (error) {
-        console.error("Error al actualizar cliente:", error);
-        return [null, "Error interno del servidor"];
+//Perfil cliente parte 2.
+export async function getClienteDetalleById(userId) {
+  try {
+    // Busca en la tabla clientes por el id_user
+    const clienteDetalle = await clienteRepository.findOne({
+      where: { 
+        user: { id: userId } 
+      }
+    });
+    
+    if (!clienteDetalle) {
+      return {
+        success: false,
+        message: `No se encontraron datos de cliente para el usuario con ID ${userId}`,
+        data: null
+      };
     }
+    
+    return {
+      success: true,
+      message: "Datos de cliente encontrados",
+      data: clienteDetalle
+    };
+    
+  } catch (error) {
+    console.error("Error al buscar detalles de cliente:", error);
+    return {
+      success: false,
+      message: `Error al consultar la base de datos: ${error.message}`,
+      data: null,
+      error: error.toString()
+    };
+  }
 }
 
-/**
- * Obtener historial de operaciones de un cliente
- */
-export async function getHistorialOperacionesService(id) {
+
+//Crear un usuario con cliente perfil completo
+
+export async function createPerfilFull(userData, clienteData) {
+  try {
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-        const operacionRepository = AppDataSource.getRepository("Operacion");
-
-        const operaciones = await operacionRepository.find({
-            where: { cliente: { id: id } },
-            relations: [
-                "productosOperacion",
-                "productosOperacion.producto",
-                "historial"
-            ],
-            order: { fecha_creacion: "DESC" }
-        });
-
-        return [operaciones, null];
-
-    } catch (error) {
-        console.error("Error al obtener historial:", error);
-        return [null, "Error interno del servidor"];
-    }
-}
-
-/**
- * Obtener estadísticas de un cliente
- */
-export async function getEstadisticasClienteService(id) {
-    try {
-        const operacionRepository = AppDataSource.getRepository("Operacion");
-        const userRepository = AppDataSource.getRepository("User");
-
-        // Verificar que el cliente existe
-        const cliente = await userRepository.findOne({
-            where: { id: id, rol: "cliente" }
-        });
-
-        if (!cliente) {
-            return [null, "Cliente no encontrado"];
+      // 1. Crear usuario con rol cliente
+      const userRepo = queryRunner.manager.getRepository(UserSchema);
+      
+      // Asegurar rol cliente
+      userData.rol = Role.CLIENTE;
+      
+      // Encriptar contraseña
+      if (userData.password) {
+        userData.password = await encryptPassword(userData.password);
+      }
+      
+      const user = userRepo.create(userData);
+      const savedUser = await userRepo.save(user);
+      
+      const clienteRepo = queryRunner.manager.getRepository(ClienteSchema);
+      
+      clienteData.user = savedUser;
+      
+      const cliente = clienteRepo.create(clienteData);
+      const savedCliente = await clienteRepo.save(cliente);
+      
+      // Confirmar transacción
+      await queryRunner.commitTransaction();
+      
+      return { 
+        success: true, 
+        message: "Perfil de cliente creado exitosamente",
+        data: {
+          userId: savedUser.id,
+          clienteId: savedCliente.id_cliente
         }
-
-        // Obtener todas las operaciones del cliente
-        const operaciones = await operacionRepository.find({
-            where: { cliente: { id: id } }
-        });
-
-        // Calcular estadísticas
-        const totalOperaciones = operaciones.length;
-
-        const operacionesPorEstado = {
-            pendiente: 0,
-            en_proceso: 0,
-            terminada: 0,
-            completada: 0,
-            pagada: 0,
-            entregada: 0,
-            anulada: 0
+      };
+      
+    } catch (error) {
+      // Revertir cambios si hay error
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // Liberar recursos
+      await queryRunner.release();
+    }
+    
+  } catch (error) {
+    console.error("Error al crear perfil de cliente:", error);
+    
+    
+    if (error.code === '23505') { 
+      if (error.detail.includes('rut')) {
+        return { 
+          success: false, 
+          message: "El RUT ingresado ya existe en el sistema" 
         };
-
-        let totalGastado = 0;
-        let totalAbonado = 0;
-        let totalPendientePago = 0;
-
-        operaciones.forEach(op => {
-            operacionesPorEstado[op.estado_operacion]++;
-            
-            const costo = parseFloat(op.costo_operacion || 0);
-            const abono = parseFloat(op.cantidad_abono || 0);
-            
-            totalGastado += costo;
-            totalAbonado += abono;
-            
-            if (op.estado_operacion !== 'pagada' && op.estado_operacion !== 'anulada') {
-                totalPendientePago += (costo - abono);
-            }
-        });
-
-        const promedioGastoPorOperacion = totalOperaciones > 0 
-            ? totalGastado / totalOperaciones 
-            : 0;
-
-        // Fecha de primera y última operación
-        const primeraOperacion = operaciones.length > 0 
-            ? operaciones.reduce((prev, curr) => 
-                new Date(prev.fecha_creacion) < new Date(curr.fecha_creacion) ? prev : curr
-              ).fecha_creacion
-            : null;
-
-        const ultimaOperacion = operaciones.length > 0
-            ? operaciones.reduce((prev, curr) => 
-                new Date(prev.fecha_creacion) > new Date(curr.fecha_creacion) ? prev : curr
-              ).fecha_creacion
-            : null;
-
-        const estadisticas = {
-            totalOperaciones,
-            operacionesPorEstado,
-            totalGastado: parseFloat(totalGastado.toFixed(2)),
-            totalAbonado: parseFloat(totalAbonado.toFixed(2)),
-            totalPendientePago: parseFloat(totalPendientePago.toFixed(2)),
-            promedioGastoPorOperacion: parseFloat(promedioGastoPorOperacion.toFixed(2)),
-            primeraOperacion,
-            ultimaOperacion
+      } else if (error.detail.includes('email')) {
+        return { 
+          success: false, 
+          message: "El correo electrónico ingresado ya está registrado" 
         };
-
-        return [estadisticas, null];
-
-    } catch (error) {
-        console.error("Error al obtener estadísticas:", error);
-        return [null, "Error interno del servidor"];
+      }
     }
+
+    return { 
+      success: false, 
+      message: `Error al crear perfil: ${error.message}`
+    };
+  }
 }
 
-/**
- * Obtener categorías de clientes disponibles
- */
-export async function getCategoriasClienteService() {
+
+//Crear medio perfil solo cliente
+export async function createMedioPerfil(userId, clienteData) {
+  try {
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    
     try {
-        const categorias = ["regular", "vip", "premium"];
-        return [categorias, null];
+      const userRepo = queryRunner.manager.getRepository(UserSchema);
+      const usuario = await userRepo.findOne({
+        where: { 
+          id: userId
+        },
+        relations: ["cliente"]
+      });
+      
+      if (!usuario) {
+        throw new Error(`No existe un usuario con ID ${userId}`);
+      }
+      
+      if (usuario.rol !== Role.CLIENTE) {
+        usuario.rol = Role.CLIENTE;
+        await userRepo.save(usuario);
+      }
+      
+      if (usuario.cliente) {
+        throw new Error(`El usuario ya tiene un perfil de cliente asociado`);
+      }
+      
+      // Crear perfil cliente
+      const clienteRepo = queryRunner.manager.getRepository(ClienteSchema);
+      
+      // Asociar al usuario
+      clienteData.user = usuario;
+      
+      // Crear cliente
+      const cliente = clienteRepo.create(clienteData);
+      const savedCliente = await clienteRepo.save(cliente);
+      
+      // Confirmar transacción
+      await queryRunner.commitTransaction();
+      
+      return { 
+        success: true, 
+        message: "Perfil de cliente añadido exitosamente",
+        data: {
+          userId: usuario.id,
+          clienteId: savedCliente.id_cliente
+        }
+      };
+      
     } catch (error) {
-        console.error("Error al obtener categorías:", error);
-        return [null, "Error interno del servidor"];
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
+    
+  } catch (error) {
+    console.error("Error al crear medio perfil:", error);
+    return { 
+      success: false, 
+      message: error.message
+    };
+  }
+}
+
+
+
+export async function updateMedioPerfil(userId, clienteData) {
+  try {
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    
+    try {
+      // Verificar que el usuario exista y tenga perfil cliente
+      const userRepo = queryRunner.manager.getRepository(UserSchema);
+      const usuario = await userRepo.findOne({
+        where: { 
+          id: userId
+        },
+        relations: ["cliente"]
+      });
+      
+      // Validar que el usuario exista
+      if (!usuario) {
+        throw new Error(`No existe un usuario con ID ${userId}`);
+      }
+      
+      // Validar que el usuario tenga rol cliente
+      if (usuario.rol !== Role.CLIENTE) {
+        throw new Error(`El usuario no tiene rol de cliente`);
+      }
+      
+      // Validar que tenga un perfil cliente
+      if (!usuario.cliente) {
+        throw new Error(`El usuario no tiene un perfil de cliente para actualizar`);
+      }
+      
+      // Actualizar el perfil de cliente
+      const clienteRepo = queryRunner.manager.getRepository(ClienteSchema);
+      
+      // Obtener ID del cliente
+      const clienteId = usuario.cliente.id_cliente;
+      
+      // Actualizar solo los campos proporcionados
+      await clienteRepo.update(
+        { id_cliente: clienteId },
+        // Filtrar propiedades undefined para no sobrescribir con nulls
+        Object.fromEntries(
+          Object.entries(clienteData).filter(([_, v]) => v !== undefined)
+        )
+      );
+      
+      
+      const clienteActualizado = await clienteRepo.findOne({
+        where: { id_cliente: clienteId }
+      });
+      
+      
+      await queryRunner.commitTransaction();
+      
+      return { 
+        success: true, 
+        message: "Perfil de cliente actualizado exitosamente",
+        data: {
+          userId: usuario.id,
+          cliente: clienteActualizado
+        }
+      };
+      
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+    
+  } catch (error) {
+    console.error("Error al actualizar perfil de cliente:", error);
+    return { 
+      success: false, 
+      message: error.message
+    };
+  }
+}
+
+export async function updatePerfilFull(userId, userData, clienteData) {
+  try {
+    // Iniciar transacción
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    
+    try {
+      const userRepo = queryRunner.manager.getRepository(UserSchema);
+      const usuario = await userRepo.findOne({
+        where: { id: userId },
+        relations: ["cliente"]
+      });
+      
+      // Validaciones
+      if (!usuario) {
+        throw new Error(`No existe un usuario con ID ${userId}`);
+      }
+      
+      if (usuario.rol !== Role.CLIENTE) {
+        throw new Error(`Esta función solo actualiza perfiles de usuarios con rol cliente`);
+      }
+      
+      if (!usuario.cliente) {
+        throw new Error(`El usuario no tiene un perfil de cliente asociado`);
+      }
+      
+      // Eliminar el rol si viene en los datos para asegurar que no cambie
+      if (userData.rol) {
+        delete userData.rol;
+      }
+      
+      // Encriptar la contraseña si viene en los datos
+      if (userData.password) {
+        userData.password = await encryptPassword(userData.password);
+      }
+      
+      //  Actualizar usuario
+      await userRepo.update(
+        { id: userId },
+        // Solo actualizar campos proporcionados
+        Object.fromEntries(
+          Object.entries(userData).filter(([_, v]) => v !== undefined)
+        )
+      );
+      
+      // 4. Actualizar cliente
+      const clienteRepo = queryRunner.manager.getRepository(ClienteSchema);
+      const clienteId = usuario.cliente.id_cliente;
+      
+      await clienteRepo.update(
+        { id_cliente: clienteId },
+        // Solo actualizar campos proporcionados
+        Object.fromEntries(
+          Object.entries(clienteData).filter(([_, v]) => v !== undefined)
+        )
+      );
+      
+      // 5. Obtener datos actualizados
+      const perfilActualizado = await userRepo.findOne({
+        where: { id: userId },
+        relations: ["cliente"]
+      });
+      
+      // Confirmar transacción
+      await queryRunner.commitTransaction();
+      
+      return { 
+        success: true, 
+        message: "Perfil actualizado exitosamente",
+        data: perfilActualizado
+      };
+      
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+    
+  } catch (error) {
+    console.error("Error al actualizar perfil completo:", error);
+    return { 
+      success: false, 
+      message: error.message
+    };
+  }
+}
+
+
+export async function blockUserCliente(userId, motivo = "") {
+  try {
+    
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    
+    try {
+      
+      const userRepo = queryRunner.manager.getRepository(UserSchema);
+      const usuario = await userRepo.findOne({
+        where: { id: userId }
+      });
+      
+     
+      if (!usuario) {
+        throw new Error(`No existe un usuario con ID ${userId}`);
+      }
+      
+      if (usuario.rol !== Role.CLIENTE) {
+        throw new Error(`El usuario no tiene rol cliente`);
+      }
+      
+    
+      if (usuario.rol === Role.BLOQUEADO) {
+        throw new Error(`El usuario ya se encuentra bloqueado`);
+      }
+      
+      // 2. Cambiar rol a BLOQUEADO
+      await userRepo.update(
+        { id: userId },
+        { 
+          rol: Role.BLOQUEADO,
+          
+        }
+      );
+      
+      // Confirmar transacción
+      await queryRunner.commitTransaction();
+      
+      return { 
+        success: true, 
+        message: "Usuario bloqueado exitosamente" + (motivo ? `: ${motivo}` : ""),
+        userId: userId
+      };
+      
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+    
+  } catch (error) {
+    console.error(`Error al bloquear usuario cliente ${userId}:`, error);
+    return { 
+      success: false, 
+      message: error.message
+    };
+  }
+}
+
+
+export async function deleteUserCliente(userId, softDelete = true) {
+  try {
+    // Iniciar transacción
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    
+    try {
+      const userRepo = queryRunner.manager.getRepository(UserSchema);
+      const usuario = await userRepo.findOne({
+        where: { id: userId },
+        relations: ["cliente"]
+      });
+      
+      if (!usuario) {
+        throw new Error(`No existe un usuario con ID ${userId}`);
+      }
+      
+      if (usuario.rol !== Role.CLIENTE) {
+        throw new Error(`El usuario no tiene rol cliente`);
+      }
+      
+      if (usuario.cliente) {
+        const clienteRepo = queryRunner.manager.getRepository(ClienteSchema);
+        await clienteRepo.delete(usuario.cliente.id_cliente);
+      }
+      
+      if (softDelete) {
+        // Soft delete: cambiar a rol bloqueado
+        await userRepo.update(
+          { id: userId },
+          { rol: Role.BLOQUEADO }
+        );
+        
+        await queryRunner.commitTransaction();
+        
+        return { 
+          success: true, 
+          message: "Usuario bloqueado y perfil de cliente eliminado exitosamente",
+          softDelete: true
+        };
+      } else {
+        await userRepo.delete(userId);
+        
+        await queryRunner.commitTransaction();
+        
+        return { 
+          success: true, 
+          message: "Usuario y perfil de cliente eliminados completamente",
+          softDelete: false
+        };
+      }
+      
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+    
+  } catch (error) {
+    console.error(`Error al eliminar usuario cliente ${userId}:`, error);
+    return { 
+      success: false, 
+      message: error.message
+    };
+  }
 }

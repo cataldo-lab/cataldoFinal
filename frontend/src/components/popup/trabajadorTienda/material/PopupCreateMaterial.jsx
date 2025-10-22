@@ -177,7 +177,7 @@ export default function PopupCreateMaterial({
                 { value: '', label: 'Sin proveedor' },
                 ...proveedores.map(p => ({
                   value: p.id_proveedor,
-                  label: `${p.nombre_representanter || ''} ${p.apellido_representante || ''}`.trim()
+                  label: p.rol_proveedor
                 }))
               ],
               required: false

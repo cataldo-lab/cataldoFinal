@@ -9,7 +9,7 @@ import clienteRoutes from "./cliente.routes.js";
 import operacionRoutes from "./staff/operacion.routes.js";
 import productoRoutes from "./staff/producto.routes.js";
 import materialRoutes from "./staff/material.routes.js";
-import clienteGTRoutes from "./staff/cliente.routes.js";
+//import clienteGTRoutes from "./staff/cliente.routes.js";
 import proveedorRoutes from "./staff/proveedor.routes.js";
 
 const router = Router();
@@ -24,6 +24,6 @@ router
     .use("/operaciones", operacionRoutes)
     .use("/productos", productoRoutes)
     .use("/materiales", materialRoutes)
-    .use("/clientes", clienteGTRoutes)
+    //.use("/clientes", clienteGTRoutes)
     .use("/proveedores", proveedorRoutes);   
 export default router;

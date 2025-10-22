@@ -1,4 +1,4 @@
-// frontend/src/components/popup/trabajadorTienda/material/PopupUpdatematerial.jsx
+// frontend/src/components/popup/trabajadorTienda/material/PopupUpdateMaterial.jsx
 import { useState, useEffect } from 'react';
 import Form from '@components/Form';
 import '@styles/popup.css';
@@ -168,7 +168,7 @@ export default function PopupUpdateMaterial({
                 { value: '', label: 'Sin proveedor' },
                 ...proveedores.map(p => ({
                   value: p.id_proveedor,
-                  label: `${p.nombre_representanter || ''} ${p.apellido_representante || ''}`.trim()
+                  label: p.rol_proveedor
                 }))
               ],
               required: false,

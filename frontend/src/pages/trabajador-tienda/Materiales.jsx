@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useGetMateriales } from '@hooks/materiales/useGetMateriales';
 import { useCreateMaterial } from '@hooks/materiales/useCreateMaterial';
 import { useUpdateMaterial } from '@hooks/materiales/useUpdateMaterial';
-//import { useDeleteMaterial } from '@hooks/materiales/useDeleteMaterial';
+import { useDeleteMaterial } from '@hooks/materiales/useDeleteMaterial';
 import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
 import PopupCreateMaterial from '@components/popup/trabajadorTienda/material/PopupCreateMaterial';
 import PopupUpdateMaterial from '@components/popup/trabajadorTienda/material/PopupUpdateMaterial';
@@ -25,7 +25,7 @@ export default function Materiales() {
 
   const { createMaterial, loading: loadingCreate } = useCreateMaterial();
   const { updateMaterial, loading: loadingUpdate } = useUpdateMaterial();
-  //const { deleteMaterial, loading: loadingDelete } = useDeleteMaterial();
+  const { deleteMaterial, loading: loadingDelete } = useDeleteMaterial();
  
 
   // ===== ESTADOS LOCALES =====
@@ -391,22 +391,22 @@ export default function Materiales() {
 
             {/* Filtro de Proveedor */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 block">
-                🏢 Proveedor
-              </label>
-              <select
-                value={filtros.id_proveedor}
-                onChange={(e) => handleFiltroChange('id_proveedor', e.target.value)}
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:ring-2 focus:ring-stone-200 focus:outline-none transition-all"
-              >
-                <option value="">Todos los proveedores</option>
-                {Array.isArray(proveedores) && proveedores.map((prov) => (
-                  <option key={prov.id_proveedor} value={prov.id_proveedor}>
-                    {prov.nombre_representanter} {prov.apellido_representante}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <label className="text-sm font-semibold text-gray-900 block">
+              🏢 Categoria
+            </label>
+            <select
+              value={filtros.id_proveedor}
+              onChange={(e) => handleFiltroChange('id_proveedor', e.target.value)}
+              className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:ring-2 focus:ring-stone-200 focus:outline-none transition-all"
+            >
+              <option value="">Todos los proveedores</option>
+              {Array.isArray(proveedores) && proveedores.map((prov) => (
+                <option key={prov.id_proveedor} value={prov.id_proveedor}>
+                  {prov.rol_proveedor}
+                </option>
+              ))}
+            </select>
+          </div>
 
             {/* Búsqueda */}
             <div className="space-y-2">

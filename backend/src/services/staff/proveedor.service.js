@@ -1,6 +1,156 @@
 // backend/src/services/staff/proveedor.service.js
 "use strict";
 import { AppDataSource } from "../../config/configDb.js";
+import { proveedoresSchema } from "../../entity/proveedores.entity.js";
+import { representanteSchema } from "../../entity/representante.entity.js";
+import { MaterialesSchema } from "../../entity/materiales.entity.js";
+
+/**
+ * ========================================
+ * VALIDACIONES
+ * ========================================
+ */
+
+/**
+ * Validar RUT chileno
+ * @param {string} rut - RUT a validar
+ * @returns {boolean}
+ */
+function validarRUT(rut) {
+    if (!rut || typeof rut !== 'string') return false;
+    
+    const rutLimpio = rut.replace(/\./g, '').replace(/-/g, '');
+    if (!/^[0-9]+[0-9kK]$/.test(rutLimpio)) return false;
+    
+    const cuerpo = rutLimpio.slice(0, -1);
+    const dv = rutLimpio.slice(-1).toUpperCase();
+    
+    let suma = 0;
+    let multiplicador = 2;
+    
+    for (let i = cuerpo.length - 1; i >= 0; i--) {
+        suma += parseInt(cuerpo.charAt(i)) * multiplicador;
+        multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+    }
+    
+    const dvEsperado = 11 - (suma % 11);
+    const dvCalculado = dvEsperado === 11 ? '0' : dvEsperado === 10 ? 'K' : dvEsperado.toString();
+    
+    return dv === dvCalculado;
+}
+
+/**
+ * Validar email
+ * @param {string} email - Email a validar
+ * @returns {boolean}
+ */
+function validarEmail(email) {
+    if (!email) return false;
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
+/**
+ * Validar datos del proveedor
+ * @param {Object} data - Datos del proveedor
+ * @param {boolean} isUpdate - Si es actualización
+ * @returns {Object} { isValid, errors }
+ */
+function validarDatosProveedor(data, isUpdate = false) {
+    const errors = [];
+
+    if (!isUpdate) {
+        // Validaciones para creación (campos obligatorios)
+        if (!data.rol_proveedor || data.rol_proveedor.trim() === '') {
+            errors.push('El rol del proveedor es obligatorio');
+        }
+
+        if (!data.rut_proveedor || data.rut_proveedor.trim() === '') {
+            errors.push('El RUT del proveedor es obligatorio');
+        } else if (!validarRUT(data.rut_proveedor)) {
+            errors.push('El RUT del proveedor no es válido');
+        }
+
+        if (!data.fono_proveedor || data.fono_proveedor.trim() === '') {
+            errors.push('El teléfono es obligatorio');
+        }
+
+        if (!data.correo_proveedor || data.correo_proveedor.trim() === '') {
+            errors.push('El correo es obligatorio');
+        } else if (!validarEmail(data.correo_proveedor)) {
+            errors.push('El correo no es válido');
+        }
+    } else {
+        // Validaciones para actualización (solo si los campos están presentes)
+        if (data.rut_proveedor !== undefined && !validarRUT(data.rut_proveedor)) {
+            errors.push('El RUT del proveedor no es válido');
+        }
+
+        if (data.correo_proveedor !== undefined && !validarEmail(data.correo_proveedor)) {
+            errors.push('El correo no es válido');
+        }
+    }
+
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
+}
+
+/**
+ * Validar datos del representante
+ * @param {Object} data - Datos del representante
+ * @param {boolean} isUpdate - Si es actualización
+ * @returns {Object} { isValid, errors }
+ */
+function validarDatosRepresentante(data, isUpdate = false) {
+    const errors = [];
+
+    if (!isUpdate) {
+        // Validaciones para creación (campos obligatorios)
+        if (!data.nombre_representante || data.nombre_representante.trim() === '') {
+            errors.push('El nombre del representante es obligatorio');
+        }
+
+        if (!data.apellido_representante || data.apellido_representante.trim() === '') {
+            errors.push('El apellido del representante es obligatorio');
+        }
+
+        if (!data.rut_representante || data.rut_representante.trim() === '') {
+            errors.push('El RUT del representante es obligatorio');
+        } else if (!validarRUT(data.rut_representante)) {
+            errors.push('El RUT del representante no es válido');
+        }
+
+        if (!data.cargo_representante || data.cargo_representante.trim() === '') {
+            errors.push('El cargo del representante es obligatorio');
+        }
+
+        if (!data.fono_representante || data.fono_representante.trim() === '') {
+            errors.push('El teléfono del representante es obligatorio');
+        }
+
+        if (!data.correo_representante || data.correo_representante.trim() === '') {
+            errors.push('El correo del representante es obligatorio');
+        } else if (!validarEmail(data.correo_representante)) {
+            errors.push('El correo del representante no es válido');
+        }
+    } else {
+        // Validaciones para actualización (solo si los campos están presentes)
+        if (data.rut_representante !== undefined && !validarRUT(data.rut_representante)) {
+            errors.push('El RUT del representante no es válido');
+        }
+
+        if (data.correo_representante !== undefined && !validarEmail(data.correo_representante)) {
+            errors.push('El correo del representante no es válido');
+        }
+    }
+
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
+}
 
 /**
  * ========================================
@@ -10,337 +160,270 @@ import { AppDataSource } from "../../config/configDb.js";
 
 /**
  * Crear un nuevo proveedor
+ * @param {Object} proveedorData - Datos del proveedor
+ * @returns {Promise<[Object|null, string|null]>}
  */
 export async function createProveedorService(proveedorData) {
     try {
-        const proveedorRepository = AppDataSource.getRepository("Proveedores");
-        const representanteRepository = AppDataSource.getRepository("Representante");
-
-        // Validar datos obligatorios del proveedor
-        if (!proveedorData.rol_proveedor) {
-            return [null, "El rol del proveedor es obligatorio"];
+        // Validar datos
+        const validation = validarDatosProveedor(proveedorData, false);
+        if (!validation.isValid) {
+            return [null, validation.errors.join(', ')];
         }
 
-        if (!proveedorData.rut_proveedor) {
-            return [null, "El RUT del proveedor es obligatorio"];
-        }
+        const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
 
-        // Verificar que el RUT no exista
-        const rutExistente = await proveedorRepository.findOne({
-            where: { rut_proveedor: proveedorData.rut_proveedor }
+        // Verificar si el RUT ya existe
+        const existeRUT = await proveedorRepository.findOne({
+            where: { rut_proveedor: proveedorData.rut_proveedor.trim() }
         });
 
-        if (rutExistente) {
-            return [null, "Ya existe un proveedor con este RUT"];
+        if (existeRUT) {
+            return [null, 'Ya existe un proveedor con ese RUT'];
+        }
+
+        // Verificar si el correo ya existe
+        const existeCorreo = await proveedorRepository.findOne({
+            where: { correo_proveedor: proveedorData.correo_proveedor.trim().toLowerCase() }
+        });
+
+        if (existeCorreo) {
+            return [null, 'Ya existe un proveedor con ese correo'];
         }
 
         // Crear proveedor
         const nuevoProveedor = proveedorRepository.create({
-            rol_proveedor: proveedorData.rol_proveedor,
-            rut_proveedor: proveedorData.rut_proveedor,
-            fono_proveedor: proveedorData.fono_proveedor || null,
-            correo_proveedor: proveedorData.correo_proveedor || null,
-            nombre_representanter: proveedorData.nombre_representanter || null,
-            apellido_representante: proveedorData.apellido_representante || null,
-            rut_representante: proveedorData.rut_representante || null,
-            activo: true
+            rol_proveedor: proveedorData.rol_proveedor.trim(),
+            rut_proveedor: proveedorData.rut_proveedor.trim(),
+            fono_proveedor: proveedorData.fono_proveedor.trim(),
+            correo_proveedor: proveedorData.correo_proveedor.trim().toLowerCase()
         });
 
         const proveedorGuardado = await proveedorRepository.save(nuevoProveedor);
 
-        // Si viene información completa de representante, crear registro en tabla Representante
-        if (proveedorData.representante) {
-            const rep = proveedorData.representante;
-            
-            const nuevoRepresentante = representanteRepository.create({
-                nombre_representante: rep.nombre_representante,
-                apellido_representante: rep.apellido_representante,
-                rut_representante: rep.rut_representante,
-                cargo_representante: rep.cargo_representante,
-                fono_representante: rep.fono_representante || null,
-                correo_representante: rep.correo_representante || null,
-                es_principal: true,
-                activo: true,
-                proveedor: proveedorGuardado
-            });
-
-            await representanteRepository.save(nuevoRepresentante);
-        }
-
-        // Retornar proveedor con sus relaciones
-        const proveedorCompleto = await proveedorRepository.findOne({
-            where: { id_proveedor: proveedorGuardado.id_proveedor },
-            relations: ["representantes", "materiales"]
-        });
-
-        return [proveedorCompleto, null];
+        return [proveedorGuardado, null];
 
     } catch (error) {
-        console.error("Error al crear proveedor:", error);
-        return [null, "Error interno del servidor"];
+        console.error('Error al crear proveedor:', error);
+        return [null, 'Error interno del servidor'];
     }
 }
 
 /**
- * Obtener todos los proveedores
+ * Obtener todos los proveedores con filtros opcionales
+ * @param {Object} filtros - Filtros opcionales
+ * @param {string} [filtros.rol_proveedor] - Filtrar por rol
+ * @param {string} [filtros.search] - Búsqueda general
+ * @returns {Promise<[Array|null, string|null]>}
  */
 export async function getProveedoresService(filtros = {}) {
     try {
-        const proveedorRepository = AppDataSource.getRepository("Proveedores");
-
-        const queryBuilder = proveedorRepository
-            .createQueryBuilder("proveedor")
-            .leftJoinAndSelect("proveedor.representantes", "representantes")
-            .leftJoinAndSelect("proveedor.materiales", "materiales")
-            .where("proveedor.activo = :activo", { activo: true })
-            .orderBy("proveedor.rol_proveedor", "ASC");
+        const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
+        
+        const queryBuilder = proveedorRepository.createQueryBuilder('proveedor')
+            .leftJoinAndSelect('proveedor.materiales', 'materiales')
+            .orderBy('proveedor.id_proveedor', 'DESC');
 
         // Aplicar filtros
         if (filtros.rol_proveedor) {
-            queryBuilder.andWhere("proveedor.rol_proveedor ILIKE :rol", {
-                rol: `%${filtros.rol_proveedor}%`
+            queryBuilder.andWhere('proveedor.rol_proveedor = :rol', { 
+                rol: filtros.rol_proveedor 
             });
         }
 
         if (filtros.search) {
             queryBuilder.andWhere(
-                "(proveedor.rol_proveedor ILIKE :search OR " +
-                "proveedor.rut_proveedor ILIKE :search OR " +
-                "proveedor.correo_proveedor ILIKE :search OR " +
-                "proveedor.nombre_representanter ILIKE :search OR " +
-                "proveedor.apellido_representante ILIKE :search OR " +
-                "representantes.nombre_representante ILIKE :search OR " +
-                "representantes.apellido_representante ILIKE :search)",
+                '(proveedor.rol_proveedor ILIKE :search OR ' +
+                'proveedor.rut_proveedor ILIKE :search OR ' +
+                'proveedor.correo_proveedor ILIKE :search)',
                 { search: `%${filtros.search}%` }
             );
         }
 
         const proveedores = await queryBuilder.getMany();
 
-        // Formatear respuesta
-        const proveedoresFormateados = proveedores.map(p => ({
-            id_proveedor: p.id_proveedor,
-            rol_proveedor: p.rol_proveedor,
-            rut_proveedor: p.rut_proveedor,
-            fono_proveedor: p.fono_proveedor,
-            correo_proveedor: p.correo_proveedor,
-            // Representante embebido
-            nombre_representanter: p.nombre_representanter,
-            apellido_representante: p.apellido_representante,
-            rut_representante: p.rut_representante,
-            nombre_completo_rep: p.nombre_representanter && p.apellido_representante 
-                ? `${p.nombre_representanter} ${p.apellido_representante}`
-                : null,
-            activo: p.activo,
-            fecha_creacion: p.fecha_creacion,
-            // Relaciones
-            representantes_adicionales: p.representantes || [],
-            total_representantes: (p.representantes || []).length,
-            materiales: p.materiales || [],
-            total_materiales: (p.materiales || []).length
+        // Agregar estadísticas básicas
+        const proveedoresConStats = proveedores.map(proveedor => ({
+            ...proveedor,
+            total_materiales: proveedor.materiales ? proveedor.materiales.length : 0
         }));
 
-        return [proveedoresFormateados, null];
+        return [proveedoresConStats, null];
 
     } catch (error) {
-        console.error("Error al obtener proveedores:", error);
-        return [null, "Error interno del servidor"];
+        console.error('Error al obtener proveedores:', error);
+        return [null, 'Error interno del servidor'];
     }
 }
 
 /**
  * Obtener un proveedor por ID con toda su información
+ * Incluye: materiales, representantes, estadísticas
+ * @param {number} id_proveedor - ID del proveedor
+ * @returns {Promise<[Object|null, string|null]>}
  */
-export async function getProveedorByIdService(id) {
+export async function getProveedorByIdService(id_proveedor) {
     try {
-        const proveedorRepository = AppDataSource.getRepository("Proveedores");
-        const compraRepository = AppDataSource.getRepository("CompraMaterial");
+        const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
+        const representanteRepository = AppDataSource.getRepository(representanteSchema);
 
-        // Obtener proveedor con relaciones
-        const proveedor = await proveedorRepository.findOne({
-            where: { id_proveedor: id },
-            relations: ["representantes", "materiales"]
-        });
+        // Obtener proveedor con sus materiales
+        const proveedor = await proveedorRepository
+            .createQueryBuilder('proveedor')
+            .leftJoinAndSelect('proveedor.materiales', 'materiales')
+            .where('proveedor.id_proveedor = :id', { id: id_proveedor })
+            .getOne();
 
         if (!proveedor) {
-            return [null, "Proveedor no encontrado"];
+            return [null, 'Proveedor no encontrado'];
         }
 
-        // Obtener historial de compras
-        const compras = await compraRepository.find({
-            where: { proveedor: { id_proveedor: id } },
-            relations: ["material", "usuario"],
-            order: { fecha_compra: "DESC" },
-            take: 20
+        // Obtener representantes
+        const representantes = await representanteRepository.find({
+            where: { proveedor: { id_proveedor } },
+            order: { id_representante: 'DESC' }
         });
 
         // Calcular estadísticas
-        const totalCompras = compras.length;
-        const comprasRecibidas = compras.filter(c => c.estado === "recibida");
-        const comprasPendientes = compras.filter(c => c.estado === "pendiente");
-        
-        const totalGastado = comprasRecibidas.reduce(
-            (sum, c) => sum + parseFloat(c.precio_total || 0), 0
-        );
-
-        // Construir respuesta completa
-        const respuesta = {
-            proveedor: {
-                id_proveedor: proveedor.id_proveedor,
-                rol_proveedor: proveedor.rol_proveedor,
-                rut_proveedor: proveedor.rut_proveedor,
-                fono_proveedor: proveedor.fono_proveedor,
-                correo_proveedor: proveedor.correo_proveedor,
-                // Representante embebido
-                nombre_representanter: proveedor.nombre_representanter,
-                apellido_representante: proveedor.apellido_representante,
-                rut_representante: proveedor.rut_representante,
-                nombre_completo_rep: proveedor.nombre_representanter && proveedor.apellido_representante
-                    ? `${proveedor.nombre_representanter} ${proveedor.apellido_representante}`
-                    : null,
-                activo: proveedor.activo,
-                fecha_creacion: proveedor.fecha_creacion
-            },
-            representantes: (proveedor.representantes || []).map(r => ({
-                id_representante: r.id_representante,
-                nombre_completo: `${r.nombre_representante} ${r.apellido_representante}`,
-                nombre_representante: r.nombre_representante,
-                apellido_representante: r.apellido_representante,
-                rut_representante: r.rut_representante,
-                cargo_representante: r.cargo_representante,
-                fono_representante: r.fono_representante,
-                correo_representante: r.correo_representante,
-                es_principal: r.es_principal,
-                activo: r.activo
-            })),
-            materiales_suministrados: (proveedor.materiales || []).map(m => ({
-                id_material: m.id_material,
-                nombre_material: m.nombre_material,
-                unidad_medida: m.unidad_medida,
-                precio_unitario: parseFloat(m.precio_unitario || 0),
-                existencia_material: m.existencia_material,
-                stock_minimo: m.stock_minimo,
-                activo: m.activo
-            })),
-            estadisticas: {
-                total_materiales: (proveedor.materiales || []).length,
-                total_compras: totalCompras,
-                compras_recibidas: comprasRecibidas.length,
-                compras_pendientes: comprasPendientes.length,
-                total_gastado: parseFloat(totalGastado.toFixed(2))
-            },
-            ultimas_compras: compras.slice(0, 10).map(c => ({
-                id_compra: c.id_compra,
-                material: c.material?.nombre_material || "N/A",
-                precio_total: parseFloat(c.precio_total || 0),
-                fecha_compra: c.fecha_compra,
-                estado: c.estado
-            }))
+        const estadisticas = {
+            total_materiales: proveedor.materiales ? proveedor.materiales.length : 0,
+            total_representantes: representantes.length,
+            materiales_activos: proveedor.materiales 
+                ? proveedor.materiales.filter(m => m.activo).length 
+                : 0
         };
 
-        return [respuesta, null];
+        // Construir respuesta completa
+        const proveedorCompleto = {
+            ...proveedor,
+            representantes,
+            estadisticas
+        };
+
+        return [proveedorCompleto, null];
 
     } catch (error) {
-        console.error("Error al obtener proveedor:", error);
-        return [null, "Error interno del servidor"];
+        console.error('Error al obtener proveedor por ID:', error);
+        return [null, 'Error interno del servidor'];
     }
 }
 
 /**
- * Actualizar proveedor
+ * Actualizar un proveedor existente
+ * @param {number} id_proveedor - ID del proveedor
+ * @param {Object} datosActualizados - Datos a actualizar
+ * @returns {Promise<[Object|null, string|null]>}
  */
-export async function updateProveedorService(id, datosActualizados) {
+export async function updateProveedorService(id_proveedor, datosActualizados) {
     try {
-        const proveedorRepository = AppDataSource.getRepository("Proveedores");
+        // Validar datos
+        const validation = validarDatosProveedor(datosActualizados, true);
+        if (!validation.isValid) {
+            return [null, validation.errors.join(', ')];
+        }
 
+        const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
+
+        // Verificar que el proveedor existe
         const proveedor = await proveedorRepository.findOne({
-            where: { id_proveedor: id }
+            where: { id_proveedor }
         });
 
         if (!proveedor) {
-            return [null, "Proveedor no encontrado"];
+            return [null, 'Proveedor no encontrado'];
         }
 
-        // Si se actualiza el RUT, verificar que no exista
+        // Verificar RUT único (si se está actualizando)
         if (datosActualizados.rut_proveedor && 
             datosActualizados.rut_proveedor !== proveedor.rut_proveedor) {
-            const rutExistente = await proveedorRepository.findOne({
-                where: { rut_proveedor: datosActualizados.rut_proveedor }
+            
+            const existeRUT = await proveedorRepository.findOne({
+                where: { rut_proveedor: datosActualizados.rut_proveedor.trim() }
             });
 
-            if (rutExistente && rutExistente.id_proveedor !== id) {
-                return [null, "Ya existe un proveedor con este RUT"];
+            if (existeRUT) {
+                return [null, 'Ya existe otro proveedor con ese RUT'];
             }
         }
 
-        // Actualizar campos permitidos
-        const camposActualizables = [
-            'rol_proveedor',
-            'rut_proveedor',
-            'fono_proveedor',
-            'correo_proveedor',
-            'nombre_representanter',
-            'apellido_representante',
-            'rut_representante',
-            'activo'
-        ];
+        // Verificar correo único (si se está actualizando)
+        if (datosActualizados.correo_proveedor && 
+            datosActualizados.correo_proveedor.toLowerCase() !== proveedor.correo_proveedor) {
+            
+            const existeCorreo = await proveedorRepository.findOne({
+                where: { correo_proveedor: datosActualizados.correo_proveedor.trim().toLowerCase() }
+            });
 
-        camposActualizables.forEach(campo => {
-            if (datosActualizados[campo] !== undefined) {
-                proveedor[campo] = datosActualizados[campo];
+            if (existeCorreo) {
+                return [null, 'Ya existe otro proveedor con ese correo'];
             }
-        });
+        }
 
-        proveedor.fecha_actualizacion = new Date();
+        // Actualizar campos proporcionados
+        if (datosActualizados.rol_proveedor !== undefined) {
+            proveedor.rol_proveedor = datosActualizados.rol_proveedor.trim();
+        }
+        if (datosActualizados.rut_proveedor !== undefined) {
+            proveedor.rut_proveedor = datosActualizados.rut_proveedor.trim();
+        }
+        if (datosActualizados.fono_proveedor !== undefined) {
+            proveedor.fono_proveedor = datosActualizados.fono_proveedor.trim();
+        }
+        if (datosActualizados.correo_proveedor !== undefined) {
+            proveedor.correo_proveedor = datosActualizados.correo_proveedor.trim().toLowerCase();
+        }
 
-        await proveedorRepository.save(proveedor);
-
-        const proveedorActualizado = await proveedorRepository.findOne({
-            where: { id_proveedor: id },
-            relations: ["representantes", "materiales"]
-        });
+        const proveedorActualizado = await proveedorRepository.save(proveedor);
 
         return [proveedorActualizado, null];
 
     } catch (error) {
-        console.error("Error al actualizar proveedor:", error);
-        return [null, "Error interno del servidor"];
+        console.error('Error al actualizar proveedor:', error);
+        return [null, 'Error interno del servidor'];
     }
 }
 
 /**
- * Eliminar proveedor (soft delete)
+ * Eliminar un proveedor
+ * Solo se puede eliminar si no tiene materiales asociados
+ * @param {number} id_proveedor - ID del proveedor
+ * @returns {Promise<[Object|null, string|null]>}
  */
-export async function deleteProveedorService(id) {
+export async function deleteProveedorService(id_proveedor) {
     try {
-        const proveedorRepository = AppDataSource.getRepository("Proveedores");
+        const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
+        const materialRepository = AppDataSource.getRepository(MaterialesSchema);
 
+        // Verificar que el proveedor existe
         const proveedor = await proveedorRepository.findOne({
-            where: { id_proveedor: id },
-            relations: ["materiales"]
+            where: { id_proveedor },
+            relations: ['materiales']
         });
 
         if (!proveedor) {
-            return [null, "Proveedor no encontrado"];
+            return [null, 'Proveedor no encontrado'];
         }
 
-        // Verificar si tiene materiales activos
-        const materialesActivos = (proveedor.materiales || []).filter(m => m.activo);
-        
-        if (materialesActivos.length > 0) {
-            return [null, `No se puede eliminar. Tiene ${materialesActivos.length} material(es) activo(s)`];
+        // Verificar que no tenga materiales asociados
+        const materialesAsociados = await materialRepository.count({
+            where: { proveedor: { id_proveedor } }
+        });
+
+        if (materialesAsociados > 0) {
+            return [null, `No se puede eliminar el proveedor porque tiene ${materialesAsociados} material(es) asociado(s)`];
         }
 
-        // Soft delete
-        proveedor.activo = false;
-        proveedor.fecha_actualizacion = new Date();
-        await proveedorRepository.save(proveedor);
+        // Eliminar proveedor
+        await proveedorRepository.remove(proveedor);
 
-        return [{ mensaje: "Proveedor desactivado exitosamente" }, null];
+        return [{ 
+            mensaje: 'Proveedor eliminado exitosamente',
+            id_proveedor 
+        }, null];
 
     } catch (error) {
-        console.error("Error al eliminar proveedor:", error);
-        return [null, "Error interno del servidor"];
+        console.error('Error al eliminar proveedor:', error);
+        return [null, 'Error interno del servidor'];
     }
 }
 
@@ -351,55 +434,51 @@ export async function deleteProveedorService(id) {
  */
 
 /**
- * Crear representante para un proveedor
+ * Crear un nuevo representante para un proveedor
+ * @param {number} id_proveedor - ID del proveedor
+ * @param {Object} representanteData - Datos del representante
+ * @returns {Promise<[Object|null, string|null]>}
  */
 export async function createRepresentanteService(id_proveedor, representanteData) {
     try {
-        const representanteRepository = AppDataSource.getRepository("Representante");
-        const proveedorRepository = AppDataSource.getRepository("Proveedores");
+        // Validar datos
+        const validation = validarDatosRepresentante(representanteData, false);
+        if (!validation.isValid) {
+            return [null, validation.errors.join(', ')];
+        }
 
-        // Validar que el proveedor existe
+        const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
+        const representanteRepository = AppDataSource.getRepository(representanteSchema);
+
+        // Verificar que el proveedor existe
         const proveedor = await proveedorRepository.findOne({
-            where: { id_proveedor: id_proveedor }
+            where: { id_proveedor }
         });
 
         if (!proveedor) {
-            return [null, "Proveedor no encontrado"];
+            return [null, 'Proveedor no encontrado'];
         }
 
-        // Validar datos obligatorios
-        if (!representanteData.nombre_representante || !representanteData.apellido_representante) {
-            return [null, "Nombre y apellido del representante son obligatorios"];
-        }
+        // Verificar si el RUT ya existe para este proveedor
+        const existeRUT = await representanteRepository.findOne({
+            where: { 
+                rut_representante: representanteData.rut_representante.trim(),
+                proveedor: { id_proveedor }
+            }
+        });
 
-        if (!representanteData.rut_representante) {
-            return [null, "El RUT del representante es obligatorio"];
-        }
-
-        if (!representanteData.cargo_representante) {
-            return [null, "El cargo del representante es obligatorio"];
-        }
-
-        // Si es principal, quitar el flag de otros
-        if (representanteData.es_principal) {
-            await representanteRepository
-                .createQueryBuilder()
-                .update()
-                .set({ es_principal: false })
-                .where("id_proveedor = :id_proveedor", { id_proveedor })
-                .execute();
+        if (existeRUT) {
+            return [null, 'Ya existe un representante con ese RUT para este proveedor'];
         }
 
         // Crear representante
         const nuevoRepresentante = representanteRepository.create({
-            nombre_representante: representanteData.nombre_representante,
-            apellido_representante: representanteData.apellido_representante,
-            rut_representante: representanteData.rut_representante,
-            cargo_representante: representanteData.cargo_representante,
-            fono_representante: representanteData.fono_representante || null,
-            correo_representante: representanteData.correo_representante || null,
-            es_principal: representanteData.es_principal || false,
-            activo: true,
+            nombre_representante: representanteData.nombre_representante.trim(),
+            apellido_representante: representanteData.apellido_representante.trim(),
+            rut_representante: representanteData.rut_representante.trim(),
+            cargo_representante: representanteData.cargo_representante.trim(),
+            fono_representante: representanteData.fono_representante.trim(),
+            correo_representante: representanteData.correo_representante.trim().toLowerCase(),
             proveedor: proveedor
         });
 
@@ -408,127 +487,144 @@ export async function createRepresentanteService(id_proveedor, representanteData
         return [representanteGuardado, null];
 
     } catch (error) {
-        console.error("Error al crear representante:", error);
-        return [null, "Error interno del servidor"];
+        console.error('Error al crear representante:', error);
+        return [null, 'Error interno del servidor'];
     }
 }
 
 /**
  * Obtener representantes de un proveedor
+ * @param {number} id_proveedor - ID del proveedor
+ * @returns {Promise<[Array|null, string|null]>}
  */
 export async function getRepresentantesByProveedorService(id_proveedor) {
     try {
-        const representanteRepository = AppDataSource.getRepository("Representante");
-        const proveedorRepository = AppDataSource.getRepository("Proveedores");
+        const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
+        const representanteRepository = AppDataSource.getRepository(representanteSchema);
 
         // Verificar que el proveedor existe
         const proveedor = await proveedorRepository.findOne({
-            where: { id_proveedor: id_proveedor }
+            where: { id_proveedor }
         });
 
         if (!proveedor) {
-            return [null, "Proveedor no encontrado"];
+            return [null, 'Proveedor no encontrado'];
         }
 
         // Obtener representantes
         const representantes = await representanteRepository.find({
-            where: { 
-                proveedor: { id_proveedor: id_proveedor },
-                activo: true
-            },
-            order: { 
-                es_principal: "DESC",
-                creado_en: "DESC" 
-            }
+            where: { proveedor: { id_proveedor } },
+            order: { id_representante: 'DESC' }
         });
 
         return [representantes, null];
 
     } catch (error) {
-        console.error("Error al obtener representantes:", error);
-        return [null, "Error interno del servidor"];
+        console.error('Error al obtener representantes:', error);
+        return [null, 'Error interno del servidor'];
     }
 }
 
 /**
- * Actualizar representante
+ * Actualizar un representante existente
+ * @param {number} id_representante - ID del representante
+ * @param {Object} datosActualizados - Datos a actualizar
+ * @returns {Promise<[Object|null, string|null]>}
  */
 export async function updateRepresentanteService(id_representante, datosActualizados) {
     try {
-        const representanteRepository = AppDataSource.getRepository("Representante");
+        // Validar datos
+        const validation = validarDatosRepresentante(datosActualizados, true);
+        if (!validation.isValid) {
+            return [null, validation.errors.join(', ')];
+        }
 
+        const representanteRepository = AppDataSource.getRepository(representanteSchema);
+
+        // Verificar que el representante existe
         const representante = await representanteRepository.findOne({
-            where: { id_representante: id_representante },
-            relations: ["proveedor"]
+            where: { id_representante },
+            relations: ['proveedor']
         });
 
         if (!representante) {
-            return [null, "Representante no encontrado"];
+            return [null, 'Representante no encontrado'];
         }
 
-        // Si se marca como principal, quitar el flag de otros
-        if (datosActualizados.es_principal && !representante.es_principal) {
-            await representanteRepository
-                .createQueryBuilder()
-                .update()
-                .set({ es_principal: false })
-                .where("id_proveedor = :id_proveedor", { 
-                    id_proveedor: representante.proveedor.id_proveedor 
-                })
-                .execute();
-        }
+        // Verificar RUT único (si se está actualizando)
+        if (datosActualizados.rut_representante && 
+            datosActualizados.rut_representante !== representante.rut_representante) {
+            
+            const existeRUT = await representanteRepository.findOne({
+                where: { 
+                    rut_representante: datosActualizados.rut_representante.trim(),
+                    proveedor: { id_proveedor: representante.proveedor.id_proveedor }
+                }
+            });
 
-        // Actualizar campos permitidos
-        const camposActualizables = [
-            'nombre_representante',
-            'apellido_representante',
-            'rut_representante',
-            'cargo_representante',
-            'fono_representante',
-            'correo_representante',
-            'es_principal',
-            'activo'
-        ];
-
-        camposActualizables.forEach(campo => {
-            if (datosActualizados[campo] !== undefined) {
-                representante[campo] = datosActualizados[campo];
+            if (existeRUT) {
+                return [null, 'Ya existe otro representante con ese RUT para este proveedor'];
             }
-        });
+        }
 
-        await representanteRepository.save(representante);
+        // Actualizar campos proporcionados
+        if (datosActualizados.nombre_representante !== undefined) {
+            representante.nombre_representante = datosActualizados.nombre_representante.trim();
+        }
+        if (datosActualizados.apellido_representante !== undefined) {
+            representante.apellido_representante = datosActualizados.apellido_representante.trim();
+        }
+        if (datosActualizados.rut_representante !== undefined) {
+            representante.rut_representante = datosActualizados.rut_representante.trim();
+        }
+        if (datosActualizados.cargo_representante !== undefined) {
+            representante.cargo_representante = datosActualizados.cargo_representante.trim();
+        }
+        if (datosActualizados.fono_representante !== undefined) {
+            representante.fono_representante = datosActualizados.fono_representante.trim();
+        }
+        if (datosActualizados.correo_representante !== undefined) {
+            representante.correo_representante = datosActualizados.correo_representante.trim().toLowerCase();
+        }
 
-        return [representante, null];
+        const representanteActualizado = await representanteRepository.save(representante);
+
+        return [representanteActualizado, null];
 
     } catch (error) {
-        console.error("Error al actualizar representante:", error);
-        return [null, "Error interno del servidor"];
+        console.error('Error al actualizar representante:', error);
+        return [null, 'Error interno del servidor'];
     }
 }
 
 /**
- * Eliminar representante (soft delete)
+ * Eliminar un representante
+ * @param {number} id_representante - ID del representante
+ * @returns {Promise<[Object|null, string|null]>}
  */
 export async function deleteRepresentanteService(id_representante) {
     try {
-        const representanteRepository = AppDataSource.getRepository("Representante");
+        const representanteRepository = AppDataSource.getRepository(representanteSchema);
 
+        // Verificar que el representante existe
         const representante = await representanteRepository.findOne({
-            where: { id_representante: id_representante }
+            where: { id_representante }
         });
 
         if (!representante) {
-            return [null, "Representante no encontrado"];
+            return [null, 'Representante no encontrado'];
         }
 
-        // Soft delete
-        representante.activo = false;
-        await representanteRepository.save(representante);
+        // Eliminar representante
+        await representanteRepository.remove(representante);
 
-        return [{ mensaje: "Representante desactivado exitosamente" }, null];
+        return [{ 
+            mensaje: 'Representante eliminado exitosamente',
+            id_representante 
+        }, null];
 
     } catch (error) {
-        console.error("Error al eliminar representante:", error);
-        return [null, "Error interno del servidor"];
+        console.error('Error al eliminar representante:', error);
+        return [null, 'Error interno del servidor'];
     }
 }

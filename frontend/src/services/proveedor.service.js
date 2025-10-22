@@ -12,25 +12,22 @@ import axios from './root.service.js';
  * @param {string} [filtros.search] - Búsqueda general
  * @returns {Promise<Object>} Respuesta del servidor
  */
-export async function getProveedores(filtros = {}) {
-    try {
-        const params = new URLSearchParams();
-        
-        if (filtros.rol_proveedor) {
-            params.append('rol_proveedor', filtros.rol_proveedor);
-        }
-        if (filtros.search) {
-            params.append('search', filtros.search);
-        }
-        
-        const response = await axios.get(`/proveedores?${params.toString()}`);
-        return response.data;
-    } catch (error) {
-        return error.response?.data || { 
-            status: 'Error', 
-            message: 'Error de conexión' 
-        };
-    }
+export async function getProveedores() {
+  try {
+    const response = await axios.get('/proveedores');
+    return response.data;
+  } catch (error) {
+    console.error('Error al cargar proveedores:', error);
+    
+    // En lugar de devolver el error, devolvemos un objeto con estado de error
+    // pero con un array vacío de datos para que la aplicación pueda continuar
+    return { 
+      status: 'Error', 
+      message: error.response?.data?.message || 'Error al obtener proveedores',
+      details: error.message,
+      data: [] 
+    };
+  }
 }
 
 /**

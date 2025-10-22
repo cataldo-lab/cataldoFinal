@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import Table from '@components/Table';
 import Search from '@components/Search';
-import PopupCreateOperacion from '@components/popup/trabajadorTienda/PopupCreateOperacion';
-import PopupUpdateOperacion from '@components/popup/trabajadorTienda/PopupUpdateOperacion';
+//import PopupCreateOperacion from '@components/popup/trabajadorTienda/PopupCreateOperacion';
+//import PopupUpdateOperacion from '@components/popup/trabajadorTienda/PopupUpdateOperacion';
 import AddIcon from '@assets/AddIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
 import DeleteIcon from '@assets/deleteIcon.svg';
