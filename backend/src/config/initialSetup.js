@@ -210,27 +210,18 @@ async function createProveedores() {
       {
         rol_proveedor: "Materiales de Construcción",
         rut_proveedor: "76.123.456-7",
-        nombre_representanter: "Carlos",
-        apellido_representante: "Mendoza",
-        rut_representante: "12.345.678-9",
         fono_proveedor: "+56912345678",
         correo_proveedor: "contacto@maderasur.cl"
       },
       {
         rol_proveedor: "Vidrios y Cristales",
         rut_proveedor: "77.987.654-3",
-        nombre_representanter: "María",
-        apellido_representante: "González",
-        rut_representante: "19.876.543-2",
         fono_proveedor: "+56987654321",
         correo_proveedor: "ventas@vidrioscentro.cl"
       },
       {
         rol_proveedor: "Telas y Tapicería",
         rut_proveedor: "75.555.666-K",
-        nombre_representanter: "Roberto",
-        apellido_representante: "Silva",
-        rut_representante: "16.555.777-8",
         fono_proveedor: "+56955577788",
         correo_proveedor: "info@telasdecor.cl"
       },

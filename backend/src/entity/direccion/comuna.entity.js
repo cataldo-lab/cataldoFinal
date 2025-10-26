@@ -15,7 +15,6 @@ export const ComunaSchema = new EntitySchema({
             length: 100,
             nullable: false
         },
-        // Removemos campos de dirección específica, eso va en una entidad Direccion separada
     },
     relations: {
         provincia: {
@@ -24,7 +23,6 @@ export const ComunaSchema = new EntitySchema({
             joinColumn: { name: "id_provincia" },
             nullable: false,
         },
-        // Relación inversa con User (1:N)
         users: {
             type: "one-to-many",
             target: "User",

@@ -7,7 +7,11 @@ meta {
 get {
   url: http://localhost:3000/api/proveedores
   body: none
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub21icmVDb21wbGV0byI6IkZlcm5hbmRvIEpvc8OpIEhlcnJlcmEgR8OzbWV6IiwiZW1haWwiOiJmZXJuYW5kby5oZXJyZXJhQGdtYWlsLmNsIiwicnV0IjoiMTIuMzQ1LjY3OC05Iiwicm9sIjoidHJhYmFqYWRvcl90aWVuZGEiLCJpYXQiOjE3NjA5NzAzNjMsImV4cCI6MTc2MTA1Njc2M30.Z5x4zzY7DUHopZ70ZritwFoeSY-XGirktkY-Jp_22w4
 }
 
 settings {

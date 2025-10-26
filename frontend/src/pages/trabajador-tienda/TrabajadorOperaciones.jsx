@@ -8,10 +8,10 @@ import AddIcon from '@assets/AddIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
 import DeleteIcon from '@assets/deleteIcon.svg';
 
-// ✅ IMPORTACIONES CORREGIDAS
+
 import { 
-  getOperaciones,           // ✅ Con acento
-  createOperacion,          // ✅ Con acento
+  getOperaciones,           
+  createOperacion,          
   updateOperacion,
   updateEstadoOperacion,
   deleteOperacion
