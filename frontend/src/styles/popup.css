@@ -1,19 +1,25 @@
 .bg{
-    position: absolute;
+    position: fixed; /* Cambiado de absolute a fixed */
     inset: 0;
     background: rgb(18 19 18 / 33.8%);
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden; /* Prevenir scroll en el overlay */
+    z-index: 1000;
 }
 
 .popup{
-    top: 30px;
     height: 700px;
+    max-height: 90vh; /* Añadido para móviles */
     width: 600px;
+    max-width: 90vw; /* Añadido para móviles */
     background: white;
     position: relative;
     border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Importante: ocultar overflow del contenedor */
 }
 
 .popup .close {
@@ -46,6 +52,9 @@
 
 .popup .form {
     padding: 35px;
+    overflow-y: auto; /* Solo el form tiene scroll */
+    overflow-x: hidden;
+    height: 100%;
 
     h1 {
         margin-bottom: 30px;
@@ -103,4 +112,23 @@
     .toggle-password-icon {
         top: 47.5%;
     }
+}
+
+/* Estilos personalizados para el scrollbar */
+.popup .form::-webkit-scrollbar {
+    width: 8px;
+}
+
+.popup .form::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.popup .form::-webkit-scrollbar-thumb {
+    background: #c4c4c4;
+    border-radius: 10px;
+}
+
+.popup .form::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
 }

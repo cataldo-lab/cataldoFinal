@@ -32,7 +32,7 @@ export const CompraMaterialSchema = new EntitySchema({
         },
         fecha_compra: {
             type: "timestamp",
-            nullable: false,
+            nullable: true,
             default: () => "CURRENT_TIMESTAMP",
             comment: "Fecha en que se realizó la compra"
         },
@@ -72,12 +72,12 @@ export const CompraMaterialSchema = new EntitySchema({
         },
         fecha_creacion: {
             type: "timestamp",
-            nullable: false,
+            nullable: true,
             default: () => "CURRENT_TIMESTAMP"
         },
         fecha_actualizacion: {
             type: "timestamp",
-            nullable: false,
+            nullable: true,
             default: () => "CURRENT_TIMESTAMP"
         }
     },

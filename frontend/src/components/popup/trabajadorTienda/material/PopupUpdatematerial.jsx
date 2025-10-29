@@ -91,7 +91,7 @@ export default function PopupUpdateMaterial({
         )}
 
         <Form
-          title={`Editar Material #${material.id_material}`}
+          title={`Editar Material `}
           fields={[
             {
               label: "Nombre del Material",

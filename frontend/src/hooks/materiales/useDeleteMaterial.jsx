@@ -1,73 +1,50 @@
+// frontend/src/hooks/materiales/useDeleteMaterial.jsx
 import { useState } from 'react';
-import { deleteMaterial } from '@services/materiales.service.js';
-import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
+import { deleteMaterial, hardDeleteMaterial } from '@services/materiales.service.js';
 
-/**
- * Hook para desactivar materiales
- */
-export const useDeleteMaterial = () => {
+
+export function useDeleteMaterial() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
-  /**
-   * Desactivar un material
-   * @param {number} id - ID del material
-   * @param {boolean} showAlert - Si mostrar alerta de confirmación
-   * @returns {Promise<boolean>} true si fue exitoso
-   */
-  const handleDeleteMaterial = async (id, showAlert = true) => {
+  const handleDeleteMaterial = async (id, permanent = false) => {
     try {
       setLoading(true);
       setError(null);
-
-      if (!id || isNaN(parseInt(id))) {
-        const errorMsg = 'ID de material inválido';
-        setError(errorMsg);
-        if (showAlert) showErrorAlert('Error', errorMsg);
-        return false;
-      }
-
-      const response = await deleteMaterial(parseInt(id));
-
-      if (response.status === 'Success') {
-        if (showAlert) {
-          showSuccessAlert(
-            'Material desactivado',
-            'El material ha sido desactivado correctamente'
-          );
-        }
-        return true;
+      setSuccess(false);
+      
+      const response = permanent 
+        ? await hardDeleteMaterial(id)
+        : await deleteMaterial(id);
+      
+      if (response.success) {
+        setSuccess(true);
+        return [true, null];
       } else {
-        throw new Error(response.details || 'Error al desactivar material');
+        setError(response.message);
+        return [false, response.message];
       }
-
     } catch (err) {
-      const errorMessage = err.response?.data?.details || 
-                          err.message || 
-                          'Error al desactivar el material';
-      setError(errorMessage);
-      if (showAlert) showErrorAlert('Error', errorMessage);
       console.error('Error en useDeleteMaterial:', err);
-      return false;
+      const errorMsg = 'Error inesperado al eliminar material';
+      setError(errorMsg);
+      return [false, errorMsg];
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * Resetear estado
-   */
-  const reset = () => {
-    setLoading(false);
+  const resetState = () => {
     setError(null);
+    setSuccess(false);
   };
 
   return {
-    deleteMaterial: handleDeleteMaterial,
+    handleDeleteMaterial,
     loading,
     error,
-    reset
+    success,
+    resetState
   };
-};
-
-export default useDeleteMaterial;
+}

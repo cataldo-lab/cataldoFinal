@@ -36,8 +36,7 @@ const Login = () => {
             const response = await login(data);
             
             if (response.status === 'Success') {
-                // Si el login es exitoso, navegar al home
-                // El auth.service.js ya maneja el guardado del token y datos del usuario
+                
                 navigate('/home', { replace: true });
             } else if (response.status === 'Client error') {
                 errorData(response.details);
@@ -100,11 +99,7 @@ const Login = () => {
                 ]}
                 buttonText="Iniciar sesión"
                 onSubmit={loginSubmit}
-                footerContent={
-                    <p>
-                        ¿No tienes cuenta?, <a href="/register">¡Regístrate aquí!</a>
-                    </p>
-                }
+                
             />
         </main>
     );

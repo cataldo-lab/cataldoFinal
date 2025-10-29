@@ -1,9 +1,11 @@
 // frontend/src/pages/trabajador-tienda/Materiales.jsx
 import { useState, useEffect } from 'react';
-import { useGetMateriales } from '@hooks/materiales/useGetMateriales';
-import { useCreateMaterial } from '@hooks/materiales/useCreateMaterial';
-import { useUpdateMaterial } from '@hooks/materiales/useUpdateMaterial';
-import { useDeleteMaterial } from '@hooks/materiales/useDeleteMaterial';
+import { 
+  useMateriales,
+  useCreateMaterial,
+  useUpdateMaterial,
+  useDeleteMaterial
+} from '@hooks/materiales';
 import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
 import PopupCreateMaterial from '@components/popup/trabajadorTienda/material/PopupCreateMaterial';
 import PopupUpdateMaterial from '@components/popup/trabajadorTienda/material/PopupUpdateMaterial';
@@ -21,12 +23,28 @@ export default function Materiales() {
     loading: loadingMateriales, 
     error: errorMateriales,
     fetchMateriales 
-  } = useGetMateriales(true);
+  } = useMateriales(false, true); // false = no incluir inactivos, true = auto fetch
 
-  const { createMaterial, loading: loadingCreate } = useCreateMaterial();
-  const { updateMaterial, loading: loadingUpdate } = useUpdateMaterial();
-  const { deleteMaterial, loading: loadingDelete } = useDeleteMaterial();
- 
+  const { 
+    handleCreateMaterial: createMaterialAction, 
+    loading: loadingCreate 
+  } = useCreateMaterial();
+  
+  const { 
+    handleUpdateMaterial: updateMaterialAction, 
+    loading: loadingUpdate 
+  } = useUpdateMaterial();
+  
+  const { 
+    handleDeleteMaterial: deleteMaterialAction, 
+    loading: loadingDelete 
+  } = useDeleteMaterial();
+
+  const { 
+    proveedores, 
+    loading: loadingProveedores, 
+    fetchProveedores 
+  } = useProveedoresSafe();
 
   // ===== ESTADOS LOCALES =====
   const [selectedItems, setSelectedItems] = useState([]);
@@ -36,38 +54,21 @@ export default function Materiales() {
   const [materialesFiltrados, setMaterialesFiltrados] = useState([]);
   
   const [filtros, setFiltros] = useState({
-    activo: true,
     id_proveedor: '',
     busqueda: '',
     bajo_stock: false
   });
 
- const { proveedores, loading: loadingProveedores, fetchProveedores, hasProveedores } = useProveedoresSafe();
-
-
   // ===== EFECTOS =====
   useEffect(() => {
-    cargarDatos();
+    fetchProveedores();
   }, []);
 
   useEffect(() => {
     aplicarFiltros();
   }, [materiales, filtros]);
 
-  // ===== FUNCIONES DE CARGA =====
-  const cargarDatos = async () => {
-    const filtrosAPI = {
-      activo: filtros.activo,
-      bajo_stock: filtros.bajo_stock || undefined,
-      id_proveedor: filtros.id_proveedor || undefined
-    };
-    
-    await Promise.all([
-      fetchMateriales(filtrosAPI),
-      fetchProveedores()
-    ]);
-  };
-
+  // ===== FUNCIONES DE FILTRADO =====
   const aplicarFiltros = () => {
     if (!Array.isArray(materiales)) {
       setMaterialesFiltrados([]);
@@ -75,6 +76,13 @@ export default function Materiales() {
     }
 
     let resultado = [...materiales];
+
+    // Filtro por proveedor
+    if (filtros.id_proveedor) {
+      resultado = resultado.filter(m => 
+        m.proveedor?.id_proveedor === parseInt(filtros.id_proveedor)
+      );
+    }
 
     // Filtro de búsqueda por nombre
     if (filtros.busqueda && filtros.busqueda.trim() !== '') {
@@ -84,75 +92,79 @@ export default function Materiales() {
       );
     }
 
+    // Filtro de stock bajo
+    if (filtros.bajo_stock) {
+      resultado = resultado.filter(m => 
+        m.existencia_material < m.stock_minimo
+      );
+    }
+
     setMaterialesFiltrados(resultado);
   };
 
   // ===== HANDLERS DE FILTROS =====
-  const handleFiltroChange = async (campo, valor) => {
-    const nuevosFiltros = {
-      ...filtros,
+  const handleFiltroChange = (campo, valor) => {
+    setFiltros(prev => ({
+      ...prev,
       [campo]: valor
-    };
-    
-    setFiltros(nuevosFiltros);
-
-    // Si cambia un filtro de API, recargar
-    if (['activo', 'bajo_stock', 'id_proveedor'].includes(campo)) {
-      const filtrosAPI = {
-        activo: nuevosFiltros.activo,
-        bajo_stock: nuevosFiltros.bajo_stock || undefined,
-        id_proveedor: nuevosFiltros.id_proveedor || undefined
-      };
-      
-      await fetchMateriales(filtrosAPI);
-    }
+    }));
   };
 
-  const limpiarFiltros = async () => {
+  const limpiarFiltros = () => {
     setFiltros({
-      activo: true,
       id_proveedor: '',
       busqueda: '',
       bajo_stock: false
     });
-    await fetchMateriales({ activo: true });
   };
 
   // ===== HANDLERS DE CRUD =====
   const handleCreateMaterial = async (materialData) => {
-    const resultado = await createMaterial(materialData);
-    if (resultado) {
+    const [newMaterial, error] = await createMaterialAction(materialData);
+    
+    if (newMaterial) {
+      showSuccessAlert('Éxito', 'Material creado correctamente');
       setShowCreatePopup(false);
-      await cargarDatos();
+      await fetchMateriales();
       return [true, null];
+    } else {
+      showErrorAlert('Error', error || 'Error al crear material');
+      return [false, error];
     }
-    return [false, 'Error al crear material'];
   };
 
   const handleUpdateMaterial = async (id, materialData) => {
-    const resultado = await updateMaterial(id, materialData);
-    if (resultado) {
+    const [updatedMaterial, error] = await updateMaterialAction(id, materialData);
+    
+    if (updatedMaterial) {
+      showSuccessAlert('Éxito', 'Material actualizado correctamente');
       setShowUpdatePopup(false);
       setMaterialSeleccionado(null);
-      await cargarDatos();
+      await fetchMateriales();
       return [true, null];
+    } else {
+      showErrorAlert('Error', error || 'Error al actualizar material');
+      return [false, error];
     }
-    return [false, 'Error al actualizar material'];
   };
 
   const handleDeleteMaterial = async (id) => {
     try {
       const result = await deleteDataAlert();
       if (result.isConfirmed) {
-        const exito = await deleteMaterial(id, false);
-        if (exito) {
+        const [success, error] = await deleteMaterialAction(id, false);
+        
+        if (success) {
+          showSuccessAlert('Éxito', 'Material desactivado correctamente');
           setSelectedItems(selectedItems.filter(item => item !== id));
-          await cargarDatos();
+          await fetchMateriales();
+        } else {
+          showErrorAlert('Error', error || 'No se pudo desactivar el material');
         }
       }
     } catch (error) {
       console.error('Error al eliminar material:', error);
-      showErrorAlert('Error', 'No se pudo desactivar el material');
+      showErrorAlert('Error', 'Error inesperado al desactivar el material');
     }
   };
 
@@ -171,10 +183,10 @@ export default function Materiales() {
     try {
       const result = await deleteDataAlert();
       if (result.isConfirmed) {
-        const promises = selectedItems.map(id => deleteMaterial(id, false));
+        const promises = selectedItems.map(id => deleteMaterialAction(id, false));
         const resultados = await Promise.all(promises);
         
-        const exitosos = resultados.filter(r => r === true).length;
+        const exitosos = resultados.filter(([success]) => success === true).length;
         
         if (exitosos > 0) {
           showSuccessAlert(
@@ -182,7 +194,9 @@ export default function Materiales() {
             `${exitosos} material(es) desactivado(s) correctamente`
           );
           setSelectedItems([]);
-          await cargarDatos();
+          await fetchMateriales();
+        } else {
+          showErrorAlert('Error', 'No se pudieron desactivar los materiales');
         }
       }
     } catch (error) {
@@ -220,38 +234,42 @@ export default function Materiales() {
     }).format(precio);
   };
 
-  const getEstadoStockBadge = (estadoStock) => {
-    if (!estadoStock || !estadoStock.nivel) return null;
+  const getEstadoStockBadge = (material) => {
+    const { existencia_material, stock_minimo } = material;
+    
+    let nivel, className, icon, mensaje;
 
-    const estilos = {
-      critico: {
-        className: 'bg-red-100 text-red-800 border-red-200',
-        icon: '🔴',
-        textColor: 'text-red-600'
-      },
-      bajo: {
-        className: 'bg-orange-100 text-orange-800 border-orange-200',
-        icon: '🟠',
-        textColor: 'text-orange-600'
-      },
-      medio: {
-        className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-        icon: '🟡',
-        textColor: 'text-yellow-600'
-      },
-      normal: {
-        className: 'bg-green-100 text-green-800 border-green-200',
-        icon: '🟢',
-        textColor: 'text-green-600'
-      }
-    };
-
-    const estilo = estilos[estadoStock.nivel] || estilos.normal;
+    if (existencia_material === 0) {
+      nivel = 'critico';
+      className = 'bg-red-100 text-red-800 border-red-200';
+      icon = '🔴';
+      mensaje = 'Sin stock';
+    } else if (existencia_material < stock_minimo * 0.5) {
+      nivel = 'critico';
+      className = 'bg-red-100 text-red-800 border-red-200';
+      icon = '🔴';
+      mensaje = 'Crítico';
+    } else if (existencia_material < stock_minimo) {
+      nivel = 'bajo';
+      className = 'bg-orange-100 text-orange-800 border-orange-200';
+      icon = '🟠';
+      mensaje = 'Stock bajo';
+    } else if (existencia_material < stock_minimo * 1.5) {
+      nivel = 'medio';
+      className = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      icon = '🟡';
+      mensaje = 'Stock medio';
+    } else {
+      nivel = 'normal';
+      className = 'bg-green-100 text-green-800 border-green-200';
+      icon = '🟢';
+      mensaje = 'Stock normal';
+    }
 
     return (
-      <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${estilo.className} inline-flex items-center gap-1.5`}>
-        <span className="text-base">{estilo.icon}</span>
-        {estadoStock.mensaje}
+      <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${className} inline-flex items-center gap-1.5`}>
+        <span className="text-base">{icon}</span>
+        {mensaje}
       </span>
     );
   };
@@ -310,7 +328,7 @@ export default function Materiales() {
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Error al cargar</h2>
             <p className="text-gray-600 mb-4">{errorMateriales}</p>
             <button
-              onClick={cargarDatos}
+              onClick={fetchMateriales}
               className="bg-stone-600 hover:bg-stone-700 text-white px-6 py-2 rounded-lg transition-colors"
             >
               🔄 Reintentar
@@ -374,39 +392,24 @@ export default function Materiales() {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Filtro de Estado */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 block">
-                ⚡ Estado
-              </label>
-              <select
-                value={filtros.activo.toString()}
-                onChange={(e) => handleFiltroChange('activo', e.target.value === 'true')}
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:ring-2 focus:ring-stone-200 focus:outline-none transition-all"
-              >
-                <option value="true">✓ Activos</option>
-                <option value="false">✗ Inactivos</option>
-              </select>
-            </div>
-
             {/* Filtro de Proveedor */}
             <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-900 block">
-              🏢 Categoria
-            </label>
-            <select
-              value={filtros.id_proveedor}
-              onChange={(e) => handleFiltroChange('id_proveedor', e.target.value)}
-              className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:ring-2 focus:ring-stone-200 focus:outline-none transition-all"
-            >
-              <option value="">Todos los proveedores</option>
-              {Array.isArray(proveedores) && proveedores.map((prov) => (
-                <option key={prov.id_proveedor} value={prov.id_proveedor}>
-                  {prov.rol_proveedor}
-                </option>
-              ))}
-            </select>
-          </div>
+              <label className="text-sm font-semibold text-gray-900 block">
+                🏢 Proveedor
+              </label>
+              <select
+                value={filtros.id_proveedor}
+                onChange={(e) => handleFiltroChange('id_proveedor', e.target.value)}
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:ring-2 focus:ring-stone-200 focus:outline-none transition-all"
+              >
+                <option value="">Todos los proveedores</option>
+                {Array.isArray(proveedores) && proveedores.map((prov) => (
+                  <option key={prov.id_proveedor} value={prov.id_proveedor}>
+                    {prov.rol_proveedor}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Búsqueda */}
             <div className="space-y-2">
@@ -429,34 +432,35 @@ export default function Materiales() {
                 />
               </div>
             </div>
-          </div>
 
-          {/* Stock bajo checkbox */}
-          <div className="mt-4 flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-            <input
-              type="checkbox"
-              id="bajo_stock"
-              checked={filtros.bajo_stock}
-              onChange={(e) => handleFiltroChange('bajo_stock', e.target.checked)}
-              className="w-5 h-5 accent-orange-600 cursor-pointer"
-            />
-            <label htmlFor="bajo_stock" className="text-sm font-semibold text-orange-800 cursor-pointer flex items-center gap-2">
-              <span>⚠️</span>
-              Mostrar solo materiales con stock bajo
-            </label>
+            {/* Stock bajo checkbox */}
+            <div className="space-y-2 flex items-end">
+              <div className="w-full flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="bajo_stock"
+                  checked={filtros.bajo_stock}
+                  onChange={(e) => handleFiltroChange('bajo_stock', e.target.checked)}
+                  className="w-5 h-5 accent-orange-600 cursor-pointer"
+                />
+                <label htmlFor="bajo_stock" className="text-sm font-semibold text-orange-800 cursor-pointer flex items-center gap-2">
+                  <span>⚠️</span>
+                  Stock bajo
+                </label>
+              </div>
+            </div>
           </div>
 
           <div className="mt-4 flex gap-2">
             <button
               onClick={limpiarFiltros}
-              disabled={loadingMateriales}
               className="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg 
-              transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+              transition-colors text-sm font-medium flex items-center gap-2"
             >
               <span>🔄</span> Limpiar filtros
             </button>
             <button
-              onClick={cargarDatos}
+              onClick={fetchMateriales}
               disabled={loadingMateriales}
               className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg 
               transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
@@ -546,7 +550,7 @@ export default function Materiales() {
                         {material.proveedor ? (
                           <div className="flex flex-col gap-1">
                             <span className="text-sm font-medium text-gray-900">
-                              {material.proveedor.nombre_completo}
+                              {material.proveedor.rol_proveedor}
                             </span>
                             {material.proveedor.fono_proveedor && (
                               <span className="text-xs text-gray-500">
@@ -560,7 +564,7 @@ export default function Materiales() {
                       </td>
 
                       <td className="px-4 py-4">
-                        {getEstadoStockBadge(material.estado_stock)}
+                        {getEstadoStockBadge(material)}
                       </td>
 
                       <td className="px-4 py-4">
@@ -592,7 +596,7 @@ export default function Materiales() {
         </div>
 
         {/* ===== FOOTER ===== */}
-        <div className="mt-6 flex justify-between items-center">
+        <div className="mt-6 flex justify-between items-center flex-wrap gap-4">
           <div className="text-sm text-gray-600 bg-white px-6 py-3 rounded-full 
           shadow-sm border border-gray-100">
             Mostrando <span className="font-bold text-stone-600">{materialesParaMostrar.length}</span> materiales

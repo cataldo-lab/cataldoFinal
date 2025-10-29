@@ -3,668 +3,320 @@
 import { AppDataSource } from "../../config/configDb.js";
 import { detectarCategoria } from "../../entity/materiales.entity.js";
 
-/**
- * Crear un nuevo material
- */
+
 export async function createMaterialService(materialData) {
-    try {
-        const materialRepository = AppDataSource.getRepository("Materiales");
-        const proveedorRepository = AppDataSource.getRepository("Proveedores");
+  try {
+    const materialRepository = AppDataSource.getRepository("Materiales");
+    const proveedorRepository = AppDataSource.getRepository("Proveedores");
 
-        // Validar datos básicos
-        if (!materialData.nombre_material) {
-            return [null, "El nombre del material es obligatorio"];
-        }
-
-        if (!materialData.unidad_medida) {
-            return [null, "La unidad de medida es obligatoria"];
-        }
-
-        if (!materialData.precio_unitario || materialData.precio_unitario <= 0) {
-            return [null, "El precio unitario debe ser mayor a 0"];
-        }
-
-        // Buscar proveedor (opcional)
-        let proveedor = null;
-        if (materialData.id_proveedor) {
-            proveedor = await proveedorRepository.findOne({
-                where: { id_proveedor: materialData.id_proveedor }
-            });
-            
-            if (!proveedor) {
-                return [null, "Proveedor no encontrado"];
-            }
-        }
-
-        // Detectar categoría automáticamente basada en unidad de medida
-        const categoria = detectarCategoria(materialData.unidad_medida);
-
-        // Crear material
-        const nuevoMaterial = materialRepository.create({
-            nombre_material: materialData.nombre_material,
-            existencia_material: materialData.existencia_material || 0,
-            categoria_unidad: categoria,
-            unidad_medida: materialData.unidad_medida,
-            precio_unitario: materialData.precio_unitario,
-            stock_minimo: materialData.stock_minimo || 1,
-            activo: materialData.activo !== undefined ? materialData.activo : true,
-            proveedor: proveedor
-        });
-
-        const materialGuardado = await materialRepository.save(nuevoMaterial);
-
-        return [materialGuardado, null];
-
-    } catch (error) {
-        console.error("Error al crear material:", error);
-        return [null, "Error interno del servidor"];
+    // Validar campos requeridos
+    if (!materialData.nombre_material || !materialData.unidad_medida || !materialData.precio_unitario) {
+      return [null, "Faltan campos requeridos"];
     }
+
+    // Validar proveedor si se proporciona
+    let proveedor = null;
+    if (materialData.id_proveedor) {
+      proveedor = await proveedorRepository.findOne({
+        where: { id_proveedor: materialData.id_proveedor }
+      });
+
+      if (!proveedor) {
+        return [null, "Proveedor no encontrado"];
+      }
+    }
+
+    const categoria_unidad = detectarCategoria(materialData.unidad_medida);
+
+    // Crear el material
+    const nuevoMaterial = materialRepository.create({
+      nombre_material: materialData.nombre_material,
+      existencia_material: materialData.existencia_material || 0,
+      unidad_medida: materialData.unidad_medida,
+      categoria_unidad: categoria_unidad,
+      precio_unitario: parseFloat(materialData.precio_unitario),
+      stock_minimo: materialData.stock_minimo || 1,
+      activo: materialData.activo !== undefined ? materialData.activo : true,
+      proveedor: proveedor
+    });
+
+    const materialGuardado = await materialRepository.save(nuevoMaterial);
+
+    const materialCompleto = await materialRepository.findOne({
+      where: { id_material: materialGuardado.id_material },
+      relations: ["proveedor"]
+    });
+
+    return [materialCompleto, null];
+
+  } catch (error) {
+    console.error("Error al crear material:", error);
+    return [null, "Error interno del servidor al crear material"];
+  }
 }
 
-/**
- * Obtener todos los materiales con filtros
- */
-export async function getMaterialesService(filtros = {}) {
-    try {
-        const materialRepository = AppDataSource.getRepository("Materiales");
 
-        const queryBuilder = materialRepository
-            .createQueryBuilder("material")
-            .leftJoinAndSelect("material.proveedor", "proveedor")
-            .orderBy("material.nombre_material", "ASC");
+export async function updateMaterialService(id_material, materialData) {
+  try {
+    const materialRepository = AppDataSource.getRepository("Materiales");
+    const proveedorRepository = AppDataSource.getRepository("Proveedores");
 
-        // Aplicar filtros
-        if (filtros.categoria_unidad) {
-            queryBuilder.andWhere("material.categoria_unidad = :categoria", {
-                categoria: filtros.categoria_unidad
-            });
-        }
+    const material = await materialRepository.findOne({
+      where: { id_material },
+      relations: ["proveedor"]
+    });
 
-        if (filtros.activo !== undefined) {
-            queryBuilder.andWhere("material.activo = :activo", {
-                activo: filtros.activo
-            });
-        }
-
-        if (filtros.bajo_stock === 'true') {
-            queryBuilder.andWhere("material.existencia_material <= material.stock_minimo");
-        }
-
-        if (filtros.id_proveedor) {
-            queryBuilder.andWhere("proveedor.id_proveedor = :proveedorId", {
-                proveedorId: filtros.id_proveedor
-            });
-        }
-
-        const materiales = await queryBuilder.getMany();
-
-        return [materiales, null];
-
-    } catch (error) {
-        console.error("Error al obtener materiales:", error);
-        return [null, "Error interno del servidor"];
+    if (!material) {
+      return [null, "Material no encontrado"];
     }
-}
 
-/**
- * Obtener un material por ID
- */
-export async function getMaterialByIdService(id) {
-    try {
-        const materialRepository = AppDataSource.getRepository("Materiales");
-
-        const material = await materialRepository.findOne({
-            where: { id_material: id },
-            relations: ["proveedor", "productos", "productos.producto"]
-        });
-
-        if (!material) {
-            return [null, "Material no encontrado"];
-        }
-
-        return [material, null];
-
-    } catch (error) {
-        console.error("Error al obtener material:", error);
-        return [null, "Error interno del servidor"];
-    }
-}
-
-/**
- * Actualizar material
- */
-export async function updateMaterialService(id, datosActualizados) {
-    try {
-        const materialRepository = AppDataSource.getRepository("Materiales");
-
-        const material = await materialRepository.findOne({
-            where: { id_material: id }
-        });
-
-        if (!material) {
-            return [null, "Material no encontrado"];
-        }
-
-        // Actualizar campos permitidos
-        const camposActualizables = [
-            'nombre_material',
-            'existencia_material',
-            'unidad_medida',
-            'precio_unitario',
-            'stock_minimo',
-            'activo'
-        ];
-
-        camposActualizables.forEach(campo => {
-            if (datosActualizados[campo] !== undefined) {
-                material[campo] = datosActualizados[campo];
-            }
-        });
-
-        // Si cambia la unidad de medida, actualizar categoría
-        if (datosActualizados.unidad_medida) {
-            material.categoria_unidad = detectarCategoria(datosActualizados.unidad_medida);
-        }
-
-        await materialRepository.save(material);
-
-        const materialActualizado = await materialRepository.findOne({
-            where: { id_material: id },
-            relations: ["proveedor"]
-        });
-
-        return [materialActualizado, null];
-
-    } catch (error) {
-        console.error("Error al actualizar material:", error);
-        return [null, "Error interno del servidor"];
-    }
-}
-
-/**
- * Actualizar solo el stock de un material
- */
-export async function updateStockMaterialService(id, cantidad, operacion = 'set') {
-    try {
-        const materialRepository = AppDataSource.getRepository("Materiales");
-
-        const material = await materialRepository.findOne({
-            where: { id_material: id }
-        });
-
-        if (!material) {
-            return [null, "Material no encontrado"];
-        }
-
-        // Calcular nuevo stock según operación
-        let nuevoStock = material.existencia_material;
-
-        switch (operacion) {
-            case 'add':
-                nuevoStock += cantidad;
-                break;
-            case 'subtract':
-                nuevoStock -= cantidad;
-                if (nuevoStock < 0) {
-                    return [null, "No hay suficiente stock disponible"];
-                }
-                break;
-            case 'set':
-                nuevoStock = cantidad;
-                break;
-            default:
-                return [null, "Operación no válida. Use: 'add', 'subtract', o 'set'"];
-        }
-
-        material.existencia_material = nuevoStock;
-        await materialRepository.save(material);
-
-        return [material, null];
-
-    } catch (error) {
-        console.error("Error al actualizar stock:", error);
-        return [null, "Error interno del servidor"];
-    }
-}
-
-/**
- * Eliminar (desactivar) material
- */
-export async function deleteMaterialService(id) {
-    try {
-        const materialRepository = AppDataSource.getRepository("Materiales");
-
-        const material = await materialRepository.findOne({
-            where: { id_material: id }
-        });
-
-        if (!material) {
-            return [null, "Material no encontrado"];
-        }
-
-        // Desactivar en lugar de eliminar
-        material.activo = false;
-        await materialRepository.save(material);
-
-        return [material, null];
-
-    } catch (error) {
-        console.error("Error al eliminar material:", error);
-        return [null, "Error interno del servidor"];
-    }
-}
-
-/**
- * Obtener materiales con stock bajo
- */
-export async function getMaterialesBajoStockService() {
-    try {
-        const materialRepository = AppDataSource.getRepository("Materiales");
-
-        const materiales = await materialRepository
-            .createQueryBuilder("material")
-            .leftJoinAndSelect("material.proveedor", "proveedor")
-            .where("material.existencia_material <= material.stock_minimo")
-            .andWhere("material.activo = :activo", { activo: true })
-            .orderBy("material.existencia_material", "ASC")
-            .getMany();
-
-        return [materiales, null];
-
-    } catch (error) {
-        console.error("Error al obtener materiales bajo stock:", error);
-        return [null, "Error interno del servidor"];
-    }
-}
-
-/**
- * Obtener alertas de stock
- */
-export async function getAlertasStockService() {
-    try {
-        const materialRepository = AppDataSource.getRepository("Materiales");
-
-        const materiales = await materialRepository
-            .createQueryBuilder("material")
-            .leftJoinAndSelect("material.proveedor", "proveedor")
-            .where("material.activo = :activo", { activo: true })
-            .getMany();
-
-        const alertas = {
-            critico: [],  // Stock = 0
-            bajo: [],     // Stock <= stock_minimo
-            medio: [],    // Stock <= stock_minimo * 1.5
-            normal: []    // Stock > stock_minimo * 1.5
-        };
-
-        materiales.forEach(material => {
-            if (material.existencia_material === 0) {
-                alertas.critico.push(material);
-            } else if (material.existencia_material <= material.stock_minimo) {
-                alertas.bajo.push(material);
-            } else if (material.existencia_material <= material.stock_minimo * 1.5) {
-                alertas.medio.push(material);
-            } else {
-                alertas.normal.push(material);
-            }
-        });
-
-        return [alertas, null];
-
-    } catch (error) {
-        console.error("Error al obtener alertas:", error);
-        return [null, "Error interno del servidor"];
-    }
-}
-
-/**
- * Helper: Determinar estado del stock
- */
-function getEstadoStock(material) {
-    if (material.existencia_material === 0) {
-        return { nivel: "critico", mensaje: "Sin stock" };
-    } else if (material.existencia_material <= material.stock_minimo) {
-        return { nivel: "bajo", mensaje: "Stock bajo" };
-    } else if (material.existencia_material <= material.stock_minimo * 1.5) {
-        return { nivel: "medio", mensaje: "Stock medio" };
-    } else {
-        return { nivel: "normal", mensaje: "Stock adecuado" };
-    }
-}
-
-/**
- * Obtener un material con TODO su detalle (proveedor, compras, productos que lo usan)
- */
-export async function getMaterialDetalleCompletoService(id_material) {
-    try {
-        const materialRepository = AppDataSource.getRepository("Materiales");
-        const compraRepository = AppDataSource.getRepository("CompraMaterial");
-        const representanteRepository = AppDataSource.getRepository("Representante");
-
-        // 1. Obtener material con proveedor
-        const material = await materialRepository.findOne({
-            where: { id_material: id_material },
-            relations: ["proveedor", "productos", "productos.producto"]
-        });
-
-        if (!material) {
-            return [null, "Material no encontrado"];
-        }
-
-        // 2. Obtener historial de compras del material
-        const compras = await compraRepository.find({
-            where: { material: { id_material: id_material } },
-            relations: ["proveedor", "usuario"],
-            order: { fecha_compra: "DESC" }
-        });
-
-        // 3. Si hay proveedor, obtener su representante
-        let representante = null;
-        if (material.proveedor) {
-            representante = await representanteRepository.findOne({
-                where: { proveedor: { id_proveedor: material.proveedor.id_proveedor } }
-            });
-        }
-
-        // 4. Calcular estadísticas de compras
-        const totalCompras = compras.length;
-        const comprasPendientes = compras.filter(c => c.estado === "pendiente").length;
-        const comprasRecibidas = compras.filter(c => c.estado === "recibida").length;
-        
-        const totalInvertido = compras
-            .filter(c => c.estado === "recibida")
-            .reduce((sum, c) => sum + parseFloat(c.precio_total), 0);
-
-        // No podemos usar cantidad porque no existe en el schema - usando precio_total
-        const cantidadTotalComprada = comprasRecibidas;
-
-        // 5. Obtener productos que usan este material
-        const productosQueUsan = material.productos.map(pm => ({
-            id_producto: pm.producto.id_producto,
-            nombre_producto: pm.producto.nombre_producto,
-            cantidad_necesaria: pm.cantidad_necesaria,
-            costo_unitario: pm.costo_unitario
-        }));
-
-        // 6. Formatear compras
-        const comprasFormateadas = compras.map(c => ({
-            id_compra: c.id_compra,
-            precio_total: parseFloat(c.precio_total),
-            fecha_compra: c.fecha_compra,
-            fecha_entrega_estimada: c.fecha_entrega_estimada,
-            fecha_entrega_real: c.fecha_entrega_real,
-            estado: c.estado,
-            tipo_documento: c.tipo_documento,
-            numero_documento: c.numero_documento,
-            proveedor: {
-                id_proveedor: c.proveedor.id_proveedor,
-                rol_proveedor: c.proveedor.rol_proveedor,
-                fono_proveedor: c.proveedor.fono_proveedor
-            },
-            usuario_registro: c.usuario ? {
-                id: c.usuario.id,
-                nombreCompleto: c.usuario.nombreCompleto,
-                email: c.usuario.email
-            } : null,
-            observaciones: c.observaciones
-        }));
-
-        // 7. Construir respuesta completa
-        const respuesta = {
-            material: {
-                id_material: material.id_material,
-                nombre_material: material.nombre_material,
-                existencia_material: material.existencia_material,
-                categoria_unidad: material.categoria_unidad,
-                unidad_medida: material.unidad_medida,
-                precio_unitario: parseFloat(material.precio_unitario),
-                stock_minimo: material.stock_minimo,
-                activo: material.activo,
-                estado_stock: getEstadoStock(material),
-                proveedor: material.proveedor ? {
-                    id_proveedor: material.proveedor.id_proveedor,
-                    rol_proveedor: material.proveedor.rol_proveedor,
-                    rut_proveedor: material.proveedor.rut_proveedor,
-                    fono_proveedor: material.proveedor.fono_proveedor,
-                    correo_proveedor: material.proveedor.correo_proveedor,
-                    // Solo añadir datos de representante si existe
-                    representante: representante ? {
-                        nombre: representante.nombre_representante,
-                        apellido: representante.apellido_representante,
-                        cargo: representante.cargo_representante
-                    } : null
-                } : null
-            },
-            estadisticas_compras: {
-                total_compras: totalCompras,
-                compras_pendientes: comprasPendientes,
-                compras_recibidas: comprasRecibidas,
-                cantidad_total_comprada: cantidadTotalComprada,
-                total_invertido: parseFloat(totalInvertido.toFixed(2)),
-                // Evitamos división por cero
-                precio_promedio_compra: cantidadTotalComprada > 0 
-                    ? parseFloat((totalInvertido / cantidadTotalComprada).toFixed(2))
-                    : 0
-            },
-            historial_compras: comprasFormateadas,
-            productos_que_usan: productosQueUsan
-        };
-
-        return [respuesta, null];
-
-    } catch (error) {
-        console.error("Error al obtener detalle completo del material:", error);
-        return [null, "Error interno del servidor"];
-    }
-}
-
-/**
- * Obtener todos los materiales CON información resumida de proveedor y compras
- */
-export async function getMaterialesConResumenService(filtros = {}) {
-    try {
-        const materialRepository = AppDataSource.getRepository("Materiales");
-        const compraRepository = AppDataSource.getRepository("CompraMaterial");
-        const representanteRepository = AppDataSource.getRepository("Representante");
-
-        // Construir query
-        const queryBuilder = materialRepository
-            .createQueryBuilder("material")
-            .leftJoinAndSelect("material.proveedor", "proveedor")
-            .orderBy("material.nombre_material", "ASC");
-
-        // Aplicar filtros
-        if (filtros.categoria_unidad) {
-            queryBuilder.andWhere("material.categoria_unidad = :categoria", {
-                categoria: filtros.categoria_unidad
-            });
-        }
-
-        if (filtros.activo !== undefined) {
-            queryBuilder.andWhere("material.activo = :activo", {
-                activo: filtros.activo
-            });
-        }
-
-        if (filtros.bajo_stock === 'true') {
-            queryBuilder.andWhere("material.existencia_material <= material.stock_minimo");
-        }
-
-        if (filtros.id_proveedor) {
-            queryBuilder.andWhere("proveedor.id_proveedor = :proveedorId", {
-                proveedorId: filtros.id_proveedor
-            });
-        }
-
-        const materiales = await queryBuilder.getMany();
-
-        // Para cada material, obtener resumen de compras
-        const materialesConResumen = await Promise.all(
-            materiales.map(async (material) => {
-                const compras = await compraRepository.find({
-                    where: { material: { id_material: material.id_material } }
-                });
-
-                const ultimaCompra = compras.length > 0 
-                    ? compras.reduce((prev, curr) => 
-                        new Date(prev.fecha_compra) > new Date(curr.fecha_compra) ? prev : curr
-                    )
-                    : null;
-
-                const comprasPendientes = compras.filter(c => c.estado === "pendiente").length;
-
-                // Si hay proveedor, obtener su representante
-                let representante = null;
-                if (material.proveedor) {
-                    representante = await representanteRepository.findOne({
-                        where: { proveedor: { id_proveedor: material.proveedor.id_proveedor } }
-                    });
-                }
-
-                return {
-                    id_material: material.id_material,
-                    nombre_material: material.nombre_material,
-                    existencia_material: material.existencia_material,
-                    unidad_medida: material.unidad_medida,
-                    categoria_unidad: material.categoria_unidad,
-                    precio_unitario: parseFloat(material.precio_unitario),
-                    stock_minimo: material.stock_minimo,
-                    activo: material.activo,
-                    estado_stock: getEstadoStock(material),
-                    proveedor: material.proveedor ? {
-                        id_proveedor: material.proveedor.id_proveedor,
-                        rol_proveedor: material.proveedor.rol_proveedor,
-                        fono_proveedor: material.proveedor.fono_proveedor,
-                        correo_proveedor: material.proveedor.correo_proveedor,
-                        // Solo añadir datos de representante si existe
-                        nombre_completo: representante 
-                            ? `${representante.nombre_representante} ${representante.apellido_representante}`
-                            : 'Sin representante asignado'
-                    } : null,
-                    resumen_compras: {
-                        total_compras: compras.length,
-                        compras_pendientes: comprasPendientes,
-                        ultima_compra: ultimaCompra ? {
-                            fecha: ultimaCompra.fecha_compra,
-                            precio_total: parseFloat(ultimaCompra.precio_total)
-                        } : null
-                    }
-                };
-            })
-        );
-
-        return [materialesConResumen, null];
-
-    } catch (error) {
-        console.error("Error al obtener materiales con resumen:", error);
-        return [null, "Error interno del servidor"];
-    }
-}
-
-/**
- * Obtener análisis de proveedor (cuánto y qué materiales le hemos comprado)
- */
-export async function getAnalisisProveedorService(id_proveedor) {
-    try {
-        const proveedorRepository = AppDataSource.getRepository("Proveedores");
-        const representanteRepository = AppDataSource.getRepository("Representante");
-        const materialRepository = AppDataSource.getRepository("Materiales");
-        const compraRepository = AppDataSource.getRepository("CompraMaterial");
-
-        // Verificar proveedor
+    if (materialData.id_proveedor !== undefined) {
+      if (materialData.id_proveedor === null) {
+        material.proveedor = null;
+      } else {
         const proveedor = await proveedorRepository.findOne({
-            where: { id_proveedor: id_proveedor }
+          where: { id_proveedor: materialData.id_proveedor }
         });
 
         if (!proveedor) {
-            return [null, "Proveedor no encontrado"];
+          return [null, "Proveedor no encontrado"];
+        }
+        material.proveedor = proveedor;
+      }
+    }
+
+    if (materialData.nombre_material !== undefined) {
+      material.nombre_material = materialData.nombre_material;
+    }
+    if (materialData.existencia_material !== undefined) {
+      material.existencia_material = materialData.existencia_material;
+    }
+    if (materialData.unidad_medida !== undefined) {
+      material.unidad_medida = materialData.unidad_medida;
+      material.categoria_unidad = detectarCategoria(materialData.unidad_medida);
+    }
+    if (materialData.precio_unitario !== undefined) {
+      material.precio_unitario = parseFloat(materialData.precio_unitario);
+    }
+    if (materialData.stock_minimo !== undefined) {
+      material.stock_minimo = materialData.stock_minimo;
+    }
+    if (materialData.activo !== undefined) {
+      material.activo = materialData.activo;
+    }
+
+    const materialActualizado = await materialRepository.save(material);
+
+    // Obtener el material completo con relaciones actualizadas
+    const materialCompleto = await materialRepository.findOne({
+      where: { id_material: materialActualizado.id_material },
+      relations: ["proveedor"]
+    });
+
+    return [materialCompleto, null];
+
+  } catch (error) {
+    console.error("Error al actualizar material:", error);
+    return [null, "Error interno del servidor al actualizar material"];
+  }
+}
+
+
+export async function deleteMaterialService(id_material) {
+  try {
+    const materialRepository = AppDataSource.getRepository("Materiales");
+
+    const material = await materialRepository.findOne({
+      where: { id_material }
+    });
+
+    if (!material) {
+      return [null, "Material no encontrado"];
+    }
+
+    material.activo = false;
+    await materialRepository.save(material);
+
+    return [{ message: "Material desactivado exitosamente", id_material }, null];
+
+  } catch (error) {
+    console.error("Error al eliminar material:", error);
+    return [null, "Error interno del servidor al eliminar material"];
+  }
+}
+
+
+export async function hardDeleteMaterialService(id_material) {
+  try {
+    const materialRepository = AppDataSource.getRepository("Materiales");
+
+    const material = await materialRepository.findOne({
+      where: { id_material }
+    });
+
+    if (!material) {
+      return [null, "Material no encontrado"];
+    }
+
+    const productoMaterialesRepository = AppDataSource.getRepository("ProductoMateriales");
+    const relacionesProductos = await productoMaterialesRepository.count({
+      where: { material: { id_material } }
+    });
+
+    if (relacionesProductos > 0) {
+      return [null, "No se puede eliminar el material porque está siendo usado en productos"];
+    }
+
+    await materialRepository.remove(material);
+
+    return [{ message: "Material eliminado permanentemente", id_material }, null];
+
+  } catch (error) {
+    console.error("Error al eliminar permanentemente material:", error);
+    return [null, "Error interno del servidor al eliminar material"];
+  }
+}
+
+export async function getMaterialByIdService(id_material) {
+  try {
+    const materialRepository = AppDataSource.getRepository("Materiales");
+
+    const material = await materialRepository.findOne({
+      where: { id_material },
+      relations: ["proveedor"]
+    });
+
+    if (!material) {
+      return [null, "Material no encontrado"];
+    }
+
+    return [material, null];
+
+  } catch (error) {
+    console.error("Error al obtener material:", error);
+    return [null, "Error interno del servidor"];
+  }
+}
+
+
+export async function getAllMaterialesService(soloActivos = true) {
+  try {
+    const materialRepository = AppDataSource.getRepository("Materiales");
+
+    const whereCondition = soloActivos ? { activo: true } : {};
+
+    const materiales = await materialRepository.find({
+      where: whereCondition,
+      relations: ["proveedor"],
+      order: { nombre_material: "ASC" }
+    });
+
+    return [materiales, null];
+
+  } catch (error) {
+    console.error("Error al obtener materiales:", error);
+    return [null, "Error interno del servidor"];
+  }
+}
+
+export async function getMaterialRepresentanteService(id_material) {
+  try {
+    const materialRepository = AppDataSource.getRepository("Materiales");
+    const representanteRepository = AppDataSource.getRepository("Representante");
+
+    const material = await materialRepository.findOne({
+      where: { id_material },
+      relations: ["proveedor"]
+    });
+
+    if (!material) {
+      return [null, "Material no encontrado"];
+    }
+
+    if (!material.proveedor) {
+      return [null, "El material no tiene un proveedor asociado"];
+    }
+
+    const representante = await representanteRepository.findOne({
+      where: { proveedor: { id_proveedor: material.proveedor.id_proveedor } },
+      relations: ["proveedor"]
+    });
+
+    if (!representante) {
+      return [null, "No se encontró representante para este proveedor"];
+    }
+
+    const representanteData = {
+      id_representante: representante.id_representante,
+      nombre_completo: `${representante.nombre_representante} ${representante.apellido_representante}`,
+      nombre_representante: representante.nombre_representante,
+      apellido_representante: representante.apellido_representante,
+      rut_representante: representante.rut_representante,
+      cargo_representante: representante.cargo_representante,
+      fono_representante: representante.fono_representante,
+      correo_representante: representante.correo_representante,
+      proveedor: {
+        id_proveedor: representante.proveedor.id_proveedor,
+        rol_proveedor: representante.proveedor.rol_proveedor,
+        rut_proveedor: representante.proveedor.rut_proveedor
+      }
+    };
+
+    return [representanteData, null];
+
+  } catch (error) {
+    console.error("Error al obtener representante del material:", error);
+    return [null, "Error interno del servidor"];
+  }
+}
+
+
+export async function getMaterialesConRepresentantesService() {
+  try {
+    const materialRepository = AppDataSource.getRepository("Materiales");
+    const representanteRepository = AppDataSource.getRepository("Representante");
+
+    const materiales = await materialRepository.find({
+      where: { activo: true },
+      relations: ["proveedor"]
+    });
+
+    const materialesConRepresentantes = await Promise.all(
+      materiales.map(async (material) => {
+        let representante = null;
+
+        if (material.proveedor) {
+          representante = await representanteRepository.findOne({
+            where: { proveedor: { id_proveedor: material.proveedor.id_proveedor } }
+          });
         }
 
-        // Obtener representante del proveedor
-        const representante = await representanteRepository.findOne({
-            where: { proveedor: { id_proveedor: id_proveedor } }
-        });
-
-        // Materiales de este proveedor
-        const materiales = await materialRepository.find({
-            where: { proveedor: { id_proveedor: id_proveedor } }
-        });
-
-        // Compras a este proveedor
-        const compras = await compraRepository.find({
-            where: { proveedor: { id_proveedor: id_proveedor } },
-            relations: ["material"],
-            order: { fecha_compra: "DESC" }
-        });
-
-        // Estadísticas
-        const totalCompras = compras.length;
-        const comprasRecibidas = compras.filter(c => c.estado === "recibida");
-        const comprasPendientes = compras.filter(c => c.estado === "pendiente");
-        
-        const totalGastado = comprasRecibidas.reduce(
-            (sum, c) => sum + parseFloat(c.precio_total), 0
-        );
-
-        // Análisis por material
-        const materialesAnalisis = materiales.map(material => {
-            const comprasMaterial = compras.filter(c => c.material.id_material === material.id_material);
-            const comprasRecibidasMaterial = comprasMaterial.filter(c => c.estado === "recibida");
-            
-            // No podemos usar cantidad - usar número de compras recibidas como aproximación
-            const totalComprado = comprasRecibidasMaterial.length;
-            
-            const totalGastadoMaterial = comprasRecibidasMaterial.reduce(
-                (sum, c) => sum + parseFloat(c.precio_total), 0
-            );
-
-            return {
-                id_material: material.id_material,
-                nombre_material: material.nombre_material,
-                unidad_medida: material.unidad_medida,
-                stock_actual: material.existencia_material,
-                total_compras: comprasMaterial.length,
-                total_comprado: totalComprado,
-                total_gastado: parseFloat(totalGastadoMaterial.toFixed(2)),
-                precio_promedio: totalComprado > 0 
-                    ? parseFloat((totalGastadoMaterial / totalComprado).toFixed(2))
-                    : 0
-            };
-        });
-
-        const respuesta = {
-            proveedor: {
-                id_proveedor: proveedor.id_proveedor,
-                rol_proveedor: proveedor.rol_proveedor,
-                rut_proveedor: proveedor.rut_proveedor,
-                fono_proveedor: proveedor.fono_proveedor,
-                correo_proveedor: proveedor.correo_proveedor,
-                representante: representante ? {
-                    nombre_completo: `${representante.nombre_representante} ${representante.apellido_representante}`,
-                    cargo: representante.cargo_representante
-                } : null
-            },
-            estadisticas: {
-                total_materiales_suministrados: materiales.length,
-                total_compras: totalCompras,
-                compras_recibidas: comprasRecibidas.length,
-                compras_pendientes: comprasPendientes.length,
-                total_gastado: parseFloat(totalGastado.toFixed(2))
-            },
-            materiales_suministrados: materialesAnalisis,
-            ultimas_compras: compras.slice(0, 10).map(c => ({
-                id_compra: c.id_compra,
-                material: c.material.nombre_material,
-                precio_total: parseFloat(c.precio_total),
-                fecha_compra: c.fecha_compra,
-                estado: c.estado
-            }))
+        return {
+          id_material: material.id_material,
+          nombre_material: material.nombre_material,
+          existencia_material: material.existencia_material,
+          unidad_medida: material.unidad_medida,
+          precio_unitario: parseFloat(material.precio_unitario),
+          stock_minimo: material.stock_minimo,
+          proveedor: material.proveedor ? {
+            id_proveedor: material.proveedor.id_proveedor,
+            rol_proveedor: material.proveedor.rol_proveedor
+          } : null,
+          representante: representante ? {
+            id_representante: representante.id_representante,
+            nombre_completo: `${representante.nombre_representante} ${representante.apellido_representante}`,
+            fono_representante: representante.fono_representante,
+            correo_representante: representante.correo_representante,
+            cargo_representante: representante.cargo_representante
+          } : null
         };
+      })
+    );
 
-        return [respuesta, null];
+    return [materialesConRepresentantes, null];
 
-    } catch (error) {
-        console.error("Error al obtener análisis de proveedor:", error);
-        return [null, "Error interno del servidor"];
-    }
+  } catch (error) {
+    console.error("Error al obtener materiales con representantes:", error);
+    return [null, "Error interno del servidor"];
+  }
 }

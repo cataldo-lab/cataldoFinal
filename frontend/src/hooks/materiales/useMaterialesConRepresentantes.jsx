@@ -1,19 +1,19 @@
-// frontend/src/hooks/materiales/useMateriales.jsx
+// frontend/src/hooks/materiales/useMaterialesConRepresentantes.jsx
 import { useState, useEffect } from 'react';
-import { getMateriales } from '@services/materiales.service.js';
+import { getMaterialesConRepresentantes } from '@services/materiales.service.js';
 
 
-export function useMateriales(incluirInactivos = false, autoFetch = true) {
+export function useMaterialesConRepresentantes(autoFetch = true) {
   const [materiales, setMateriales] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchMateriales = async () => {
+  const fetchMaterialesConRepresentantes = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await getMateriales(incluirInactivos);
+      const response = await getMaterialesConRepresentantes();
       
       if (response.success) {
         setMateriales(response.data || []);
@@ -22,8 +22,8 @@ export function useMateriales(incluirInactivos = false, autoFetch = true) {
         setMateriales([]);
       }
     } catch (err) {
-      console.error('Error en useMateriales:', err);
-      setError('Error inesperado al cargar materiales');
+      console.error('Error en useMaterialesConRepresentantes:', err);
+      setError('Error inesperado al cargar materiales con representantes');
       setMateriales([]);
     } finally {
       setLoading(false);
@@ -32,15 +32,15 @@ export function useMateriales(incluirInactivos = false, autoFetch = true) {
 
   useEffect(() => {
     if (autoFetch) {
-      fetchMateriales();
+      fetchMaterialesConRepresentantes();
     }
-  }, [incluirInactivos, autoFetch]);
+  }, [autoFetch]);
 
   return {
     materiales,
     loading,
     error,
-    fetchMateriales,
+    fetchMaterialesConRepresentantes,
     setMateriales
   };
 }

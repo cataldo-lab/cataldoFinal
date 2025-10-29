@@ -810,7 +810,7 @@ async function createRepresentantes() {
         cargo_representante: "Gerente de Ventas",
         fono_representante: "+56912345678",
         correo_representante: "c.mendoza@maderasur.cl",
-        proveedores: proveedores[0]
+        proveedor: proveedores[0] 
       },
       {
         nombre_representante: "María Fernanda",
@@ -819,7 +819,7 @@ async function createRepresentantes() {
         cargo_representante: "Ejecutiva Comercial",
         fono_representante: "+56987654321",
         correo_representante: "m.gonzalez@vidrioscentro.cl",
-        proveedores: proveedores[1]
+        proveedor: proveedores[1] 
       },
       {
         nombre_representante: "Roberto Antonio",
@@ -828,7 +828,7 @@ async function createRepresentantes() {
         cargo_representante: "Representante de Ventas",
         fono_representante: "+56955577788",
         correo_representante: "r.silva@telasdecor.cl",
-        proveedores: proveedores[2]
+        proveedor: proveedores[2] 
       },
       {
         nombre_representante: "Ana Beatriz",
@@ -837,7 +837,7 @@ async function createRepresentantes() {
         cargo_representante: "Coordinadora Comercial",
         fono_representante: "+56933344455",
         correo_representante: "a.rodriguez@herrajeschile.cl",
-        proveedores: proveedores[3]
+        proveedor: proveedores[3] 
       }
     ];
 
@@ -853,7 +853,6 @@ async function createRepresentantes() {
     throw error;
   }
 }
-
 /**
  * Crear relaciones producto-materiales
  */

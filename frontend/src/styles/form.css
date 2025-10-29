@@ -1,5 +1,3 @@
-
-
 @media (width <= 480px) {
     .form {
         padding-left: 1rem;
@@ -38,17 +36,17 @@
 }
 
 .form {
-    background: linear-gradient(145deg, #ffffff, #f8f9ff);
+    background: linear-gradient(145deg, #ffffff, #fafaf9);
     padding: 2.5rem;
     display: flex;
     flex-direction: column;
     border-radius: 24px;
     align-items: center;
     box-shadow: 
-        0 20px 40px rgba(26, 35, 126, 0.1),
-        0 8px 20px rgba(26, 35, 126, 0.05),
+        0 20px 40px rgba(28, 25, 23, 0.1),
+        0 8px 20px rgba(28, 25, 23, 0.05),
         inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(26, 35, 126, 0.08);
+    border: 1px solid rgba(28, 25, 23, 0.08);
     position: relative;
     overflow: hidden;
 }
@@ -60,12 +58,12 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #1a237e, #3f51b5, #ffc107);
+    background: linear-gradient(90deg, #292524, #57534e, #a8a29e);
     border-radius: 24px 24px 0 0;
 }
 
 .form h1 {
-    color: #1a237e;
+    color: #1c1917;
     font-family: "Playfair Display", serif;
     font-size: 2rem;
     font-weight: 700;
@@ -84,7 +82,7 @@
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background: linear-gradient(90deg, #ffc107, #ff8f00);
+    background: linear-gradient(90deg, #a8a29e, #78716c);
     border-radius: 2px;
 }
 
@@ -96,7 +94,7 @@
 }
 
 .form label {
-    color: #1a237e;
+    color: #1c1917;
     font-weight: 600;
     font-size: 0.875rem;
     margin-bottom: 0.5rem;
@@ -107,56 +105,56 @@
 .form input,
 .form textarea {
     display: flex;
-    border: 2px solid #e8eaf6;
+    border: 2px solid #e7e5e4;
     padding: 1rem 1.25rem;
     background-color: #ffffff;
     background-repeat: no-repeat;
     margin-bottom: 0.25rem;
     font-weight: 400;
     font-size: 0.95rem;
-    color: #1a237e;
+    color: #1c1917;
     border-radius: 12px;
     background-position: right 15px center;
     background-size: 20px 20px;
     box-sizing: border-box;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 
-        inset 0 1px 3px rgba(26, 35, 126, 0.05),
-        0 1px 2px rgba(26, 35, 126, 0.05);
+        inset 0 1px 3px rgba(28, 25, 23, 0.05),
+        0 1px 2px rgba(28, 25, 23, 0.05);
 }
 
 .form input::placeholder,
 .form textarea::placeholder {
-    color: rgba(26, 35, 126, 0.4);
+    color: rgba(28, 25, 23, 0.4);
     font-weight: 400;
 }
 
 .form input:focus,
 .form textarea:focus {
     outline: none;
-    border-color: #3f51b5;
-    background-color: #f3f4ff;
+    border-color: #57534e;
+    background-color: #fafaf9;
     box-shadow: 
-        0 0 0 3px rgba(63, 81, 181, 0.1),
-        inset 0 1px 3px rgba(26, 35, 126, 0.05);
+        0 0 0 3px rgba(87, 83, 78, 0.1),
+        inset 0 1px 3px rgba(28, 25, 23, 0.05);
     transform: translateY(-1px);
 }
 
 .form input:hover,
 .form textarea:hover {
-    border-color: #c5cae9;
+    border-color: #d6d3d1;
     transform: translateY(-1px);
 }
 
 .form select {
     display: flex;
-    border: 2px solid #e8eaf6;
+    border: 2px solid #e7e5e4;
     padding: 1rem 1.25rem;
     margin-bottom: 0.25rem;
     background-color: #ffffff;
     font-weight: 400;
     font-size: 0.95rem;
-    color: #1a237e;
+    color: #1c1917;
     border-radius: 12px;
     box-sizing: border-box;
     background-image: url('../assets/ChevronDownIcon.svg');
@@ -167,21 +165,21 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     box-shadow: 
-        inset 0 1px 3px rgba(26, 35, 126, 0.05),
-        0 1px 2px rgba(26, 35, 126, 0.05);
+        inset 0 1px 3px rgba(28, 25, 23, 0.05),
+        0 1px 2px rgba(28, 25, 23, 0.05);
 }
 
 .form select:focus {
     outline: none;
-    border-color: #3f51b5;
-    background-color: #f3f4ff;
+    border-color: #57534e;
+    background-color: #fafaf9;
     box-shadow: 
-        0 0 0 3px rgba(63, 81, 181, 0.1),
-        inset 0 1px 3px rgba(26, 35, 126, 0.05);
+        0 0 0 3px rgba(87, 83, 78, 0.1),
+        inset 0 1px 3px rgba(28, 25, 23, 0.05);
 }
 
 .form select:hover {
-    border-color: #c5cae9;
+    border-color: #d6d3d1;
     transform: translateY(-1px);
 }
 
@@ -192,7 +190,7 @@
     padding: 1rem 2rem;
     border-radius: 12px;
     width: 100%;
-    background: linear-gradient(135deg, #1a237e, #3f51b5);
+    background: linear-gradient(135deg, #292524, #57534e);
     color: #ffffff;
     font-weight: 700;
     font-size: 1rem;
@@ -205,8 +203,8 @@
     position: relative;
     overflow: hidden;
     box-shadow: 
-        0 4px 12px rgba(26, 35, 126, 0.3),
-        0 2px 4px rgba(26, 35, 126, 0.2);
+        0 4px 12px rgba(28, 25, 23, 0.3),
+        0 2px 4px rgba(28, 25, 23, 0.2);
 }
 
 .form button::before {
@@ -223,9 +221,9 @@
 .form button:hover {
     transform: translateY(-2px);
     box-shadow: 
-        0 8px 25px rgba(26, 35, 126, 0.4),
-        0 4px 10px rgba(26, 35, 126, 0.3);
-    background: linear-gradient(135deg, #3f51b5, #1a237e);
+        0 8px 25px rgba(28, 25, 23, 0.4),
+        0 4px 10px rgba(28, 25, 23, 0.3);
+    background: linear-gradient(135deg, #57534e, #292524);
 }
 
 .form button:hover::before {
@@ -235,8 +233,8 @@
 .form button:active {
     transform: translateY(0);
     box-shadow: 
-        0 2px 8px rgba(26, 35, 126, 0.3),
-        0 1px 3px rgba(26, 35, 126, 0.2);
+        0 2px 8px rgba(28, 25, 23, 0.3),
+        0 1px 3px rgba(28, 25, 23, 0.2);
 }
 
 .form .footerContent {
@@ -245,12 +243,12 @@
     justify-content: center;
     margin-top: 1.5rem;
     text-align: center;
-    color: #757575;
+    color: #78716c;
     font-size: 0.9rem;
 }
 
 .form .footerContent a {
-    color: #ffc107;
+    color: #a8a29e;
     text-decoration: none;
     font-weight: 600;
     transition: all 0.2s ease;
@@ -264,12 +262,12 @@
     left: 0;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, #ffc107, #ff8f00);
+    background: linear-gradient(90deg, #a8a29e, #78716c);
     transition: width 0.3s ease;
 }
 
 .form .footerContent a:hover {
-    color: #ff8f00;
+    color: #78716c;
 }
 
 .form .footerContent a:hover::after {
@@ -301,7 +299,7 @@
 /* Container with updated gradient */
 .container {
     min-height: 100vh;    
-    background: linear-gradient(135deg, #1a237e 0%, #3f51b5 50%, #1a237e 100%);
+    background: linear-gradient(135deg, #292524 0%, #57534e 50%, #292524 100%);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -318,9 +316,9 @@
     right: 0;
     bottom: 0;
     background: 
-        radial-gradient(circle at 20% 80%, rgba(255, 193, 7, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(63, 81, 181, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(26, 35, 126, 0.05) 0%, transparent 50%);
+        radial-gradient(circle at 20% 80%, rgba(168, 162, 158, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(87, 83, 78, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(28, 25, 23, 0.05) 0%, transparent 50%);
     pointer-events: none;
 }
 
@@ -425,12 +423,12 @@ input[name='rol'] {
 .form input:focus-visible,
 .form textarea:focus-visible,
 .form select:focus-visible {
-    outline: 3px solid rgba(255, 193, 7, 0.5);
+    outline: 3px solid rgba(168, 162, 158, 0.5);
     outline-offset: 2px;
 }
 
 .form button:focus-visible {
-    outline: 3px solid rgba(255, 193, 7, 0.8);
+    outline: 3px solid rgba(168, 162, 158, 0.8);
     outline-offset: 3px;
 }
 

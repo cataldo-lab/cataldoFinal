@@ -1,264 +1,280 @@
 // backend/src/controllers/staff/material.controller.js
 "use strict";
 import {
-    createMaterialService,
-    getMaterialesService,
-    getMaterialByIdService,
-    updateMaterialService,
-    updateStockMaterialService,
-    deleteMaterialService,
-    getMaterialesBajoStockService,
-    getAlertasStockService,
-    getMaterialDetalleCompletoService,
-    getMaterialesConResumenService,
-    getAnalisisProveedorService
-} from "../../services/staff/material.service.js"; 
-import {
-    handleErrorClient,
-    handleErrorServer,
-    handleSuccess
-} from "../../handlers/responseHandlers.js";
+  createMaterialService,
+  updateMaterialService,
+  deleteMaterialService,
+  hardDeleteMaterialService,
+  getMaterialByIdService,
+  getAllMaterialesService,
+  getMaterialRepresentanteService,
+  getMaterialesConRepresentantesService
+} from "../../services/staff/material.service.js";
 
-/**
- * POST /api/materiales
- * Crear un nuevo material
- */
+
 export async function createMaterial(req, res) {
-    try {
-        const materialData = req.body;
+  try {
+    const materialData = req.body;
 
-        const [material, error] = await createMaterialService(materialData);
+    const [material, error] = await createMaterialService(materialData);
 
-        if (error) return handleErrorClient(res, 400, error);
-
-        handleSuccess(res, 201, "Material creado exitosamente", material);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error
+      });
     }
+
+    return res.status(201).json({
+      success: true,
+      message: "Material creado exitosamente",
+      data: material
+    });
+
+  } catch (error) {
+    console.error("Error en createMaterial controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error interno del servidor"
+    });
+  }
 }
 
-/**
- * GET /api/materiales
- * Obtener todos los materiales (versión básica sin resumen)
- */
-export async function getMateriales(req, res) {
-    try {
-        const filtros = {
-            categoria_unidad: req.query.categoria_unidad,
-            activo: req.query.activo !== undefined ? req.query.activo === 'true' : undefined,
-            bajo_stock: req.query.bajo_stock,
-            id_proveedor: req.query.id_proveedor ? parseInt(req.query.id_proveedor) : undefined
-        };
 
-        // Limpiar filtros vacíos
-        Object.keys(filtros).forEach(key => {
-            if (filtros[key] === undefined) delete filtros[key];
-        });
-
-        const [materiales, error] = await getMaterialesService(filtros);
-
-        if (error) return handleErrorServer(res, 500, error);
-
-        handleSuccess(res, 200, "Materiales obtenidos exitosamente", materiales);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
-    }
-}
-
-/**
- * GET /api/materiales/con-resumen
- * Obtener materiales CON resumen de compras y proveedor
- */
-export async function getMaterialesConResumen(req, res) {
-    try {
-        const filtros = {
-            categoria_unidad: req.query.categoria_unidad,
-            activo: req.query.activo !== undefined ? req.query.activo === 'true' : undefined,
-            bajo_stock: req.query.bajo_stock,
-            id_proveedor: req.query.id_proveedor ? parseInt(req.query.id_proveedor) : undefined
-        };
-
-        // Limpiar filtros vacíos
-        Object.keys(filtros).forEach(key => {
-            if (filtros[key] === undefined) delete filtros[key];
-        });
-
-        const [materiales, error] = await getMaterialesConResumenService(filtros);
-
-        if (error) return handleErrorServer(res, 500, error);
-
-        handleSuccess(res, 200, "Materiales obtenidos con resumen", materiales);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
-    }
-}
-
-/**
- * GET /api/materiales/:id
- * Obtener un material por ID (versión básica)
- */
 export async function getMaterialById(req, res) {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
+    const id_material = parseInt(id);
 
-        const [material, error] = await getMaterialByIdService(parseInt(id));
-
-        if (error) return handleErrorClient(res, 404, error);
-
-        handleSuccess(res, 200, "Material obtenido exitosamente", material);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
+    if (isNaN(id_material)) {
+      return res.status(400).json({
+        success: false,
+        message: "ID de material inválido"
+      });
     }
+
+    const [material, error] = await getMaterialByIdService(id_material);
+
+    if (error) {
+      return res.status(404).json({
+        success: false,
+        message: error
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: material
+    });
+
+  } catch (error) {
+    console.error("Error en getMaterialById controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error interno del servidor"
+    });
+  }
 }
 
-/**
- * GET /api/materiales/:id/detalle-completo
- * Obtener material con TODO: proveedor, compras, productos que lo usan
- */
-export async function getMaterialDetalleCompleto(req, res) {
-    try {
-        const { id } = req.params;
 
-        const [detalle, error] = await getMaterialDetalleCompletoService(parseInt(id));
+export async function getAllMateriales(req, res) {
+  try {
+    const incluirInactivos = req.query.incluirInactivos === 'true';
+    const soloActivos = !incluirInactivos;
 
-        if (error) return handleErrorClient(res, 404, error);
+    const [materiales, error] = await getAllMaterialesService(soloActivos);
 
-        handleSuccess(res, 200, "Detalle completo del material obtenido", detalle);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: error
+      });
     }
+
+    return res.status(200).json({
+      success: true,
+      data: materiales,
+      count: materiales.length
+    });
+
+  } catch (error) {
+    console.error("Error en getAllMateriales controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error interno del servidor"
+    });
+  }
 }
 
-/**
- * PUT /api/materiales/:id
- * Actualizar material
- */
+
 export async function updateMaterial(req, res) {
-    try {
-        const { id } = req.params;
-        const datosActualizados = req.body;
+  try {
+    const { id } = req.params;
+    const id_material = parseInt(id);
+    const materialData = req.body;
 
-        const [material, error] = await updateMaterialService(
-            parseInt(id),
-            datosActualizados
-        );
-
-        if (error) return handleErrorClient(res, 404, error);
-
-        handleSuccess(res, 200, "Material actualizado exitosamente", material);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
+    if (isNaN(id_material)) {
+      return res.status(400).json({
+        success: false,
+        message: "ID de material inválido"
+      });
     }
+
+    const [material, error] = await updateMaterialService(id_material, materialData);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Material actualizado exitosamente",
+      data: material
+    });
+
+  } catch (error) {
+    console.error("Error en updateMaterial controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error interno del servidor"
+    });
+  }
 }
 
-/**
- * PATCH /api/materiales/:id/stock
- * Actualizar stock de material
- * Body: { cantidad: number, operacion: 'add' | 'subtract' | 'set' }
- */
-export async function updateStockMaterial(req, res) {
-    try {
-        const { id } = req.params;
-        const { cantidad, operacion } = req.body;
 
-        if (cantidad === undefined || cantidad === null) {
-            return handleErrorClient(res, 400, "La cantidad es requerida");
-        }
-
-        if (cantidad < 0) {
-            return handleErrorClient(res, 400, "La cantidad no puede ser negativa");
-        }
-
-        const [material, error] = await updateStockMaterialService(
-            parseInt(id),
-            cantidad,
-            operacion || 'set'
-        );
-
-        if (error) return handleErrorClient(res, 400, error);
-
-        handleSuccess(res, 200, "Stock actualizado exitosamente", material);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
-    }
-}
-
-/**
- * DELETE /api/materiales/:id
- * Desactivar material
- */
 export async function deleteMaterial(req, res) {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
+    const id_material = parseInt(id);
 
-        const [material, error] = await deleteMaterialService(parseInt(id));
-
-        if (error) return handleErrorClient(res, 404, error);
-
-        handleSuccess(res, 200, "Material desactivado exitosamente", material);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
+    if (isNaN(id_material)) {
+      return res.status(400).json({
+        success: false,
+        message: "ID de material inválido"
+      });
     }
+
+    const [result, error] = await deleteMaterialService(id_material);
+
+    if (error) {
+      return res.status(404).json({
+        success: false,
+        message: error
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: result.message
+    });
+
+  } catch (error) {
+    console.error("Error en deleteMaterial controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error interno del servidor"
+    });
+  }
 }
 
-/**
- * GET /api/materiales/alertas/bajo-stock
- * Obtener materiales con stock bajo
- */
-export async function getMaterialesBajoStock(req, res) {
-    try {
-        const [materiales, error] = await getMaterialesBajoStockService();
 
-        if (error) return handleErrorServer(res, 500, error);
+export async function hardDeleteMaterial(req, res) {
+  try {
+    const { id } = req.params;
+    const id_material = parseInt(id);
 
-        handleSuccess(res, 200, "Materiales bajo stock obtenidos", materiales);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
+    if (isNaN(id_material)) {
+      return res.status(400).json({
+        success: false,
+        message: "ID de material inválido"
+      });
     }
+
+    const [result, error] = await hardDeleteMaterialService(id_material);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: result.message
+    });
+
+  } catch (error) {
+    console.error("Error en hardDeleteMaterial controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error interno del servidor"
+    });
+  }
 }
 
-/**
- * GET /api/materiales/alertas/stock
- * Obtener alertas de stock categorizadas
- */
-export async function getAlertasStock(req, res) {
-    try {
-        const [alertas, error] = await getAlertasStockService();
 
-        if (error) return handleErrorServer(res, 500, error);
+export async function getMaterialRepresentante(req, res) {
+  try {
+    const { id } = req.params;
+    const id_material = parseInt(id);
 
-        handleSuccess(res, 200, "Alertas de stock obtenidas", alertas);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
+    if (isNaN(id_material)) {
+      return res.status(400).json({
+        success: false,
+        message: "ID de material inválido"
+      });
     }
+
+    const [representante, error] = await getMaterialRepresentanteService(id_material);
+
+    if (error) {
+      return res.status(404).json({
+        success: false,
+        message: error
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: representante
+    });
+
+  } catch (error) {
+    console.error("Error en getMaterialRepresentante controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error interno del servidor"
+    });
+  }
 }
 
-/**
- * GET /api/proveedores/:id/analisis
- * Obtener análisis completo de un proveedor
- * (cuánto y qué materiales le hemos comprado)
- */
-export async function getAnalisisProveedor(req, res) {
-    try {
-        const { id } = req.params;
 
-        const [analisis, error] = await getAnalisisProveedorService(parseInt(id));
+export async function getMaterialesConRepresentantes(req, res) {
+  try {
+    const [materiales, error] = await getMaterialesConRepresentantesService();
 
-        if (error) return handleErrorClient(res, 404, error);
-
-        handleSuccess(res, 200, "Análisis del proveedor obtenido", analisis);
-
-    } catch (error) {
-        handleErrorServer(res, 500, error.message);
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: error
+      });
     }
+
+    return res.status(200).json({
+      success: true,
+      data: materiales,
+      count: materiales.length
+    });
+
+  } catch (error) {
+    console.error("Error en getMaterialesConRepresentantes controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error interno del servidor"
+    });
+  }
 }
