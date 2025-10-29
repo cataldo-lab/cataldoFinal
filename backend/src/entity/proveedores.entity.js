@@ -37,7 +37,11 @@ export const proveedoresSchema = new EntitySchema({
             type: "one-to-many",
             target: "Materiales",
             inverseSide: "proveedor",
-            //cascade: true
+        },
+        representantes:{ 
+            type: "one-to-many",
+            target: "Representante",
+            inverseSide: "proveedor"
         }
     }
 })

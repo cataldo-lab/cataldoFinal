@@ -77,6 +77,22 @@ export default function PopupCreateMaterial({
 
   if (!show) return null;
 
+  // Preparar opciones mostrando representantes
+  const opcionesProveedores = Array.isArray(proveedores) 
+    ? proveedores.map(p => {
+        if (p.representante) {
+          return {
+            value: p.id_proveedor.toString(),
+            label: `👤 ${p.representante.nombre_completo} - ${p.rol_proveedor}`
+          };
+        }
+        return {
+          value: p.id_proveedor.toString(),
+          label: `🏢 ${p.rol_proveedor}`
+        };
+      })
+    : [];
+
   return (
     <div className="bg">
       <div className="popup" style={{ height: 'auto', maxHeight: '90vh', maxWidth: '600px', overflowY: 'auto' }}>
@@ -198,10 +214,10 @@ export default function PopupCreateMaterial({
             {
               label: (
                 <span>
-                  Proveedor
+                  Proveedor / Representante
                   <span className='tooltip-icon' style={{ marginLeft: '5px' }}>
                     <img src={QuestionIcon} alt="Ayuda" style={{ width: '16px', height: '16px' }} />
-                    <span className='tooltip-text'>Selecciona el proveedor del material (opcional)</span>
+                    <span className='tooltip-text'>Selecciona el representante/proveedor del material (opcional)</span>
                   </span>
                 </span>
               ),
@@ -209,10 +225,7 @@ export default function PopupCreateMaterial({
               fieldType: 'select',
               options: [
                 { value: '', label: '-- Sin proveedor --' },
-                ...(Array.isArray(proveedores) ? proveedores.map(p => ({
-                  value: p.id_proveedor.toString(),
-                  label: p.rol_proveedor || `Proveedor #${p.id_proveedor}`
-                })) : [])
+                ...opcionesProveedores
               ],
               required: false
             }

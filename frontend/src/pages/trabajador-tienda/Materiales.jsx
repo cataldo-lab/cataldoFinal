@@ -1,14 +1,15 @@
 // frontend/src/pages/trabajador-tienda/Materiales.jsx
 import { useState, useEffect } from 'react';
 
-import useMateriales from "@hooks/materiales/useMateriales";
-import useCreateMaterial from "@hooks/materiales/useCreateMaterial";
-import useUpdateMaterial from "@hooks/materiales/useUpdateMaterial";
+import { useMaterialesConRepresentantes } from "@hooks/materiales/useMaterialesConRepresentantes";
+import { useCreateMaterial } from "@hooks/materiales/useCreateMaterial";
+import { useUpdateMaterial } from "@hooks/materiales/useUpdateMaterial";
 import { useDeleteMaterial } from "@hooks/materiales/useDeleteMaterial";
 import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
 import PopupCreateMaterial from '@components/popup/trabajadorTienda/material/PopupCreateMaterial';
 import PopupUpdateMaterial from '@components/popup/trabajadorTienda/material/PopupUpdateMaterial';
-import useProveedoresSafe from '@hooks/prooveedores/useProveedoresSafe';
+//import useProveedoresSafe from '@hooks/prooveedores/useProveedoresSafe';
+import { useProveedoresConRepresentantes } from '@hooks/prooveedores/useProveedoresConRepresentantes'
 
 import AddIcon from '@assets/AddIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
@@ -21,8 +22,8 @@ export default function Materiales() {
     materiales, 
     loading: loadingMateriales, 
     error: errorMateriales,
-    fetchMateriales 
-  } = useMateriales(false, true); // false = no incluir inactivos, true = auto fetch
+    fetchMaterialesConRepresentantes 
+  } = useMaterialesConRepresentantes(true); // true = auto fetch
 
   const { 
     handleCreateMaterial: createMaterialAction, 
@@ -43,7 +44,7 @@ export default function Materiales() {
     proveedores, 
     loading: loadingProveedores, 
     fetchProveedores 
-  } = useProveedoresSafe();
+  } = useProveedoresConRepresentantes();
 
   // ===== ESTADOS LOCALES =====
   const [selectedItems, setSelectedItems] = useState([]);
@@ -124,7 +125,7 @@ export default function Materiales() {
     if (newMaterial) {
       showSuccessAlert('Éxito', 'Material creado correctamente');
       setShowCreatePopup(false);
-      await fetchMateriales();
+      await fetchMaterialesConRepresentantes();
       return [true, null];
     } else {
       showErrorAlert('Error', error || 'Error al crear material');
@@ -139,7 +140,7 @@ export default function Materiales() {
       showSuccessAlert('Éxito', 'Material actualizado correctamente');
       setShowUpdatePopup(false);
       setMaterialSeleccionado(null);
-      await fetchMateriales();
+      await fetchMaterialesConRepresentantes();
       return [true, null];
     } else {
       showErrorAlert('Error', error || 'Error al actualizar material');
@@ -156,7 +157,7 @@ export default function Materiales() {
         if (success) {
           showSuccessAlert('Éxito', 'Material desactivado correctamente');
           setSelectedItems(selectedItems.filter(item => item !== id));
-          await fetchMateriales();
+          await fetchMaterialesConRepresentantes();
         } else {
           showErrorAlert('Error', error || 'No se pudo desactivar el material');
         }
@@ -193,7 +194,7 @@ export default function Materiales() {
             `${exitosos} material(es) desactivado(s) correctamente`
           );
           setSelectedItems([]);
-          await fetchMateriales();
+          await fetchMaterialesConRepresentantes();
         } else {
           showErrorAlert('Error', 'No se pudieron desactivar los materiales');
         }
@@ -294,7 +295,7 @@ export default function Materiales() {
 
   const EmptyState = () => (
     <tr>
-      <td colSpan="8" className="px-6 py-12 text-center">
+      <td colSpan="9" className="px-6 py-12 text-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
             <span className="text-5xl">📭</span>
@@ -327,7 +328,7 @@ export default function Materiales() {
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Error al cargar</h2>
             <p className="text-gray-600 mb-4">{errorMateriales}</p>
             <button
-              onClick={fetchMateriales}
+              onClick={fetchMaterialesConRepresentantes}
               className="bg-stone-600 hover:bg-stone-700 text-white px-6 py-2 rounded-lg transition-colors"
             >
               🔄 Reintentar
@@ -459,7 +460,7 @@ export default function Materiales() {
               <span>🔄</span> Limpiar filtros
             </button>
             <button
-              onClick={fetchMateriales}
+              onClick={fetchMaterialesConRepresentantes}
               disabled={loadingMateriales}
               className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg 
               transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
@@ -488,6 +489,7 @@ export default function Materiales() {
                   <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">Unidad</th>
                   <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">Precio</th>
                   <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">Proveedor</th>
+                  <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">Representante</th>
                   <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">Estado Stock</th>
                   <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider">Acciones</th>
                 </tr>
@@ -551,14 +553,29 @@ export default function Materiales() {
                             <span className="text-sm font-medium text-gray-900">
                               {material.proveedor.rol_proveedor}
                             </span>
-                            {material.proveedor.fono_proveedor && (
-                              <span className="text-xs text-gray-500">
-                                📞 {material.proveedor.fono_proveedor}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400 italic">Sin proveedor</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-4">
+                        {material.representante ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="text-sm font-medium text-gray-900">
+                              👤 {material.representante.nombre_completo}
+                            </span>
+                            <span className="text-xs text-gray-600">
+                              {material.representante.cargo_representante}
+                            </span>
+                            {material.representante.fono_representante && (
+                              <span className="text-xs text-blue-600 font-medium">
+                                📞 {material.representante.fono_representante}
                               </span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-400 italic">Sin proveedor</span>
+                          <span className="text-sm text-gray-400 italic">Sin representante</span>
                         )}
                       </td>
 

@@ -46,3 +46,5 @@ export function useCreateMaterial() {
     resetState
   };
 }
+
+export default useCreateMaterial; 

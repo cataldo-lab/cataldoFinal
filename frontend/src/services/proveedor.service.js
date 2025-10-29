@@ -156,12 +156,6 @@ export async function createRepresentante(id_proveedor, representanteData) {
     }
 }
 
-/**
- * Actualizar un representante existente
- * @param {number} id_representante - ID del representante
- * @param {Object} representanteData - Datos a actualizar
- * @returns {Promise<Object>} Respuesta del servidor
- */
 export async function updateRepresentante(id_representante, representanteData) {
     try {
         const response = await axios.put(
@@ -177,11 +171,7 @@ export async function updateRepresentante(id_representante, representanteData) {
     }
 }
 
-/**
- * Eliminar un representante
- * @param {number} id_representante - ID del representante
- * @returns {Promise<Object>} Respuesta del servidor
- */
+
 export async function deleteRepresentante(id_representante) {
     try {
         const response = await axios.delete(
@@ -196,17 +186,8 @@ export async function deleteRepresentante(id_representante) {
     }
 }
 
-// ========================================
-// SERVICIOS DE ANÁLISIS
-// ========================================
 
-/**
- * Obtener análisis completo de un proveedor
- * Incluye materiales suministrados y estadísticas de compras
- * Nota: Este endpoint está en /materiales/proveedores/:id/analisis
- * @param {number} id_proveedor - ID del proveedor
- * @returns {Promise<Object>} Respuesta del servidor
- */
+
 export async function getAnalisisProveedor(id_proveedor) {
     try {
         const response = await axios.get(`/materiales/proveedores/${id_proveedor}/analisis`);
@@ -215,6 +196,19 @@ export async function getAnalisisProveedor(id_proveedor) {
         return error.response?.data || { 
             status: 'Error', 
             message: 'Error de conexión' 
+        };
+    }
+}
+
+export async function getProveedoresConRepresentantes() {
+    try {
+        const { data } = await axios.get('/proveedores/con-representantes');
+        return data;
+    } catch (error) {
+        console.error('Error al obtener proveedores con representantes:', error);
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Error al obtener proveedores'
         };
     }
 }

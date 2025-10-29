@@ -9,7 +9,8 @@ import {
     createRepresentanteService,
     getRepresentantesByProveedorService,
     updateRepresentanteService,
-    deleteRepresentanteService
+    deleteRepresentanteService,
+    getProveedoresConRepresentantesService
 } from "../../services/staff/proveedor.service.js";
 import {
     handleErrorClient,
@@ -17,16 +18,7 @@ import {
     handleSuccess
 } from "../../handlers/responseHandlers.js";
 
-/**
- * ========================================
- * CONTROLADORES DE PROVEEDORES
- * ========================================
- */
 
-/**
- * POST /api/proveedores
- * Crear un nuevo proveedor
- */
 export async function createProveedor(req, res) {
     try {
         const proveedorData = req.body;
@@ -88,10 +80,7 @@ export async function getProveedorById(req, res) {
     }
 }
 
-/**
- * PUT /api/proveedores/:id
- * Actualizar proveedor
- */
+
 export async function updateProveedor(req, res) {
     try {
         const { id } = req.params;
@@ -111,10 +100,7 @@ export async function updateProveedor(req, res) {
     }
 }
 
-/**
- * DELETE /api/proveedores/:id
- * Eliminar proveedor
- */
+
 export async function deleteProveedor(req, res) {
     try {
         const { id } = req.params;
@@ -130,11 +116,7 @@ export async function deleteProveedor(req, res) {
     }
 }
 
-/**
- * ========================================
- * CONTROLADORES DE REPRESENTANTES
- * ========================================
- */
+
 
 /**
  * POST /api/proveedores/:id/representantes
@@ -178,10 +160,6 @@ export async function getRepresentantesByProveedor(req, res) {
     }
 }
 
-/**
- * PUT /api/proveedores/representantes/:id
- * Actualizar representante
- */
 export async function updateRepresentante(req, res) {
     try {
         const { id } = req.params;
@@ -201,10 +179,6 @@ export async function updateRepresentante(req, res) {
     }
 }
 
-/**
- * DELETE /api/proveedores/representantes/:id
- * Eliminar representante
- */
 export async function deleteRepresentante(req, res) {
     try {
         const { id } = req.params;
@@ -217,5 +191,37 @@ export async function deleteRepresentante(req, res) {
 
     } catch (error) {
         handleErrorServer(res, 500, error.message);
+    }
+}
+
+export async function getProveedoresConRepresentantes(req, res) {
+    try {
+        console.log('🎯 Controller: getProveedoresConRepresentantes llamado');
+        
+        const [proveedores, error] = await getProveedoresConRepresentantesService();
+
+        if (error) {
+            console.error('❌ Error desde service:', error);
+            return res.status(500).json({
+                success: false,
+                message: error
+            });
+        }
+
+        console.log('✅ Controller: Proveedores obtenidos exitosamente:', proveedores.length);
+
+        return res.status(200).json({
+            success: true,
+            data: proveedores,
+            count: proveedores.length
+        });
+    } catch (error) {
+        console.error("❌ ERROR EN CONTROLLER getProveedoresConRepresentantes:");
+        console.error("❌ Mensaje:", error.message);
+        console.error("❌ Stack:", error.stack);
+        return res.status(500).json({
+            success: false,
+            message: "Error interno del servidor"
+        });
     }
 }

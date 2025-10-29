@@ -46,3 +46,5 @@ export function useUpdateMaterial() {
     resetState
   };
 }
+
+export default useUpdateMaterial;

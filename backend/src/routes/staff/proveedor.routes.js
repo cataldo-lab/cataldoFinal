@@ -10,7 +10,8 @@ import {
     createRepresentante,
     getRepresentantesByProveedor,
     updateRepresentante,
-    deleteRepresentante
+    deleteRepresentante,
+    getProveedoresConRepresentantes
 } from "../../controllers/staff/proveedor.controller.js";
 import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
 import { isEmployee, isManager } from "../../middlewares/authorization.middleware.js";
@@ -40,25 +41,28 @@ router.delete("/representantes/:id", isManager, deleteRepresentante);
  */
 
 // GET /api/proveedores - Obtener todos los proveedores
-router.get("/", isEmployee, getProveedores);
+router.get("/", [isEmployee,isManager], getProveedores);
 
 // POST /api/proveedores - Crear nuevo proveedor
-router.post("/", isEmployee, createProveedor);
+router.post("/", [isEmployee,isManager], createProveedor);
 
 // GET /api/proveedores/:id/representantes - Obtener representantes de un proveedor
 // ⚠️ DEBE ir ANTES de GET /:id
-router.get("/:id/representantes", isEmployee, getRepresentantesByProveedor);
+router.get("/:id/representantes", [isEmployee,isManager], getRepresentantesByProveedor);
 
 // POST /api/proveedores/:id/representantes - Crear representante para un proveedor
-router.post("/:id/representantes", isEmployee, createRepresentante);
+router.post("/:id/representantes", [isEmployee,isManager], createRepresentante);
 
 // GET /api/proveedores/:id - Obtener un proveedor por ID
-router.get("/:id", isEmployee, getProveedorById);
+router.get("/:id", [isEmployee,isManager], getProveedorById);
 
 // PUT /api/proveedores/:id - Actualizar proveedor
-router.put("/:id", isEmployee, updateProveedor);
+router.put("/:id", [isEmployee,isManager], updateProveedor);
 
 // DELETE /api/proveedores/:id - Eliminar proveedor (solo gerente)
-router.delete("/:id", isManager, deleteProveedor);
+router.delete("/:id", [isEmployee,isManager], deleteProveedor);
+
+router.get("/con-representantes", [isEmployee,isManager], getProveedoresConRepresentantes);
+
 
 export default router;

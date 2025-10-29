@@ -628,3 +628,90 @@ export async function deleteRepresentanteService(id_representante) {
         return [null, 'Error interno del servidor'];
     }
 }
+
+
+export async function getProveedoresConRepresentantesService() {
+    try {
+        console.log('🔍 Iniciando getProveedoresConRepresentantesService...');
+        
+        // Usar los schemas directamente
+        const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
+        const representanteRepository = AppDataSource.getRepository(representanteSchema);
+
+        console.log('📦 Repositorios obtenidos correctamente');
+
+        // Obtener todos los proveedores
+        const proveedores = await proveedorRepository.find({
+            order: { id_proveedor: 'DESC' }
+        });
+
+        console.log(`📊 Total proveedores encontrados: ${proveedores.length}`);
+
+        if (proveedores.length === 0) {
+            console.log('⚠️ No hay proveedores en la base de datos');
+            return [[], null];
+        }
+
+        // Obtener representantes para cada proveedor
+        const proveedoresConRepresentantes = [];
+
+        for (const proveedor of proveedores) {
+            try {
+                console.log(`🔍 Buscando representante para proveedor ID: ${proveedor.id_proveedor}`);
+                
+                // Buscar representante del proveedor
+                const representantes = await representanteRepository
+                    .createQueryBuilder('representante')
+                    .leftJoinAndSelect('representante.proveedor', 'proveedor')
+                    .where('proveedor.id_proveedor = :id', { id: proveedor.id_proveedor })
+                    .orderBy('representante.id_representante', 'DESC')
+                    .getMany();
+
+                const representante = representantes.length > 0 ? representantes[0] : null;
+
+                console.log(`${representante ? '✅' : '⚠️'} Proveedor ${proveedor.id_proveedor} (${proveedor.rol_proveedor}): ${representante ? 'CON' : 'SIN'} representante`);
+
+                proveedoresConRepresentantes.push({
+                    id_proveedor: proveedor.id_proveedor,
+                    rol_proveedor: proveedor.rol_proveedor,
+                    rut_proveedor: proveedor.rut_proveedor,
+                    fono_proveedor: proveedor.fono_proveedor,
+                    correo_proveedor: proveedor.correo_proveedor,
+                    representante: representante ? {
+                        id_representante: representante.id_representante,
+                        nombre_representante: representante.nombre_representante,
+                        apellido_representante: representante.apellido_representante,
+                        nombre_completo: `${representante.nombre_representante} ${representante.apellido_representante}`,
+                        rut_representante: representante.rut_representante,
+                        cargo_representante: representante.cargo_representante,
+                        fono_representante: representante.fono_representante,
+                        correo_representante: representante.correo_representante
+                    } : null
+                });
+            } catch (innerError) {
+                console.error(`❌ Error procesando proveedor ${proveedor.id_proveedor}:`, innerError.message);
+                // Continuar con el siguiente proveedor
+                proveedoresConRepresentantes.push({
+                    id_proveedor: proveedor.id_proveedor,
+                    rol_proveedor: proveedor.rol_proveedor,
+                    rut_proveedor: proveedor.rut_proveedor,
+                    fono_proveedor: proveedor.fono_proveedor,
+                    correo_proveedor: proveedor.correo_proveedor,
+                    representante: null
+                });
+            }
+        }
+
+        console.log(`✅ Proveedores con representantes procesados: ${proveedoresConRepresentantes.length}`);
+        console.log(`📊 Proveedores CON representante: ${proveedoresConRepresentantes.filter(p => p.representante).length}`);
+        console.log(`📊 Proveedores SIN representante: ${proveedoresConRepresentantes.filter(p => !p.representante).length}`);
+
+        return [proveedoresConRepresentantes, null];
+
+    } catch (error) {
+        console.error('❌ Error CRÍTICO en getProveedoresConRepresentantesService:');
+        console.error('❌ Mensaje:', error.message);
+        console.error('❌ Stack:', error.stack);
+        return [null, `Error al obtener proveedores: ${error.message}`];
+    }
+}

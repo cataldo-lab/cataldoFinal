@@ -44,3 +44,5 @@ export function useMateriales(incluirInactivos = false, autoFetch = true) {
     setMateriales
   };
 }
+
+export default useMateriales;
