@@ -9,8 +9,10 @@ import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/swee
 import PopupCreateMaterial from '@components/popup/trabajadorTienda/material/PopupCreateMaterial';
 import PopupUpdateMaterial from '@components/popup/trabajadorTienda/material/PopupUpdateMaterial';
 //import useProveedoresSafe from '@hooks/prooveedores/useProveedoresSafe';
-import { useProveedoresConRepresentantes } from '@hooks/prooveedores/useProveedoresConRepresentantes'
-
+import { useProveedoresConRepresentantes } from '@hooks/prooveedores/useProveedoresConRepresentantes';
+import  PopupCreateProveedorConRepresentante  from
+ '@components/popup/trabajadorTienda/proveedor/PopupCreateProveedorConRepresentante.jsx';
+import { useCreateProveedorConRepresentante } from '@hooks/prooveedores/useCreateProveedorConRepresentante'
 import AddIcon from '@assets/AddIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
 import DeleteIcon from '@assets/deleteIcon.svg';
@@ -24,6 +26,9 @@ export default function Materiales() {
     error: errorMateriales,
     fetchMaterialesConRepresentantes 
   } = useMaterialesConRepresentantes(true); // true = auto fetch
+
+  
+
 
   const { 
     handleCreateMaterial: createMaterialAction, 
@@ -45,6 +50,14 @@ export default function Materiales() {
     loading: loadingProveedores, 
     fetchProveedores 
   } = useProveedoresConRepresentantes();
+
+  const {
+  handleCreateProveedorConRepresentante,  
+  loading: loadingCreateProveedor,
+  isOpen,
+  openModal,
+  closeModal
+} = useCreateProveedorConRepresentante();
 
   // ===== ESTADOS LOCALES =====
   const [selectedItems, setSelectedItems] = useState([]);
@@ -147,6 +160,8 @@ export default function Materiales() {
       return [false, error];
     }
   };
+
+  
 
   const handleDeleteMaterial = async (id) => {
     try {
@@ -341,6 +356,8 @@ export default function Materiales() {
 
   const materialesParaMostrar = Array.isArray(materialesFiltrados) ? materialesFiltrados : [];
 
+
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pb-8">
       <div className="pt-[calc(9vh+1rem)] px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -391,7 +408,7 @@ export default function Materiales() {
             <span>🔍</span> Filtros de búsqueda
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Filtro de Proveedor */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-900 block">
@@ -443,13 +460,27 @@ export default function Materiales() {
                   onChange={(e) => handleFiltroChange('bajo_stock', e.target.checked)}
                   className="w-5 h-5 accent-orange-600 cursor-pointer"
                 />
-                <label htmlFor="bajo_stock" className="text-sm font-semibold text-orange-800 cursor-pointer flex items-center gap-2">
+                <label htmlFor="bajo_stock" className="text-sm font-semibold text-orange-800
+                cursor-pointer flex items-center gap-2">
                   <span>⚠️</span>
                   Stock bajo
                 </label>
               </div>
             </div>
+
+            {/*.   */}
+          <div className="flex items-end">
+          <button
+          onClick={openModal}
+          className="w-full px-4 py-2.5 bg-stone-500 hover:bg-stone-700 text-white rounded-lg font-semibold transition-all"
+        >
+          ➕ Agregar proveedor
+        </button>
           </div>
+
+          </div>
+
+          
 
           <div className="mt-4 flex gap-2">
             <button
@@ -648,6 +679,22 @@ export default function Materiales() {
         proveedores={Array.isArray(proveedores) ? proveedores : []}
         onSubmit={handleUpdateMaterial}
       />
+
+      <PopupCreateProveedorConRepresentante
+      show={isOpen}
+      setShow={closeModal}
+      onSubmit={async (data) => {
+        const [result, error] = await handleCreateProveedorConRepresentante(data);
+        if (result) {
+          showSuccessAlert('Éxito', 'Proveedor creado correctamente');
+          await fetchProveedores(); // Recargar lista de proveedores
+          return [true, null];
+        } else {
+          showErrorAlert('Error', error || 'Error al crear proveedor');
+          return [false, error];
+    }
+  }}
+/>
     </div>
   );
 }

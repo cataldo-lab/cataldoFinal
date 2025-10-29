@@ -11,22 +11,19 @@ import {
     getRepresentantesByProveedor,
     updateRepresentante,
     deleteRepresentante,
-    getProveedoresConRepresentantes
+    getProveedoresConRepresentantes,
+    createProveedorConRepresentante
 } from "../../controllers/staff/proveedor.controller.js";
 import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
 import { isEmployee, isManager } from "../../middlewares/authorization.middleware.js";
 
 const router = Router();
 
-// Middleware de autenticación para todas las rutas
 router.use(authenticateJwt);
 
-/**
- * ========================================
- * RUTAS DE REPRESENTANTES (DEBEN IR PRIMERO)
- * ========================================
- * IMPORTANTE: Estas rutas van ANTES de /:id para evitar conflictos
- */
+router.get("/con-representantes", [isEmployee,isManager], getProveedoresConRepresentantes);
+router.post("/con-representante", isEmployee, createProveedorConRepresentante);
+
 
 // PUT /api/proveedores/representantes/:id - Actualizar representante
 router.put("/representantes/:id", isEmployee, updateRepresentante);
@@ -34,11 +31,7 @@ router.put("/representantes/:id", isEmployee, updateRepresentante);
 // DELETE /api/proveedores/representantes/:id - Eliminar representante (solo gerente)
 router.delete("/representantes/:id", isManager, deleteRepresentante);
 
-/**
- * ========================================
- * RUTAS DE PROVEEDORES
- * ========================================
- */
+
 
 // GET /api/proveedores - Obtener todos los proveedores
 router.get("/", [isEmployee,isManager], getProveedores);
@@ -62,7 +55,7 @@ router.put("/:id", [isEmployee,isManager], updateProveedor);
 // DELETE /api/proveedores/:id - Eliminar proveedor (solo gerente)
 router.delete("/:id", [isEmployee,isManager], deleteProveedor);
 
-router.get("/con-representantes", [isEmployee,isManager], getProveedoresConRepresentantes);
+
 
 
 export default router;

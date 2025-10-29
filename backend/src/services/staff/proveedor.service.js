@@ -39,11 +39,7 @@ function validarRUT(rut) {
     return dv === dvCalculado;
 }
 
-/**
- * Validar email
- * @param {string} email - Email a validar
- * @returns {boolean}
- */
+
 function validarEmail(email) {
     if (!email) return false;
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -630,19 +626,20 @@ export async function deleteRepresentanteService(id_representante) {
 }
 
 
+
 export async function getProveedoresConRepresentantesService() {
     try {
         console.log('🔍 Iniciando getProveedoresConRepresentantesService...');
         
-        // Usar los schemas directamente
         const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
-        const representanteRepository = AppDataSource.getRepository(representanteSchema);
 
-        console.log('📦 Repositorios obtenidos correctamente');
+        console.log('📦 Repositorio obtenido correctamente');
 
-        // Obtener todos los proveedores
         const proveedores = await proveedorRepository.find({
-            order: { id_proveedor: 'DESC' }
+            relations: ['representantes'],
+            order: { 
+                id_proveedor: 'DESC' 
+            }
         });
 
         console.log(`📊 Total proveedores encontrados: ${proveedores.length}`);
@@ -652,55 +649,33 @@ export async function getProveedoresConRepresentantesService() {
             return [[], null];
         }
 
-        // Obtener representantes para cada proveedor
-        const proveedoresConRepresentantes = [];
+        // Formatear la respuesta
+        const proveedoresConRepresentantes = proveedores.map(proveedor => {
+            // Tomar el primer representante si existe
+            const representante = proveedor.representantes && proveedor.representantes.length > 0 
+                ? proveedor.representantes[0] 
+                : null;
 
-        for (const proveedor of proveedores) {
-            try {
-                console.log(`🔍 Buscando representante para proveedor ID: ${proveedor.id_proveedor}`);
-                
-                // Buscar representante del proveedor
-                const representantes = await representanteRepository
-                    .createQueryBuilder('representante')
-                    .leftJoinAndSelect('representante.proveedor', 'proveedor')
-                    .where('proveedor.id_proveedor = :id', { id: proveedor.id_proveedor })
-                    .orderBy('representante.id_representante', 'DESC')
-                    .getMany();
+            console.log(`${representante ? '✅' : '⚠️'} Proveedor ${proveedor.id_proveedor} (${proveedor.rol_proveedor}): ${representante ? 'CON' : 'SIN'} representante`);
 
-                const representante = representantes.length > 0 ? representantes[0] : null;
-
-                console.log(`${representante ? '✅' : '⚠️'} Proveedor ${proveedor.id_proveedor} (${proveedor.rol_proveedor}): ${representante ? 'CON' : 'SIN'} representante`);
-
-                proveedoresConRepresentantes.push({
-                    id_proveedor: proveedor.id_proveedor,
-                    rol_proveedor: proveedor.rol_proveedor,
-                    rut_proveedor: proveedor.rut_proveedor,
-                    fono_proveedor: proveedor.fono_proveedor,
-                    correo_proveedor: proveedor.correo_proveedor,
-                    representante: representante ? {
-                        id_representante: representante.id_representante,
-                        nombre_representante: representante.nombre_representante,
-                        apellido_representante: representante.apellido_representante,
-                        nombre_completo: `${representante.nombre_representante} ${representante.apellido_representante}`,
-                        rut_representante: representante.rut_representante,
-                        cargo_representante: representante.cargo_representante,
-                        fono_representante: representante.fono_representante,
-                        correo_representante: representante.correo_representante
-                    } : null
-                });
-            } catch (innerError) {
-                console.error(`❌ Error procesando proveedor ${proveedor.id_proveedor}:`, innerError.message);
-                // Continuar con el siguiente proveedor
-                proveedoresConRepresentantes.push({
-                    id_proveedor: proveedor.id_proveedor,
-                    rol_proveedor: proveedor.rol_proveedor,
-                    rut_proveedor: proveedor.rut_proveedor,
-                    fono_proveedor: proveedor.fono_proveedor,
-                    correo_proveedor: proveedor.correo_proveedor,
-                    representante: null
-                });
-            }
-        }
+            return {
+                id_proveedor: proveedor.id_proveedor,
+                rol_proveedor: proveedor.rol_proveedor,
+                rut_proveedor: proveedor.rut_proveedor,
+                fono_proveedor: proveedor.fono_proveedor,
+                correo_proveedor: proveedor.correo_proveedor,
+                representante: representante ? {
+                    id_representante: representante.id_representante,
+                    nombre_representante: representante.nombre_representante,
+                    apellido_representante: representante.apellido_representante,
+                    nombre_completo: `${representante.nombre_representante} ${representante.apellido_representante}`,
+                    rut_representante: representante.rut_representante,
+                    cargo_representante: representante.cargo_representante,
+                    fono_representante: representante.fono_representante,
+                    correo_representante: representante.correo_representante
+                } : null
+            };
+        });
 
         console.log(`✅ Proveedores con representantes procesados: ${proveedoresConRepresentantes.length}`);
         console.log(`📊 Proveedores CON representante: ${proveedoresConRepresentantes.filter(p => p.representante).length}`);
@@ -712,6 +687,112 @@ export async function getProveedoresConRepresentantesService() {
         console.error('❌ Error CRÍTICO en getProveedoresConRepresentantesService:');
         console.error('❌ Mensaje:', error.message);
         console.error('❌ Stack:', error.stack);
+        console.error('❌ Error completo:', JSON.stringify(error, null, 2));
         return [null, `Error al obtener proveedores: ${error.message}`];
+    }
+}
+
+
+export async function createProveedorConRepresentanteService(data) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    
+    try {
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        console.log('🔍 Datos recibidos en service:', data);
+
+        // 1. Validar datos del proveedor
+        const validationProveedor = validarDatosProveedor(data.proveedor, false);
+        if (!validationProveedor.isValid) {
+            await queryRunner.rollbackTransaction();
+            return [null, validationProveedor.errors.join(', ')];
+        }
+
+        // 2. Si hay representante, validar sus datos
+        if (data.representante && Object.keys(data.representante).length > 0) {
+            const validationRepresentante = validarDatosRepresentante(data.representante, false);
+            if (!validationRepresentante.isValid) {
+                await queryRunner.rollbackTransaction();
+                return [null, validationRepresentante.errors.join(', ')];
+            }
+        }
+
+        const proveedorRepository = queryRunner.manager.getRepository(proveedoresSchema);
+        const representanteRepository = queryRunner.manager.getRepository(representanteSchema);
+
+        // 3. Verificar si el RUT del proveedor ya existe
+        const existeRUTProveedor = await proveedorRepository.findOne({
+            where: { rut_proveedor: data.proveedor.rut_proveedor.trim() }
+        });
+
+        if (existeRUTProveedor) {
+            await queryRunner.rollbackTransaction();
+            return [null, 'Ya existe un proveedor con ese RUT'];
+        }
+
+        // 4. Verificar si el correo del proveedor ya existe
+        const existeCorreoProveedor = await proveedorRepository.findOne({
+            where: { correo_proveedor: data.proveedor.correo_proveedor.trim().toLowerCase() }
+        });
+
+        if (existeCorreoProveedor) {
+            await queryRunner.rollbackTransaction();
+            return [null, 'Ya existe un proveedor con ese correo'];
+        }
+
+        // 5. Crear el proveedor
+        const nuevoProveedor = proveedorRepository.create({
+            rol_proveedor: data.proveedor.rol_proveedor.trim(),
+            rut_proveedor: data.proveedor.rut_proveedor.trim(),
+            fono_proveedor: data.proveedor.fono_proveedor.trim(),
+            correo_proveedor: data.proveedor.correo_proveedor.trim().toLowerCase()
+        });
+
+        const proveedorGuardado = await queryRunner.manager.save(proveedoresSchema, nuevoProveedor);
+        console.log('✅ Proveedor creado:', proveedorGuardado.id_proveedor);
+
+        let representanteGuardado = null;
+
+        // 6. Si hay datos de representante, crearlo
+        if (data.representante && Object.keys(data.representante).length > 0) {
+            const nuevoRepresentante = representanteRepository.create({
+                nombre_representante: data.representante.nombre_representante.trim(),
+                apellido_representante: data.representante.apellido_representante.trim(),
+                rut_representante: data.representante.rut_representante.trim(),
+                cargo_representante: data.representante.cargo_representante.trim(),
+                fono_representante: data.representante.fono_representante.trim(),
+                correo_representante: data.representante.correo_representante.trim().toLowerCase()
+            });
+
+            // ✅ IMPORTANTE: Establecer la relación correctamente
+            nuevoRepresentante.proveedor = proveedorGuardado;
+
+            representanteGuardado = await queryRunner.manager.save(representanteSchema, nuevoRepresentante);
+            console.log('✅ Representante creado:', representanteGuardado.id_representante);
+        }
+
+        // 7. Commit de la transacción
+        await queryRunner.commitTransaction();
+
+        // 8. Construir respuesta
+        const resultado = {
+            proveedor: proveedorGuardado,
+            representante: representanteGuardado,
+            mensaje: representanteGuardado 
+                ? 'Proveedor y representante creados exitosamente'
+                : 'Proveedor creado exitosamente (sin representante)'
+        };
+
+        return [resultado, null];
+
+    } catch (error) {
+        // Rollback en caso de error
+        await queryRunner.rollbackTransaction();
+        console.error('❌ Error al crear proveedor con representante:', error);
+        return [null, 'Error interno del servidor'];
+    } finally {
+        // Liberar el queryRunner
+        await queryRunner.release();
     }
 }

@@ -4,13 +4,15 @@ import {
     createProveedorService,
     getProveedoresService,
     getProveedorByIdService,
+    getProveedoresConRepresentantesService,
     updateProveedorService,
     deleteProveedorService,
     createRepresentanteService,
     getRepresentantesByProveedorService,
     updateRepresentanteService,
     deleteRepresentanteService,
-    getProveedoresConRepresentantesService
+    createProveedorConRepresentanteService
+    
 } from "../../services/staff/proveedor.service.js";
 import {
     handleErrorClient,
@@ -223,5 +225,26 @@ export async function getProveedoresConRepresentantes(req, res) {
             success: false,
             message: "Error interno del servidor"
         });
+    }
+}
+
+
+export async function createProveedorConRepresentante(req, res) {
+    try {
+        const data = req.body;
+
+        console.log('📥 Datos recibidos:', {
+            tieneProveedor: !!data.proveedor,
+            tieneRepresentante: !!data.representante
+        });
+
+        const [resultado, error] = await createProveedorConRepresentanteService(data);
+
+        if (error) return handleErrorClient(res, 400, error);
+
+        handleSuccess(res, 201, resultado.mensaje, resultado);
+
+    } catch (error) {
+        handleErrorServer(res, 500, error.message);
     }
 }

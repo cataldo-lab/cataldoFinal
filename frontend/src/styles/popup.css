@@ -132,3 +132,9 @@
 .popup .form::-webkit-scrollbar-thumb:hover {
     background: #a0a0a0;
 }
+
+.popup input[type='email'] {
+    background-image: none !important;
+    filter: none !important;
+}
+
