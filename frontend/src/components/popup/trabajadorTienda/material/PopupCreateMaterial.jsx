@@ -12,14 +12,31 @@ export default function PopupCreateMaterial({
   onSubmit 
 }) {
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (formData) => {
     setError(null);
+    setLoading(true);
 
     try {
       // Validar datos obligatorios
       if (!formData.nombre_material || !formData.unidad_medida || !formData.precio_unitario) {
         setError('Por favor completa todos los campos obligatorios');
+        setLoading(false);
+        return;
+      }
+
+      // Validar precio positivo
+      if (parseFloat(formData.precio_unitario) <= 0) {
+        setError('El precio unitario debe ser mayor a 0');
+        setLoading(false);
+        return;
+      }
+
+      // Validar stock mínimo
+      if (parseInt(formData.stock_minimo) < 0) {
+        setError('El stock mínimo no puede ser negativo');
+        setLoading(false);
         return;
       }
 
@@ -30,8 +47,7 @@ export default function PopupCreateMaterial({
         precio_unitario: parseFloat(formData.precio_unitario),
         stock_minimo: parseInt(formData.stock_minimo) || 10,
         existencia_material: parseInt(formData.existencia_material) || 0,
-        id_proveedor: formData.id_proveedor || null,
-        observaciones_material: formData.observaciones_material || null,
+        id_proveedor: formData.id_proveedor ? parseInt(formData.id_proveedor) : null,
         activo: true
       };
 
@@ -41,32 +57,43 @@ export default function PopupCreateMaterial({
       
       if (success) {
         setShow(false);
+        // Resetear el formulario
+        setError(null);
       } else {
         setError(errorMsg || 'Error al crear material');
       }
     } catch (error) {
       console.error('❌ Error al crear material:', error);
       setError('Ocurrió un error inesperado');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    setError(null);
+    setShow(false);
   };
 
   if (!show) return null;
 
   return (
     <div className="bg">
-      <div className="popup" style={{ height: '650px', maxWidth: '90vw', overflowY: 'auto' }}>
+      <div className="popup" style={{ height: 'auto', maxHeight: '90vh', maxWidth: '600px', overflowY: 'auto' }}>
         <button 
           className='close' 
-          onClick={() => setShow(false)}
+          onClick={handleClose}
+          disabled={loading}
           style={{
             position: 'absolute',
             top: '15px',
             right: '15px',
             background: 'none',
             border: 'none',
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
             padding: '5px',
-            zIndex: 10
+            zIndex: 10,
+            opacity: loading ? 0.5 : 1
           }}
         >
           <img src={CloseIcon} alt="Cerrar" style={{ width: '24px', height: '24px' }} />
@@ -75,13 +102,16 @@ export default function PopupCreateMaterial({
         {error && (
           <div className="error-message visible" style={{
             margin: '10px 20px',
-            padding: '10px',
-            backgroundColor: '#ffebee',
-            color: '#c62828',
+            padding: '12px 16px',
+            backgroundColor: '#fee2e2',
+            color: '#991b1b',
             borderRadius: '8px',
-            textAlign: 'center'
+            border: '1px solid #fecaca',
+            textAlign: 'center',
+            fontSize: '14px',
+            fontWeight: '500'
           }}>
-            {error}
+            ⚠️ {error}
           </div>
         )}
 
@@ -89,9 +119,9 @@ export default function PopupCreateMaterial({
           title="Crear Nuevo Material"
           fields={[
             {
-              label: "Nombre del Material",
+              label: "Nombre del Material *",
               name: "nombre_material",
-              placeholder: 'Madera de Pino 2x4',
+              placeholder: 'Ej: Madera de Pino 2x4',
               fieldType: 'input',
               type: "text",
               required: true,
@@ -99,39 +129,43 @@ export default function PopupCreateMaterial({
               maxLength: 100,
             },
             {
-              label: "Unidad de Medida",
+              label: "Unidad de Medida *",
               name: "unidad_medida",
               fieldType: 'select',
               options: [
-                { value: 'metros', label: 'Metros (m)' },
-                { value: 'kilos', label: 'Kilogramos (kg)' },
-                { value: 'litros', label: 'Litros (L)' },
-                { value: 'unidades', label: 'Unidades (u)' },
-                { value: 'metros2', label: 'Metros cuadrados (m²)' },
-                { value: 'metros3', label: 'Metros cúbicos (m³)' },
-                { value: 'cajas', label: 'Cajas' },
-                { value: 'paquetes', label: 'Paquetes' }
+                { value: '', label: '-- Seleccionar unidad --' },
+                { value: 'unidad', label: 'Unidades (u)' },
+                { value: 'm', label: 'Metros (m)' },
+                { value: 'cm', label: 'Centímetros (cm)' },
+                { value: 'mm', label: 'Milímetros (mm)' },
+                { value: 'kg', label: 'Kilogramos (kg)' },
+                { value: 'g', label: 'Gramos (g)' },
+                { value: 'lt', label: 'Litros (L)' },
+                { value: 'ml', label: 'Mililitros (ml)' },
+                { value: 'paquete', label: 'Paquetes' },
+                { value: 'docena', label: 'Docenas' },
+                { value: 'par', label: 'Pares' }
               ],
               required: true,
-              defaultValue: 'unidades'
+              defaultValue: ''
             },
             {
-              label: "Precio Unitario",
+              label: "Precio Unitario * (CLP)",
               name: "precio_unitario",
               placeholder: '5000',
               fieldType: 'input',
               type: "number",
               required: true,
               min: 0,
-              step: "0.01"
+              step: "1"
             },
             {
               label: (
                 <span>
-                  Stock Mínimo
-                  <span className='tooltip-icon'>
-                    <img src={QuestionIcon} alt="Ayuda" />
-                    <span className='tooltip-text'>Cantidad mínima antes de alerta</span>
+                  Stock Mínimo *
+                  <span className='tooltip-icon' style={{ marginLeft: '5px' }}>
+                    <img src={QuestionIcon} alt="Ayuda" style={{ width: '16px', height: '16px' }} />
+                    <span className='tooltip-text'>Cantidad mínima antes de alerta de reabastecimiento</span>
                   </span>
                 </span>
               ),
@@ -139,7 +173,7 @@ export default function PopupCreateMaterial({
               placeholder: '10',
               fieldType: 'input',
               type: "number",
-              required: false,
+              required: true,
               min: 0,
               defaultValue: '10'
             },
@@ -147,9 +181,9 @@ export default function PopupCreateMaterial({
               label: (
                 <span>
                   Existencia Inicial
-                  <span className='tooltip-icon'>
-                    <img src={QuestionIcon} alt="Ayuda" />
-                    <span className='tooltip-text'>Cantidad actual en inventario</span>
+                  <span className='tooltip-icon' style={{ marginLeft: '5px' }}>
+                    <img src={QuestionIcon} alt="Ayuda" style={{ width: '16px', height: '16px' }} />
+                    <span className='tooltip-text'>Cantidad actual en inventario (opcional, por defecto 0)</span>
                   </span>
                 </span>
               ),
@@ -165,43 +199,28 @@ export default function PopupCreateMaterial({
               label: (
                 <span>
                   Proveedor
-                  <span className='tooltip-icon'>
-                    <img src={QuestionIcon} alt="Ayuda" />
-                    <span className='tooltip-text'>Opcional - puedes dejarlo vacío</span>
+                  <span className='tooltip-icon' style={{ marginLeft: '5px' }}>
+                    <img src={QuestionIcon} alt="Ayuda" style={{ width: '16px', height: '16px' }} />
+                    <span className='tooltip-text'>Selecciona el proveedor del material (opcional)</span>
                   </span>
                 </span>
               ),
               name: "id_proveedor",
               fieldType: 'select',
               options: [
-                { value: '', label: 'Sin proveedor' },
-                ...proveedores.map(p => ({
-                  value: p.id_proveedor,
-                  label: p.rol_proveedor
-                }))
+                { value: '', label: '-- Sin proveedor --' },
+                ...(Array.isArray(proveedores) ? proveedores.map(p => ({
+                  value: p.id_proveedor.toString(),
+                  label: p.rol_proveedor || `Proveedor #${p.id_proveedor}`
+                })) : [])
               ],
               required: false
-            },
-            {
-              label: (
-                <span>
-                  Observaciones
-                  <span className='tooltip-icon'>
-                    <img src={QuestionIcon} alt="Ayuda" />
-                    <span className='tooltip-text'>Campo opcional</span>
-                  </span>
-                </span>
-              ),
-              name: "observaciones_material",
-              placeholder: 'Notas adicionales sobre el material...',
-              fieldType: 'textarea',
-              required: false,
-              maxLength: 500
             }
           ]}
           onSubmit={handleSubmit}
-          buttonText="Crear Material"
+          buttonText={loading ? "Creando..." : "Crear Material"}
           backgroundColor={'#fff'}
+          buttonDisabled={loading}
         />
       </div>
     </div>

@@ -13,30 +13,56 @@ export default function PopupUpdateMaterial({
   onSubmit 
 }) {
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!show) {
       setError(null);
+      setLoading(false);
     }
   }, [show]);
 
   const handleSubmit = async (formData) => {
     setError(null);
+    setLoading(true);
 
     try {
+      // Validar datos obligatorios
       if (!formData.nombre_material || !formData.unidad_medida || !formData.precio_unitario) {
         setError('Por favor completa todos los campos obligatorios');
+        setLoading(false);
         return;
       }
 
+      // Validar precio positivo
+      if (parseFloat(formData.precio_unitario) <= 0) {
+        setError('El precio unitario debe ser mayor a 0');
+        setLoading(false);
+        return;
+      }
+
+      // Validar stock mínimo
+      if (parseInt(formData.stock_minimo) < 0) {
+        setError('El stock mínimo no puede ser negativo');
+        setLoading(false);
+        return;
+      }
+
+      // Validar existencia
+      if (parseInt(formData.existencia_material) < 0) {
+        setError('La existencia no puede ser negativa');
+        setLoading(false);
+        return;
+      }
+
+      // Formatear datos para enviar
       const materialData = {
         nombre_material: formData.nombre_material.trim(),
         unidad_medida: formData.unidad_medida,
         precio_unitario: parseFloat(formData.precio_unitario),
         stock_minimo: parseInt(formData.stock_minimo),
         existencia_material: parseInt(formData.existencia_material),
-        id_proveedor: formData.id_proveedor || null,
-        observaciones_material: formData.observaciones_material || null,
+        id_proveedor: formData.id_proveedor ? parseInt(formData.id_proveedor) : null,
         activo: formData.activo === 'true'
       };
 
@@ -46,58 +72,105 @@ export default function PopupUpdateMaterial({
       
       if (success) {
         setShow(false);
+        setError(null);
       } else {
         setError(errorMsg || 'Error al actualizar material');
       }
     } catch (error) {
       console.error('❌ Error al actualizar material:', error);
       setError('Ocurrió un error inesperado');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    setError(null);
+    setShow(false);
   };
 
   if (!show || !material) return null;
 
+  // Calcular estado del stock
+  const stockStatus = material.existencia_material < material.stock_minimo ? 'bajo' : 'normal';
+  const stockColor = stockStatus === 'bajo' ? '#f59e0b' : '#10b981';
+
   return (
     <div className="bg">
-      <div className="popup" style={{ height: '700px', maxWidth: '90vw', overflowY: 'auto' }}>
+      <div className="popup" style={{ height: 'auto', maxHeight: '90vh', maxWidth: '600px', overflowY: 'auto' }}>
         <button 
           className='close' 
-          onClick={() => setShow(false)}
+          onClick={handleClose}
+          disabled={loading}
           style={{
             position: 'absolute',
             top: '15px',
             right: '15px',
             background: 'none',
             border: 'none',
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
             padding: '5px',
-            zIndex: 10
+            zIndex: 10,
+            opacity: loading ? 0.5 : 1
           }}
         >
           <img src={CloseIcon} alt="Cerrar" style={{ width: '24px', height: '24px' }} />
         </button>
 
+        {/* Información del material */}
+        <div style={{
+          margin: '10px 20px',
+          padding: '12px 16px',
+          backgroundColor: '#f3f4f6',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+              ID Material: #{material.id_material}
+            </span>
+            <span style={{
+              fontSize: '12px',
+              fontWeight: '600',
+              color: stockColor,
+              backgroundColor: stockStatus === 'bajo' ? '#fef3c7' : '#d1fae5',
+              padding: '4px 12px',
+              borderRadius: '12px'
+            }}>
+              {stockStatus === 'bajo' ? '⚠️ Stock Bajo' : '✓ Stock Normal'}
+            </span>
+          </div>
+          {material.proveedor && (
+            <div style={{ fontSize: '13px', color: '#6b7280' }}>
+              Proveedor: <span style={{ fontWeight: '500', color: '#374151' }}>{material.proveedor.rol_proveedor}</span>
+            </div>
+          )}
+        </div>
+
         {error && (
           <div className="error-message visible" style={{
             margin: '10px 20px',
-            padding: '10px',
-            backgroundColor: '#ffebee',
-            color: '#c62828',
+            padding: '12px 16px',
+            backgroundColor: '#fee2e2',
+            color: '#991b1b',
             borderRadius: '8px',
-            textAlign: 'center'
+            border: '1px solid #fecaca',
+            textAlign: 'center',
+            fontSize: '14px',
+            fontWeight: '500'
           }}>
-            {error}
+            ⚠️ {error}
           </div>
         )}
 
         <Form
-          title={`Editar Material `}
+          title="Editar Material"
           fields={[
             {
-              label: "Nombre del Material",
+              label: "Nombre del Material *",
               name: "nombre_material",
               defaultValue: material.nombre_material,
-              placeholder: 'Madera de Pino 2x4',
+              placeholder: 'Ej: Madera de Pino 2x4',
               fieldType: 'input',
               type: "text",
               required: true,
@@ -105,24 +178,27 @@ export default function PopupUpdateMaterial({
               maxLength: 100,
             },
             {
-              label: "Unidad de Medida",
+              label: "Unidad de Medida *",
               name: "unidad_medida",
               fieldType: 'select',
               options: [
-                { value: 'metros', label: 'Metros (m)' },
-                { value: 'kilos', label: 'Kilogramos (kg)' },
-                { value: 'litros', label: 'Litros (L)' },
-                { value: 'unidades', label: 'Unidades (u)' },
-                { value: 'metros2', label: 'Metros cuadrados (m²)' },
-                { value: 'metros3', label: 'Metros cúbicos (m³)' },
-                { value: 'cajas', label: 'Cajas' },
-                { value: 'paquetes', label: 'Paquetes' }
+                { value: 'unidad', label: 'Unidades (u)' },
+                { value: 'm', label: 'Metros (m)' },
+                { value: 'cm', label: 'Centímetros (cm)' },
+                { value: 'mm', label: 'Milímetros (mm)' },
+                { value: 'kg', label: 'Kilogramos (kg)' },
+                { value: 'g', label: 'Gramos (g)' },
+                { value: 'lt', label: 'Litros (L)' },
+                { value: 'ml', label: 'Mililitros (ml)' },
+                { value: 'paquete', label: 'Paquetes' },
+                { value: 'docena', label: 'Docenas' },
+                { value: 'par', label: 'Pares' }
               ],
               required: true,
               defaultValue: material.unidad_medida
             },
             {
-              label: "Precio Unitario",
+              label: "Precio Unitario * (CLP)",
               name: "precio_unitario",
               defaultValue: material.precio_unitario,
               placeholder: '5000',
@@ -130,10 +206,10 @@ export default function PopupUpdateMaterial({
               type: "number",
               required: true,
               min: 0,
-              step: "0.01"
+              step: "1"
             },
             {
-              label: "Stock Mínimo",
+              label: "Stock Mínimo *",
               name: "stock_minimo",
               defaultValue: material.stock_minimo,
               placeholder: '10',
@@ -143,7 +219,15 @@ export default function PopupUpdateMaterial({
               min: 0
             },
             {
-              label: "Existencia Actual",
+              label: (
+                <span>
+                  Existencia Actual *
+                  <span className='tooltip-icon' style={{ marginLeft: '5px' }}>
+                    <img src={QuestionIcon} alt="Ayuda" style={{ width: '16px', height: '16px' }} />
+                    <span className='tooltip-text'>Cantidad disponible en inventario</span>
+                  </span>
+                </span>
+              ),
               name: "existencia_material",
               defaultValue: material.existencia_material,
               placeholder: '0',
@@ -153,59 +237,35 @@ export default function PopupUpdateMaterial({
               min: 0
             },
             {
-              label: (
-                <span>
-                  Proveedor
-                  <span className='tooltip-icon'>
-                    <img src={QuestionIcon} alt="Ayuda" />
-                    <span className='tooltip-text'>Opcional - puedes dejarlo vacío</span>
-                  </span>
-                </span>
-              ),
+              label: "Proveedor",
               name: "id_proveedor",
               fieldType: 'select',
               options: [
-                { value: '', label: 'Sin proveedor' },
-                ...proveedores.map(p => ({
-                  value: p.id_proveedor,
-                  label: p.rol_proveedor
-                }))
+                { value: '', label: '-- Sin proveedor --' },
+                ...(Array.isArray(proveedores) ? proveedores.map(p => ({
+                  value: p.id_proveedor.toString(),
+                  label: p.rol_proveedor || `Proveedor #${p.id_proveedor}`
+                })) : [])
               ],
               required: false,
-              defaultValue: material.id_proveedor || ''
+              defaultValue: material.proveedor?.id_proveedor?.toString() || ''
             },
             {
-              label: "Estado",
+              label: "Estado *",
               name: "activo",
               fieldType: 'select',
               options: [
-                { value: 'true', label: 'Activo' },
-                { value: 'false', label: 'Inactivo' }
+                { value: 'true', label: '✓ Activo' },
+                { value: 'false', label: '✗ Inactivo' }
               ],
               required: true,
               defaultValue: material.activo ? 'true' : 'false'
-            },
-            {
-              label: (
-                <span>
-                  Observaciones
-                  <span className='tooltip-icon'>
-                    <img src={QuestionIcon} alt="Ayuda" />
-                    <span className='tooltip-text'>Campo opcional</span>
-                  </span>
-                </span>
-              ),
-              name: "observaciones_material",
-              defaultValue: material.observaciones_material || '',
-              placeholder: 'Notas adicionales sobre el material...',
-              fieldType: 'textarea',
-              required: false,
-              maxLength: 500
             }
           ]}
           onSubmit={handleSubmit}
-          buttonText="Actualizar Material"
+          buttonText={loading ? "Actualizando..." : "Actualizar Material"}
           backgroundColor={'#fff'}
+          buttonDisabled={loading}
         />
       </div>
     </div>

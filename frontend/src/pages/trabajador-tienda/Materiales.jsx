@@ -1,11 +1,10 @@
 // frontend/src/pages/trabajador-tienda/Materiales.jsx
 import { useState, useEffect } from 'react';
-import { 
-  useMateriales,
-  useCreateMaterial,
-  useUpdateMaterial,
-  useDeleteMaterial
-} from '@hooks/materiales';
+
+import useMateriales from "@hooks/materiales/useMateriales";
+import useCreateMaterial from "@hooks/materiales/useCreateMaterial";
+import useUpdateMaterial from "@hooks/materiales/useUpdateMaterial";
+import { useDeleteMaterial } from "@hooks/materiales/useDeleteMaterial";
 import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
 import PopupCreateMaterial from '@components/popup/trabajadorTienda/material/PopupCreateMaterial';
 import PopupUpdateMaterial from '@components/popup/trabajadorTienda/material/PopupUpdateMaterial';
