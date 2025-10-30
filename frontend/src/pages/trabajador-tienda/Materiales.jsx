@@ -69,7 +69,8 @@ export default function Materiales() {
   const [filtros, setFiltros] = useState({
     id_proveedor: '',
     busqueda: '',
-    bajo_stock: false
+    bajo_stock: false,
+    mostrar_inactivos: false
   });
 
   // ===== EFECTOS =====
@@ -146,20 +147,22 @@ export default function Materiales() {
     }
   };
 
-  const handleUpdateMaterial = async (id, materialData) => {
-    const [updatedMaterial, error] = await updateMaterialAction(id, materialData);
-    
-    if (updatedMaterial) {
-      showSuccessAlert('Éxito', 'Material actualizado correctamente');
-      setShowUpdatePopup(false);
-      setMaterialSeleccionado(null);
-      await fetchMaterialesConRepresentantes();
-      return [true, null];
-    } else {
-      showErrorAlert('Error', error || 'Error al actualizar material');
-      return [false, error];
-    }
-  };
+const handleUpdateMaterial = async (id, materialData) => {
+  console.log('🎯 Materiales.jsx - ID:', id, 'Tipo:', typeof id); 
+  
+  const [updatedMaterial, error] = await updateMaterialAction(id, materialData);
+  
+  if (updatedMaterial) {
+    showSuccessAlert('Éxito', 'Material actualizado correctamente');
+    setShowUpdatePopup(false);
+    setMaterialSeleccionado(null);
+    await fetchMaterialesConRepresentantes();
+    return [true, null];
+  } else {
+    showErrorAlert('Error', error || 'Error al actualizar material');
+    return [false, error];
+  }
+};
 
   
 
@@ -468,6 +471,8 @@ export default function Materiales() {
               </div>
             </div>
 
+            
+
             {/*.   */}
           <div className="flex items-end">
           <button
@@ -676,7 +681,7 @@ export default function Materiales() {
         show={showUpdatePopup}
         setShow={setShowUpdatePopup}
         material={materialSeleccionado}
-        proveedores={Array.isArray(proveedores) ? proveedores : []}
+        proveedores={Array.isArray(proveedores) ? proveedores : []} 
         onSubmit={handleUpdateMaterial}
       />
 

@@ -75,10 +75,16 @@ export async function createMaterial(materialData) {
 
 export async function updateMaterial(id, materialData) {
   try {
-    const { data } = await axios.put(`/materiales/${id}`, materialData);
+    console.log('🔧 Service - ID:', id, 'Tipo:', typeof id);
+    console.log('🔧 Service - Datos:', materialData);
+    
+    const { data } = await axios.patch(`/materiales/${parseInt(id)}`, materialData);
+    
+    console.log('✅ Service - Respuesta:', data);
     return data;
   } catch (error) {
-    console.error('Error al actualizar material:', error);
+    console.error('❌ Service - Error completo:', error);
+    console.error('❌ Service - Response:', error.response?.data);
     return {
       success: false,
       message: error.response?.data?.message || 'Error al actualizar material'

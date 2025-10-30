@@ -48,3 +48,4 @@ export function useDeleteMaterial() {
     resetState
   };
 }
+export default useDeleteMaterial;

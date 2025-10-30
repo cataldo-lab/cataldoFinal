@@ -66,6 +66,8 @@ export default function PopupUpdateMaterial({
         activo: formData.activo === 'true'
       };
 
+      console.log('📤 PopupUpdate - ID del material:', material.id_material, 'Tipo:', typeof material.id_material);
+      console.log('📤 PopupUpdate - Datos:', materialData);
       console.log('📤 Actualizando material:', materialData);
 
       const [success, errorMsg] = await onSubmit(material.id_material, materialData);
@@ -237,29 +239,40 @@ export default function PopupUpdateMaterial({
               min: 0
             },
             {
-              label: "Proveedor",
-              name: "id_proveedor",
-              fieldType: 'select',
-              options: [
-                { value: '', label: '-- Sin proveedor --' },
-                ...(Array.isArray(proveedores) ? proveedores.map(p => ({
+            label: "Proveedor",
+            name: "id_proveedor",
+            fieldType: 'select',
+            options: [
+              { value: '', label: '-- Sin proveedor --' },
+              ...(Array.isArray(proveedores) ? proveedores.map(p => {
+                // Si tiene representante, mostrar su nombre
+                if (p.representante) {
+                  return {
+                    value: p.id_proveedor.toString(),
+                    label: `👤 ${p.representante.nombre_completo} - ${p.rol_proveedor}`
+                  };
+                }
+                // Si no tiene representante, solo mostrar el nombre del proveedor
+                return {
                   value: p.id_proveedor.toString(),
-                  label: p.rol_proveedor || `Proveedor #${p.id_proveedor}`
-                })) : [])
-              ],
-              required: false,
-              defaultValue: material.proveedor?.id_proveedor?.toString() || ''
-            },
+                  label: `🏢 ${p.rol_proveedor}`
+                };
+              }) : [])
+            ],
+            required: false,
+            defaultValue: material.proveedor?.id_proveedor?.toString() || ''
+          },
             {
               label: "Estado *",
               name: "activo",
               fieldType: 'select',
               options: [
+                { value: 'false', label: '✗ Inactivo' },
                 { value: 'true', label: '✓ Activo' },
-                { value: 'false', label: '✗ Inactivo' }
+                
               ],
               required: true,
-              defaultValue: material.activo ? 'true' : 'false'
+              defaultValue: material.activo= 'true' 
             }
           ]}
           onSubmit={handleSubmit}

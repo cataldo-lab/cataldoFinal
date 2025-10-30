@@ -25,7 +25,7 @@ router.get("/", [isEmployee,isManager], getAllMateriales);
 router.post("/", [isEmployee,isManager], createMaterial);
 router.get("/:id", [isEmployee,isManager], getMaterialById);
 router.get("/:id/representante", [isEmployee,isManager], getMaterialRepresentante);
-router.put("/:id", [isEmployee,isManager], updateMaterial);
+router.patch("/:id", [isEmployee,isManager], updateMaterial);
 router.delete("/:id", [isEmployee,isManager], deleteMaterial);
 router.delete("/:id/permanent", [isEmployee,isManager], hardDeleteMaterial);
 

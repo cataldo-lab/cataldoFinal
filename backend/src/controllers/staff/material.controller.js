@@ -113,6 +113,9 @@ export async function updateMaterial(req, res) {
     const id_material = parseInt(id);
     const materialData = req.body;
 
+    console.log('📥 Controller - ID recibido:', id_material);
+    console.log('📥 Controller - Datos recibidos:', materialData);
+
     if (isNaN(id_material)) {
       return res.status(400).json({
         success: false,
@@ -123,12 +126,14 @@ export async function updateMaterial(req, res) {
     const [material, error] = await updateMaterialService(id_material, materialData);
 
     if (error) {
+      console.error('❌ Controller - Error del service:', error);
       return res.status(400).json({
         success: false,
         message: error
       });
     }
 
+    console.log('✅ Controller - Material actualizado correctamente');
     return res.status(200).json({
       success: true,
       message: "Material actualizado exitosamente",
@@ -136,7 +141,7 @@ export async function updateMaterial(req, res) {
     });
 
   } catch (error) {
-    console.error("Error en updateMaterial controller:", error);
+    console.error("❌ Controller - Error inesperado:", error);
     return res.status(500).json({
       success: false,
       message: "Error interno del servidor"

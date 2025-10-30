@@ -55,68 +55,139 @@ export async function createMaterialService(materialData) {
   }
 }
 
-
 export async function updateMaterialService(id_material, materialData) {
   try {
     const materialRepository = AppDataSource.getRepository("Materiales");
     const proveedorRepository = AppDataSource.getRepository("Proveedores");
+    const representanteRepository = AppDataSource.getRepository("Representante");
+
+    console.log('🔍 Buscando material ID:', id_material);
+    console.log('📦 Datos recibidos:', materialData);
 
     const material = await materialRepository.findOne({
-      where: { id_material },
+      where: { id_material: parseInt(id_material) },
       relations: ["proveedor"]
     });
 
     if (!material) {
+      console.error('❌ Material no encontrado con ID:', id_material);
       return [null, "Material no encontrado"];
     }
 
+    console.log('✅ Material encontrado:', material.nombre_material);
+
+    // Actualizar proveedor si se proporciona
     if (materialData.id_proveedor !== undefined) {
-      if (materialData.id_proveedor === null) {
-        material.proveedor = null;
-      } else {
+      if (materialData.id_proveedor && materialData.id_proveedor !== '') {
+        const proveedorId = parseInt(materialData.id_proveedor);
+        console.log('🔍 Buscando proveedor ID:', proveedorId);
+        
         const proveedor = await proveedorRepository.findOne({
-          where: { id_proveedor: materialData.id_proveedor }
+          where: { id_proveedor: proveedorId }
         });
 
         if (!proveedor) {
+          console.error('❌ Proveedor no encontrado:', proveedorId);
           return [null, "Proveedor no encontrado"];
         }
+        
+        console.log('✅ Proveedor encontrado:', proveedor.rol_proveedor);
         material.proveedor = proveedor;
+      } else {
+        console.log('🔄 Removiendo proveedor del material');
+        material.proveedor = null;
       }
     }
 
+    // Actualizar campos del material
+    console.log('📝 Actualizando campos...');
+    
     if (materialData.nombre_material !== undefined) {
-      material.nombre_material = materialData.nombre_material;
+      material.nombre_material = materialData.nombre_material.trim();
+      console.log('  ✓ Nombre:', material.nombre_material);
     }
     if (materialData.existencia_material !== undefined) {
-      material.existencia_material = materialData.existencia_material;
+      material.existencia_material = parseInt(materialData.existencia_material);
+      console.log('  ✓ Existencia:', material.existencia_material);
     }
     if (materialData.unidad_medida !== undefined) {
       material.unidad_medida = materialData.unidad_medida;
       material.categoria_unidad = detectarCategoria(materialData.unidad_medida);
+      console.log('  ✓ Unidad:', material.unidad_medida);
     }
     if (materialData.precio_unitario !== undefined) {
       material.precio_unitario = parseFloat(materialData.precio_unitario);
+      console.log('  ✓ Precio:', material.precio_unitario);
     }
     if (materialData.stock_minimo !== undefined) {
-      material.stock_minimo = materialData.stock_minimo;
+      material.stock_minimo = parseInt(materialData.stock_minimo);
+      console.log('  ✓ Stock mínimo:', material.stock_minimo);
     }
     if (materialData.activo !== undefined) {
-      material.activo = materialData.activo;
+      material.activo = Boolean(materialData.activo);
+      console.log('  ✓ Activo:', material.activo);
     }
 
-    const materialActualizado = await materialRepository.save(material);
+    console.log('💾 Guardando material actualizado...');
+    
+    try {
+      const materialActualizado = await materialRepository.save(material);
+      console.log('✅ Material guardado en BD');
+      
+      // Obtener el material completo con proveedor
+      const materialCompleto = await materialRepository.findOne({
+        where: { id_material: materialActualizado.id_material },
+        relations: ["proveedor"]
+      });
 
-    // Obtener el material completo con relaciones actualizadas
-    const materialCompleto = await materialRepository.findOne({
-      where: { id_material: materialActualizado.id_material },
-      relations: ["proveedor"]
-    });
+      // Buscar representante si hay proveedor
+      let representante = null;
+      if (materialCompleto.proveedor) {
+        console.log('🔍 Buscando representante del proveedor...');
+        representante = await representanteRepository.findOne({
+          where: { proveedor: { id_proveedor: materialCompleto.proveedor.id_proveedor } }
+        });
+        
+        if (representante) {
+          console.log('✅ Representante encontrado:', representante.nombre_representante);
+        } else {
+          console.log('ℹ️ No hay representante para este proveedor');
+        }
+      }
 
-    return [materialCompleto, null];
+      // Construir respuesta
+      const resultado = {
+        id_material: materialCompleto.id_material,
+        nombre_material: materialCompleto.nombre_material,
+        existencia_material: materialCompleto.existencia_material,
+        unidad_medida: materialCompleto.unidad_medida,
+        precio_unitario: parseFloat(materialCompleto.precio_unitario),
+        stock_minimo: materialCompleto.stock_minimo,
+        activo: materialCompleto.activo,
+        proveedor: materialCompleto.proveedor ? {
+          id_proveedor: materialCompleto.proveedor.id_proveedor,
+          rol_proveedor: materialCompleto.proveedor.rol_proveedor
+        } : null,
+        representante: representante ? {
+          id_representante: representante.id_representante,
+          nombre_completo: `${representante.nombre_representante} ${representante.apellido_representante}`,
+          fono_representante: representante.fono_representante,
+          correo_representante: representante.correo_representante,
+          cargo_representante: representante.cargo_representante
+        } : null
+      };
+
+      console.log('✅ Material actualizado correctamente');
+      return [resultado, null];
+      
+    } catch (saveError) {
+      console.error('❌ Error al guardar en BD:', saveError);
+      throw saveError;
+    }
 
   } catch (error) {
-    console.error("Error al actualizar material:", error);
+    console.error("❌ Error al actualizar material:", error);
+    console.error("❌ Stack:", error.stack);
     return [null, "Error interno del servidor al actualizar material"];
   }
 }
