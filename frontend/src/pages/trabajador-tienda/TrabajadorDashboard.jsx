@@ -202,7 +202,7 @@ const TrabajadorDashboard = () => {
                         </button>
                         
                         <button 
-                            onClick={() => window.location.href = '/trabajador-tienda/clients'}
+                            onClick={() => window.location.href = '/trabajador/clientes'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
                             <span className="text-2xl">👥</span>

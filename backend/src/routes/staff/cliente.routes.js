@@ -32,9 +32,9 @@ router.post("/clientes/:id/full", [isEmployee, isManager], createMedioPerfil); /
 // Rutas para actualizar (requieren ser empleado o gerente)
 router.patch("/clientes/:id/full", [isEmployee, isManager], updateMedioPerfil); // Actualizar solo detalles de cliente
 router.patch("/clientes/:id", [isEmployee, isManager], updatePerfilFull); // Actualizar perfil completo
-router.patch("clientes/block/:id", [isEmployee,isManager], blockUserCliente);
+router.patch("/clientes/block/:id", [isEmployee,isManager], blockUserCliente);
 
-router.delete("clientes/:id",[isManager], deleteUserCliente);
+router.delete("/clientes/:id",[isManager], deleteUserCliente);
 
 
 export default router;
