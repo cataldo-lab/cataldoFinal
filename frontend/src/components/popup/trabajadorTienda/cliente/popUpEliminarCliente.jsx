@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useDeleteCliente } from '@hooks/clientes/useDeleteCliente';
+import '@styles/popup.css';
 
 const PopUpEliminarCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
   const { deleteCliente, loading, error } = useDeleteCliente();
@@ -38,16 +39,22 @@ const PopUpEliminarCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
   if (!isOpen) return null;
 
   return (
-    <Modal titulo="Eliminar Cliente" onClose={handleCancel} size="small">
-      <div className="modal-content-custom">
+    <div className="bg">
+      <div className="popup">
+        
+        {/* BOTÓN CERRAR */}
+        <button className="close-btn" onClick={onClose}>✖</button>
+
         <p className="modal-description">
           Seleccione el tipo de eliminación para:
         </p>
+
         <p className="cliente-nombre">
           <strong>{cliente?.nombreCompleto}</strong>
         </p>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="cliente-form">
+
           <div className="radio-group">
             <label className={`radio-option ${tipoEliminacion === 'soft' ? 'selected' : ''}`}>
               <input
@@ -98,7 +105,7 @@ const PopUpEliminarCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
             </div>
           )}
 
-          <div className="modal-actions">
+          <div className="form-actions">
             <button
               type="button"
               onClick={handleCancel}
@@ -117,9 +124,10 @@ const PopUpEliminarCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
               )}
             </button>
           </div>
+
         </form>
       </div>
-    </Modal>
+    </div>
   );
 };
 

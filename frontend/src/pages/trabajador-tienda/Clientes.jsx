@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useClientes } from '@hooks/clientes/useClientes';
 import { useSearchClientes } from '@hooks/clientes/useSearchClientes';
 
+
 // Importar los popups
 import PopUpCrearCliente from '@components/popup/trabajadorTienda/cliente/popUpCrearCliente';
 import PopUpEditarCliente from '@components/popup/trabajadorTienda/cliente/popUpEditarCliente';
@@ -245,6 +246,7 @@ const ListaClientes = ({
   }
 
   return (
+  
     <div className="lista-clientes-container">
       {/* Barra de búsqueda avanzada */}
       <div className="search-section">

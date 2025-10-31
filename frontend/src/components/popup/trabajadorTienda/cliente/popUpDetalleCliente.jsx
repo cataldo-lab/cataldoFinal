@@ -1,6 +1,6 @@
 
 import { useClienteDetalle } from '@hooks/clientes/useClienteDetalle';
-import '@styles/trabajadorTienda/ClienteModals.css';
+import '@styles/popup.css';
 
 const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
   const { usuario, clienteDetalle, loading } = useClienteDetalle(clienteId);
@@ -8,9 +8,9 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
   if (!isOpen) return null;
 
   return (
-    <Modal titulo="Detalle del Cliente" onClose={onClose} size="medium">
+    <div className="bg">
       {loading ? (
-        <div className="loading-container">
+        <div className="popup">
           <div className="spinner"></div>
           <p>Cargando detalles...</p>
         </div>
@@ -124,7 +124,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
           </div>
         </div>
       )}
-    </Modal>
+    </div>
   );
 };
 
