@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import {useClientes} from '@hooks/clientes/useCliente';
+import {useClientes} from '@hooks/clientes/useClientes';
 import { useCliente } from '@hooks/clientes/useCliente';
 import { useClienteDetalle } from '@hooks/clientes/useClienteDetalle';
 import { useCreateCliente } from '@hooks/clientes/useCreateCliente';

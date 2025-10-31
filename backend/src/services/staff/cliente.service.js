@@ -2,12 +2,10 @@
 import { AppDataSource } from "../../config/configDb.js";
 import { encryptPassword } from "../../helpers/bcrypt.helper.js";
 import { ClienteSchema } from "../../entity/personas/cliente.entity.js";
-import { UserSchema } from "../../entity/personas/user.entity.js";
-
+import UserSchema, { Role } from "../../entity/personas/user.entity.js";
 
 const userRepository = AppDataSource.getRepository(UserSchema);
 const clienteRepository = AppDataSource.getRepository(ClienteSchema);
-
 
 export async function getAllClientes() {
   return userRepository.find({
@@ -30,7 +28,6 @@ export async function getClienteById(userId) {
   return cliente;
 }
 
-//Perfil general del cliente parte 1
 export async function getUserById(userId) {
   return userRepository.findOne({
     where: { 
@@ -40,10 +37,8 @@ export async function getUserById(userId) {
   });
 }
 
-//Perfil cliente parte 2.
 export async function getClienteDetalleById(userId) {
   try {
-    // Busca en la tabla clientes por el id_user
     const clienteDetalle = await clienteRepository.findOne({
       where: { 
         user: { id: userId } 
@@ -75,22 +70,17 @@ export async function getClienteDetalleById(userId) {
   }
 }
 
-
-//Crear un usuario con cliente perfil completo
-
 export async function createPerfilFull(userData, clienteData) {
   try {
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+    
     try {
-      // 1. Crear usuario con rol cliente
       const userRepo = queryRunner.manager.getRepository(UserSchema);
       
-      // Asegurar rol cliente
       userData.rol = Role.CLIENTE;
       
-      // Encriptar contraseña
       if (userData.password) {
         userData.password = await encryptPassword(userData.password);
       }
@@ -99,13 +89,11 @@ export async function createPerfilFull(userData, clienteData) {
       const savedUser = await userRepo.save(user);
       
       const clienteRepo = queryRunner.manager.getRepository(ClienteSchema);
-      
       clienteData.user = savedUser;
       
       const cliente = clienteRepo.create(clienteData);
       const savedCliente = await clienteRepo.save(cliente);
       
-      // Confirmar transacción
       await queryRunner.commitTransaction();
       
       return { 
@@ -118,17 +106,14 @@ export async function createPerfilFull(userData, clienteData) {
       };
       
     } catch (error) {
-      // Revertir cambios si hay error
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
-      // Liberar recursos
       await queryRunner.release();
     }
     
   } catch (error) {
     console.error("Error al crear perfil de cliente:", error);
-    
     
     if (error.code === '23505') { 
       if (error.detail.includes('rut')) {
@@ -151,8 +136,6 @@ export async function createPerfilFull(userData, clienteData) {
   }
 }
 
-
-//Crear medio perfil solo cliente
 export async function createMedioPerfil(userId, clienteData) {
   try {
     const queryRunner = AppDataSource.createQueryRunner();
@@ -181,17 +164,12 @@ export async function createMedioPerfil(userId, clienteData) {
         throw new Error(`El usuario ya tiene un perfil de cliente asociado`);
       }
       
-      // Crear perfil cliente
       const clienteRepo = queryRunner.manager.getRepository(ClienteSchema);
-      
-      // Asociar al usuario
       clienteData.user = usuario;
       
-      // Crear cliente
       const cliente = clienteRepo.create(clienteData);
       const savedCliente = await clienteRepo.save(cliente);
       
-      // Confirmar transacción
       await queryRunner.commitTransaction();
       
       return { 
@@ -219,8 +197,6 @@ export async function createMedioPerfil(userId, clienteData) {
   }
 }
 
-
-
 export async function updateMedioPerfil(userId, clienteData) {
   try {
     const queryRunner = AppDataSource.createQueryRunner();
@@ -228,7 +204,6 @@ export async function updateMedioPerfil(userId, clienteData) {
     await queryRunner.startTransaction();
     
     try {
-      // Verificar que el usuario exista y tenga perfil cliente
       const userRepo = queryRunner.manager.getRepository(UserSchema);
       const usuario = await userRepo.findOne({
         where: { 
@@ -237,41 +212,31 @@ export async function updateMedioPerfil(userId, clienteData) {
         relations: ["cliente"]
       });
       
-      // Validar que el usuario exista
       if (!usuario) {
         throw new Error(`No existe un usuario con ID ${userId}`);
       }
       
-      // Validar que el usuario tenga rol cliente
       if (usuario.rol !== Role.CLIENTE) {
         throw new Error(`El usuario no tiene rol de cliente`);
       }
       
-      // Validar que tenga un perfil cliente
       if (!usuario.cliente) {
         throw new Error(`El usuario no tiene un perfil de cliente para actualizar`);
       }
       
-      // Actualizar el perfil de cliente
       const clienteRepo = queryRunner.manager.getRepository(ClienteSchema);
-      
-      // Obtener ID del cliente
       const clienteId = usuario.cliente.id_cliente;
       
-      // Actualizar solo los campos proporcionados
       await clienteRepo.update(
         { id_cliente: clienteId },
-        // Filtrar propiedades undefined para no sobrescribir con nulls
         Object.fromEntries(
           Object.entries(clienteData).filter(([_, v]) => v !== undefined)
         )
       );
       
-      
       const clienteActualizado = await clienteRepo.findOne({
         where: { id_cliente: clienteId }
       });
-      
       
       await queryRunner.commitTransaction();
       
@@ -302,7 +267,6 @@ export async function updateMedioPerfil(userId, clienteData) {
 
 export async function updatePerfilFull(userId, userData, clienteData) {
   try {
-    // Iniciar transacción
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -314,7 +278,6 @@ export async function updatePerfilFull(userId, userData, clienteData) {
         relations: ["cliente"]
       });
       
-      // Validaciones
       if (!usuario) {
         throw new Error(`No existe un usuario con ID ${userId}`);
       }
@@ -327,44 +290,36 @@ export async function updatePerfilFull(userId, userData, clienteData) {
         throw new Error(`El usuario no tiene un perfil de cliente asociado`);
       }
       
-      // Eliminar el rol si viene en los datos para asegurar que no cambie
       if (userData.rol) {
         delete userData.rol;
       }
       
-      // Encriptar la contraseña si viene en los datos
       if (userData.password) {
         userData.password = await encryptPassword(userData.password);
       }
       
-      //  Actualizar usuario
       await userRepo.update(
         { id: userId },
-        // Solo actualizar campos proporcionados
         Object.fromEntries(
           Object.entries(userData).filter(([_, v]) => v !== undefined)
         )
       );
       
-      // 4. Actualizar cliente
       const clienteRepo = queryRunner.manager.getRepository(ClienteSchema);
       const clienteId = usuario.cliente.id_cliente;
       
       await clienteRepo.update(
         { id_cliente: clienteId },
-        // Solo actualizar campos proporcionados
         Object.fromEntries(
           Object.entries(clienteData).filter(([_, v]) => v !== undefined)
         )
       );
       
-      // 5. Obtener datos actualizados
       const perfilActualizado = await userRepo.findOne({
         where: { id: userId },
         relations: ["cliente"]
       });
       
-      // Confirmar transacción
       await queryRunner.commitTransaction();
       
       return { 
@@ -389,22 +344,18 @@ export async function updatePerfilFull(userId, userData, clienteData) {
   }
 }
 
-
 export async function blockUserCliente(userId, motivo = "") {
   try {
-    
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     
     try {
-      
       const userRepo = queryRunner.manager.getRepository(UserSchema);
       const usuario = await userRepo.findOne({
         where: { id: userId }
       });
       
-     
       if (!usuario) {
         throw new Error(`No existe un usuario con ID ${userId}`);
       }
@@ -413,21 +364,15 @@ export async function blockUserCliente(userId, motivo = "") {
         throw new Error(`El usuario no tiene rol cliente`);
       }
       
-    
       if (usuario.rol === Role.BLOQUEADO) {
         throw new Error(`El usuario ya se encuentra bloqueado`);
       }
       
-      // 2. Cambiar rol a BLOQUEADO
       await userRepo.update(
         { id: userId },
-        { 
-          rol: Role.BLOQUEADO,
-          
-        }
+        { rol: Role.BLOQUEADO }
       );
       
-      // Confirmar transacción
       await queryRunner.commitTransaction();
       
       return { 
@@ -452,10 +397,8 @@ export async function blockUserCliente(userId, motivo = "") {
   }
 }
 
-
 export async function deleteUserCliente(userId, softDelete = true) {
   try {
-    // Iniciar transacción
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -481,7 +424,6 @@ export async function deleteUserCliente(userId, softDelete = true) {
       }
       
       if (softDelete) {
-        // Soft delete: cambiar a rol bloqueado
         await userRepo.update(
           { id: userId },
           { rol: Role.BLOQUEADO }

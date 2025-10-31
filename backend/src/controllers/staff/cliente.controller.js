@@ -8,13 +8,14 @@ import {
   createPerfilFull, 
   createMedioPerfil, 
   updateMedioPerfil, 
-  updatePerfilFull 
+  updatePerfilFull,
+  deleteUserCliente 
 } from "../../services/staff/cliente.service.js";
 
 // Controlador para obtener todos los clientes
-export async function getAllClientes(req, res) {
+export async function getAllClientesController(req, res) {
   try {
-    const clientes = await clienteService.getAllClientes();
+    const clientes = await getAllClientes();
     return res.status(200).json({
       success: true,
       message: "Clientes obtenidos exitosamente",
@@ -31,10 +32,10 @@ export async function getAllClientes(req, res) {
 }
 
 // Controlador para obtener un cliente por ID con todos sus datos
-export async function getClienteById(req, res) {
+export async function getClienteByIdController(req, res) {
   try {
     const { id } = req.params;
-    const cliente = await clienteService.getClienteById(parseInt(id));
+    const cliente = await getClienteById(parseInt(id));
     
     if (!cliente) {
       return res.status(404).json({
@@ -59,10 +60,10 @@ export async function getClienteById(req, res) {
 }
 
 // Controlador para obtener datos básicos de usuario (parte 1 del perfil)
-export async function getUserById(req, res) {
+export async function getUserByIdController(req, res) {
   try {
     const { id } = req.params;
-    const usuario = await clienteService.getUserById(parseInt(id));
+    const usuario = await getUserById(parseInt(id));
     
     if (!usuario) {
       return res.status(404).json({
@@ -87,12 +88,11 @@ export async function getUserById(req, res) {
 }
 
 // Controlador para obtener detalles específicos de cliente (parte 2 del perfil)
-export async function getClienteDetalleById(req, res) {
+export async function getClienteDetalleByIdController(req, res) {
   try {
     const { id } = req.params;
-    const resultado = await clienteService.getClienteDetalleById(parseInt(id));
+    const resultado = await getClienteDetalleById(parseInt(id));
     
-    // Como getClienteDetalleById ya devuelve un objeto estructurado, lo pasamos directamente
     return res.status(resultado.success ? 200 : 404).json(resultado);
   } catch (error) {
     console.error(`Error al obtener detalles de cliente ${req.params.id}:`, error);
@@ -105,11 +105,10 @@ export async function getClienteDetalleById(req, res) {
 }
 
 // Controlador para crear un perfil completo (usuario + cliente)
-export async function createPerfilFull(req, res) {
+export async function createPerfilFullController(req, res) {
   try {
     const { userData, clienteData } = req.body;
     
-    // Validar que vengan ambos objetos de datos
     if (!userData || !clienteData) {
       return res.status(400).json({
         success: false,
@@ -117,7 +116,7 @@ export async function createPerfilFull(req, res) {
       });
     }
     
-    const resultado = await clienteService.createPerfilFull(userData, clienteData);
+    const resultado = await createPerfilFull(userData, clienteData);
     
     return res.status(resultado.success ? 201 : 400).json(resultado);
   } catch (error) {
@@ -131,7 +130,7 @@ export async function createPerfilFull(req, res) {
 }
 
 // Controlador para crear perfil de cliente para usuario existente
-export async function createMedioPerfil(req, res) {
+export async function createMedioPerfilController(req, res) {
   try {
     const { id } = req.params;
     const { clienteData } = req.body;
@@ -143,7 +142,7 @@ export async function createMedioPerfil(req, res) {
       });
     }
     
-    const resultado = await clienteService.createMedioPerfil(parseInt(id), clienteData);
+    const resultado = await createMedioPerfil(parseInt(id), clienteData);
     
     return res.status(resultado.success ? 201 : 400).json(resultado);
   } catch (error) {
@@ -157,7 +156,7 @@ export async function createMedioPerfil(req, res) {
 }
 
 // Controlador para actualizar solo datos de cliente
-export async function updateMedioPerfil(req, res) {
+export async function updateMedioPerfilController(req, res) {
   try {
     const { id } = req.params;
     const { clienteData } = req.body;
@@ -169,7 +168,7 @@ export async function updateMedioPerfil(req, res) {
       });
     }
     
-    const resultado = await clienteService.updateMedioPerfil(parseInt(id), clienteData);
+    const resultado = await updateMedioPerfil(parseInt(id), clienteData);
     
     return res.status(resultado.success ? 200 : 400).json(resultado);
   } catch (error) {
@@ -183,7 +182,7 @@ export async function updateMedioPerfil(req, res) {
 }
 
 // Controlador para actualizar datos completos (usuario + cliente)
-export async function updatePerfilFull(req, res) {
+export async function updatePerfilFullController(req, res) {
   try {
     const { id } = req.params;
     const { userData, clienteData } = req.body;
@@ -195,7 +194,7 @@ export async function updatePerfilFull(req, res) {
       });
     }
     
-    const resultado = await clienteService.updatePerfilFull(
+    const resultado = await updatePerfilFull(
       parseInt(id),
       userData || {}, 
       clienteData || {}
@@ -212,13 +211,13 @@ export async function updatePerfilFull(req, res) {
   }
 }
 
-
-export async function blockUserCliente(req, res) {
+// Controlador para bloquear usuario cliente
+export async function blockUserClienteController(req, res) {
   try {
     const { id } = req.params;
     const { motivo } = req.body;
     
-    const resultado = await clienteService.blockUserCliente(parseInt(id), motivo || "");
+    const resultado = await blockUserCliente(parseInt(id), motivo || "");
     
     if (!resultado.success) {
       return res.status(400).json(resultado);
@@ -235,15 +234,13 @@ export async function blockUserCliente(req, res) {
   }
 }
 
-
-export async function deleteUserCliente(req, res) {
+// Controlador para eliminar usuario cliente
+export async function deleteUserClienteController(req, res) {
   try {
     const { id } = req.params;
-    // Opcionalmente, obtener el parámetro de consulta para hard delete
-    // Si no se especifica, por defecto es soft delete (true)
     const softDelete = req.query.softDelete !== 'false';
     
-    const resultado = await clienteService.deleteUserCliente(parseInt(id), softDelete);
+    const resultado = await deleteUserCliente(parseInt(id), softDelete);
     
     if (!resultado.success) {
       return res.status(400).json(resultado);
