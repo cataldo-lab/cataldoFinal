@@ -9,7 +9,7 @@ import {
   createMedioPerfil, 
   updateMedioPerfil, 
   updatePerfilFull 
-} from "../services/staff/cliente.service.js";
+} from "../../services/staff/cliente.service.js";
 
 // Controlador para obtener todos los clientes
 export async function getAllClientes(req, res) {
