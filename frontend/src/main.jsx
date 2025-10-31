@@ -13,6 +13,7 @@ import AuditLogs from '@pages/adm/AuditLogs';
 import ProductosTrabajador from '@pages/trabajador-tienda/Productos';
 import MaterialesTrabajador from '@pages/trabajador-tienda/Materiales';
 import OperacionesTrabajador from '@pages/trabajador-tienda/TrabajadorOperaciones';
+//import ClientesStaff from '@pages/trabajador-tienda/Clientes';
 
 
 
@@ -124,6 +125,7 @@ const router = createBrowserRouter([
               </ProtectedRoute>
             )
           },
+          
         
 
         ]

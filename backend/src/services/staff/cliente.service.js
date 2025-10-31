@@ -4,16 +4,51 @@ import { encryptPassword } from "../../helpers/bcrypt.helper.js";
 import { ClienteSchema } from "../../entity/personas/cliente.entity.js";
 import UserSchema, { Role } from "../../entity/personas/user.entity.js";
 
+
 const userRepository = AppDataSource.getRepository(UserSchema);
 const clienteRepository = AppDataSource.getRepository(ClienteSchema);
 
-export async function getAllClientes() {
-  return userRepository.find({
+
+
+export async function searchClientes(filtros = {}) {
+  const queryBuilder = userRepository
+    .createQueryBuilder("user")
+    .leftJoinAndSelect("user.cliente", "cliente")
+    .where("user.rol = :rol", { rol: Role.CLIENTE });
+    
+  if (filtros.nombre) {
+    queryBuilder.andWhere("user.nombreCompleto ILIKE :nombre", 
+      { nombre: `%${filtros.nombre}%` });
+  }
+
+  if (filtros.email) {
+    queryBuilder.andWhere("user.email ILIKE :email", 
+      { email: `%${filtros.email}%` });
+  }
+  
+  if (filtros.categoria) {
+    queryBuilder.andWhere("cliente.categoria_cliente = :categoria", 
+      { categoria: filtros.categoria });
+  }
+  
+  return await queryBuilder.getMany();
+}
+
+
+export async function getAllClientes(page = 1, limit = 10) {
+  const [clientes, total] = await userRepository.findAndCount({
     where: { rol: Role.CLIENTE },
-    order: {
-      nombreCompleto: "ASC"
-    }
+    order: { nombreCompleto: "ASC" },
+    skip: (page - 1) * limit,
+    take: limit
   });
+  
+  return {
+    clientes,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit)
+  };
 }
 
 export async function getClienteById(userId) {
@@ -134,6 +169,8 @@ export async function createPerfilFull(userData, clienteData) {
       message: `Error al crear perfil: ${error.message}`
     };
   }
+
+
 }
 
 export async function createMedioPerfil(userId, clienteData) {

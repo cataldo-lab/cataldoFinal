@@ -9,7 +9,8 @@ import {
   createMedioPerfil, 
   updateMedioPerfil, 
   updatePerfilFull,
-  deleteUserCliente 
+  deleteUserCliente,
+  searchClientes  
 } from "../../services/staff/cliente.service.js";
 
 // Controlador para obtener todos los clientes
@@ -54,6 +55,57 @@ export async function getClienteByIdController(req, res) {
     return res.status(500).json({
       success: false,
       message: "Error al obtener cliente",
+      error: error.message
+    });
+  }
+}
+
+// Controlador para buscar clientes con filtros
+// Controlador para buscar clientes con filtros
+export async function searchClientesController(req, res) {
+  try {
+    const { nombre, categoria, email } = req.query;
+    
+    const filtros = {};
+    
+    // Filtro por nombre (búsqueda parcial case-insensitive)
+    if (nombre) {
+      filtros.nombre = nombre;
+    }
+    
+    // Filtro por email (búsqueda parcial case-insensitive)
+    if (email) {
+      filtros.email = email;
+    }
+    
+    // Filtro por categoría (regular, vip, premium)
+    if (categoria) {
+      // Validar que la categoría sea válida
+      const categoriasValidas = ['regular', 'vip', 'premium'];
+      if (categoriasValidas.includes(categoria.toLowerCase())) {
+        filtros.categoria = categoria.toLowerCase();
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: `Categoría inválida. Valores permitidos: ${categoriasValidas.join(', ')}`
+        });
+      }
+    }
+    
+    const clientes = await searchClientes(filtros);
+    
+    return res.status(200).json({
+      success: true,
+      message: "Búsqueda de clientes realizada exitosamente",
+      data: clientes,
+      total: clientes.length,
+      filtros: filtros
+    });
+  } catch (error) {
+    console.error("Error al buscar clientes:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error al buscar clientes",
       error: error.message
     });
   }

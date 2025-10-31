@@ -10,7 +10,8 @@ import {
   createPerfilFullController, 
   createMedioPerfilController, 
   updateMedioPerfilController, 
-  updatePerfilFullController 
+  updatePerfilFullController,
+  searchClientesController 
 } from "../../controllers/staff/cliente.controller.js";
 import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
 import { isEmployee, isManager } from "../../middlewares/authorization.middleware.js";
@@ -21,6 +22,7 @@ const router = Router();
 router.use(authenticateJwt);
 
 // Rutas para obtener (requieren ser empleado o gerente)
+router.get("/clientes/search", [isEmployee, isManager], searchClientesController);
 router.get("/ClientesUser", [isEmployee, isManager], getAllClientesController);
 router.get("/clientes/:id", [isEmployee, isManager], getClienteByIdController);
 router.get("/clientes/:id/usuario", [isEmployee, isManager], getUserByIdController);

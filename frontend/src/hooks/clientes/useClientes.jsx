@@ -1,15 +1,18 @@
-// src/hooks/clientes/useClientes.js
+// src/hooks/clientes/useClientes.jsx
 
 import { useState, useEffect, useCallback } from 'react';
 import { getAllClientes } from '../../services/clienteData.service.js';
 
 /**
  * Hook para obtener y manejar la lista de todos los clientes
- * @returns {Object} { clientes, loading, error, refetch }
+ * @param {Object} options - Opciones de configuración
+ * @param {boolean} options.autoFetch - Si debe cargar automáticamente (default: true)
+ * @returns {Object} { clientes, total, loading, error, refetch }
  */
-export const useClientes = () => {
+export const useClientes = ({ autoFetch = true } = {}) => {
   const [clientes, setClientes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState(null);
 
   const fetchClientes = useCallback(async () => {
@@ -19,7 +22,9 @@ export const useClientes = () => {
       const resultado = await getAllClientes();
       
       if (resultado.success) {
-        setClientes(resultado.data || []);
+        const clientesData = resultado.data?.clientes || resultado.data || [];
+        setClientes(clientesData);
+        setTotal(resultado.data?.total || clientesData.length);
       } else {
         setError(resultado.message || 'Error al obtener clientes');
       }
@@ -32,11 +37,14 @@ export const useClientes = () => {
   }, []);
 
   useEffect(() => {
-    fetchClientes();
-  }, [fetchClientes]);
+    if (autoFetch) {
+      fetchClientes();
+    }
+  }, [autoFetch, fetchClientes]);
 
   return {
     clientes,
+    total,
     loading,
     error,
     refetch: fetchClientes
