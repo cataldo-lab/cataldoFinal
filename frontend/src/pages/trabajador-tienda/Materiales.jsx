@@ -18,6 +18,10 @@ import UpdateIcon from '@assets/updateIcon.svg';
 import DeleteIcon from '@assets/deleteIcon.svg';
 import SearchIcon from '@assets/SearchIcon.svg';
 
+import { FaPhone } from 'react-icons/fa';
+import { FaUser, FaWarehouse } from 'react-icons/fa';
+
+
 export default function Materiales() {
   // ===== HOOKS =====
   const { 
@@ -369,7 +373,7 @@ const handleUpdateMaterial = async (id, materialData) => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div className="flex-1">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 flex items-center gap-3">
-              <span className="text-4xl md:text-5xl">🔧</span>
+              <FaWarehouse/>
               Gestión de Materiales
             </h1>
             <p className="text-gray-600 flex items-center gap-2">
@@ -598,15 +602,18 @@ const handleUpdateMaterial = async (id, materialData) => {
                       <td className="px-4 py-4">
                         {material.representante ? (
                           <div className="flex flex-col gap-1">
-                            <span className="text-sm font-medium text-gray-900">
-                              👤 {material.representante.nombre_completo}
+                            <span className="text-xs text-gray-600 font-minimum  items-center gap-2 flex">
+                              <FaUser className="w-4 h-4" /> 
+                              {material.representante.nombre_completo}
                             </span>
+
+
                             <span className="text-xs text-gray-600">
                               {material.representante.cargo_representante}
                             </span>
                             {material.representante.fono_representante && (
-                              <span className="text-xs text-blue-600 font-medium">
-                                📞 {material.representante.fono_representante}
+                              <span className="text-xs text-blue-600 font-minimum flex items-center gap-1">
+                              <FaPhone/> {material.representante.fono_representante}
                               </span>
                             )}
                           </div>

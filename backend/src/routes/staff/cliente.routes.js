@@ -22,22 +22,22 @@ const router = Router();
 router.use(authenticateJwt);
 
 // Rutas para obtener (requieren ser empleado o gerente)
-router.get("/clientes/search", [isEmployee, isManager], searchClientesController);
+router.get("/search", [isEmployee, isManager], searchClientesController);
 router.get("/ClientesUser", [isEmployee, isManager], getAllClientesController);
-router.get("/clientes/:id", [isEmployee, isManager], getClienteByIdController);
-router.get("/clientes/:id/usuario", [isEmployee, isManager], getUserByIdController);
-router.get("/clientes/:id/full", [isEmployee, isManager], getClienteDetalleByIdController);
+router.get("/:id", [isEmployee, isManager], getClienteByIdController);
+router.get("/:id/usuario", [isEmployee, isManager], getUserByIdController);
+router.get("/:id/full", [isEmployee, isManager], getClienteDetalleByIdController);
 
 // Rutas para crear (requieren ser empleado o gerente)
-router.post("/clientes", [isEmployee, isManager], createPerfilFullController);
-router.post("/clientes/:id/full", [isEmployee, isManager], createMedioPerfilController);
+router.post("/", [isEmployee, isManager], createPerfilFullController);
+router.post("/:id/full", [isEmployee, isManager], createMedioPerfilController);
 
 // Rutas para actualizar (requieren ser empleado o gerente)
-router.patch("/clientes/:id/full", [isEmployee, isManager], updateMedioPerfilController);
-router.patch("/clientes/:id", [isEmployee, isManager], updatePerfilFullController);
-router.patch("/clientes/block/:id", [isEmployee, isManager], blockUserClienteController);
+router.patch("/:id/full", [isEmployee, isManager], updateMedioPerfilController);
+router.patch("/:id", [isEmployee, isManager], updatePerfilFullController);
+router.patch("/block/:id", [isEmployee, isManager], blockUserClienteController);
 
 // Rutas para eliminar (requieren ser gerente)
-router.delete("/clientes/:id", [isEmployee,isManager], deleteUserClienteController);
+router.delete("/:id", [isEmployee,isManager], deleteUserClienteController);
 
 export default router;

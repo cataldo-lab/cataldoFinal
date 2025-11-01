@@ -16,11 +16,16 @@ import {
 // Controlador para obtener todos los clientes
 export async function getAllClientesController(req, res) {
   try {
-    const clientes = await getAllClientes();
+    // Obtener parámetros de paginación desde query
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const resultado = await getAllClientes(page, limit);
+    
     return res.status(200).json({
       success: true,
       message: "Clientes obtenidos exitosamente",
-      data: clientes
+      data: resultado
     });
   } catch (error) {
     console.error("Error al obtener clientes:", error);
@@ -60,7 +65,6 @@ export async function getClienteByIdController(req, res) {
   }
 }
 
-// Controlador para buscar clientes con filtros
 // Controlador para buscar clientes con filtros
 export async function searchClientesController(req, res) {
   try {

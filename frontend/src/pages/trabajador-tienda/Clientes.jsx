@@ -13,6 +13,12 @@ import PopUpBloquearCliente from '@components/popup/trabajadorTienda/cliente/pop
 import PopUpEliminarCliente from '@components/popup/trabajadorTienda/cliente/popUpEliminarCliente';
 
 import '@styles/trabajadorTienda/Clientes.css';
+import ViewIcon from '@assets/ViewIcon.svg';
+import UpdateIcon from '@assets/updateIcon.svg';
+import PasskeyIcon from '@assets/PasskeyIcon.svg'; // o usa otro icono para bloquear
+import DeleteIcon from '@assets/DeleteIcon.svg';
+import ChevronDownIcon from '@assets/ChevronDownIcon.svg';
+
 
 const ClientesPage = () => {
   // Estados para controlar los modales
@@ -84,16 +90,19 @@ const ClientesPage = () => {
   };
 
   return (
+
+    <div className="mt-30">
     <div className="clientes-page">
       <div className="clientes-header">
         <h1>Gestión de Clientes</h1>
         <button 
-          className="btn btn-primary"
-          onClick={() => setModalCrear(true)}
-        >
-          + Nuevo Cliente
-        </button>
-      </div>
+        className="px-6 py-2.5 bg-stone-700 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        onClick={() => setModalCrear(true)}
+        
+     > 
+      + Nuevo Cliente
+    </button>
+    </div>
 
       {/* Componente principal con búsqueda integrada */}
       <ListaClientes
@@ -171,6 +180,7 @@ const ClientesPage = () => {
         />
       )}
     </div>
+    </div>
   );
 };
 
@@ -246,12 +256,12 @@ const ListaClientes = ({
   }
 
   return (
-  
+   <div className="mt-5"> 
     <div className="lista-clientes-container">
       {/* Barra de búsqueda avanzada */}
       <div className="search-section">
         <div className="search-header">
-          <h3>🔍 Búsqueda de Clientes</h3>
+          <h3> Búsqueda de Clientes</h3>
           <button 
             onClick={() => setMostrarFiltros(!mostrarFiltros)}
             className="btn btn-sm btn-secondary"
@@ -366,7 +376,7 @@ const ListaClientes = ({
           <table className="clientes-table">
             <thead>
               <tr>
-                <th>ID</th>
+                
                 <th>Nombre Completo</th>
                 <th>Email</th>
                 <th>RUT</th>
@@ -378,7 +388,6 @@ const ListaClientes = ({
             <tbody>
               {clientes.map((cliente) => (
                 <tr key={cliente.id}>
-                  <td>{cliente.id}</td>
                   <td>{cliente.nombreCompleto}</td>
                   <td>{cliente.email}</td>
                   <td>{cliente.rut}</td>
@@ -394,44 +403,54 @@ const ListaClientes = ({
                       {cliente.rol === 'bloqueado' ? '🔒 Bloqueado' : '✅ Activo'}
                     </span>
                   </td>
-                  <td className="actions-cell">
-                    <button
-                      onClick={() => onVerDetalle(cliente)}
-                      className="btn btn-sm btn-info"
-                      title="Ver detalles"
-                    >
-                      👁️
-                    </button>
-                    <button
-                      onClick={() => onEditar(cliente)}
-                      className="btn btn-sm btn-warning"
-                      title="Editar"
-                    >
-                      ✏️
-                    </button>
-                    {cliente.rol !== 'bloqueado' && (
-                      <button
-                        onClick={() => onBloquear(cliente)}
-                        className="btn btn-sm btn-danger"
-                        title="Bloquear"
-                      >
-                        🔒
-                      </button>
-                    )}
-                    <button
-                      onClick={() => onEliminar(cliente)}
-                      className="btn btn-sm btn-danger"
-                      title="Eliminar"
-                    >
-                      🗑️
-                    </button>
-                  </td>
+
+                  
+            <td className="actions-cell">
+        <button
+          onClick={() => onVerDetalle(cliente)}
+          className="inline-flex items-center justify-center p-1.5 bg-stone-100
+           hover:bg-stone-200 text-stone-600 hover:text-stone-700 rounded transition-all duration-200"
+          title="Ver detalles"
+        >
+          <img src={ViewIcon} alt="Ver" className="w-4 h-4" />
+        </button>
+        
+        <button
+          onClick={() => onEditar(cliente)}
+          className="inline-flex items-center justify-center p-1.5 bg-stone-100 hover:bg-stone-200 
+          text-stone-600 hover:text-stone-700 rounded transition-all duration-200"
+          title="Editar"
+        >
+          <img src={UpdateIcon} alt="Editar" className="w-4 h-4" />
+        </button>
+        
+        {cliente.rol !== 'bloqueado' && (
+          <button
+            onClick={() => onBloquear(cliente)}
+            className="inline-flex items-center justify-center p-1.5 bg-stone-100 hover:bg-stone-200 
+            text-stone-600 hover:text-stone-700 rounded transition-all duration-200"
+            title="Bloquear"
+          >
+            <img src={PasskeyIcon} alt="Bloquear" className="w-4 h-4" />
+          </button>
+        )}
+        
+        <button
+          onClick={() => onEliminar(cliente)}
+          className="inline-flex items-center justify-center p-1.5 bg-red-100 hover:bg-red-200 
+          text-red-600 hover:text-red-700 rounded transition-all duration-200"
+          title="Eliminar"
+        >
+          <img src={DeleteIcon} alt="Eliminar" className="w-4 h-4" />
+        </button>
+      </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+    </div>
     </div>
   );
 };

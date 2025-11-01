@@ -1,6 +1,13 @@
 // frontend/src/pages/trabajador-tienda/TrabajadorDashboard.jsx
 import { useTrabajadorDashboard } from '../../hooks/Dashboard/useTrabajadorDashborad.jsx';
 
+import { FaExclamationTriangle,
+         FaCheckCircle, FaBox, 
+         FaDollarSign, FaWarehouse, 
+         FaClipboardList, FaUsers, 
+         FaHandshake, FaClock } from 'react-icons/fa';
+
+
 const TrabajadorDashboard = () => {
     const { stats, loading, error, reloadStats } = useTrabajadorDashboard();
 
@@ -28,7 +35,8 @@ const TrabajadorDashboard = () => {
                     <p className="text-red-700 mb-4">{error}</p>
                     <button 
                         onClick={reloadStats}
-                        className="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                        className="w-full bg-blue-900 hover:bg-blue-800 text-white
+                         font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
                     >
                         🔄 Reintentar
                     </button>
@@ -81,7 +89,8 @@ const TrabajadorDashboard = () => {
                 {/* Grid de Estadísticas */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     {/* Operaciones Pendientes */}
-                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 border-stone-500 transform hover:-translate-y-1">
+                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 
+                    border-l-4 border-stone-500 transform hover:-translate-y-1">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                                 Pendientes
@@ -109,7 +118,8 @@ const TrabajadorDashboard = () => {
                     </div>
 
                     {/* Total Productos */}
-                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 border-stone-500 transform hover:-translate-y-1">
+                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 
+                    border-l-4 border-stone-500 transform hover:-translate-y-1">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
                                 Productos
@@ -127,14 +137,18 @@ const TrabajadorDashboard = () => {
                         stats.materialesBajoStock > 0 ? 'border-red-500 bg-red-50' : 'border-stone-500'
                     } transform hover:-translate-y-1`}>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                                Stock Bajo
-                            </h3>
-                            <span className="text-3xl">
-                                {stats.materialesBajoStock > 0 ? '⚠️' : '✅'}
-                            </span>
-                        </div>
-                        <p className={`text-5xl font-bold mb-2 ${
+                        <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                            Stock Bajo
+                        </h3>
+                        <span className="text-3xl">
+                            {stats.materialesBajoStock > 0 ? (
+                                <FaExclamationTriangle className="w-8 h-8 text-yellow-500" />
+                            ) : (
+                                <FaCheckCircle className="w-8 h-8 text-green-500" />
+                            )}
+                        </span>
+                     </div>
+                                            <p className={`text-5xl font-bold mb-2 ${
                             stats.materialesBajoStock > 0 ? 'text-red-600' : 'text-green-600'
                         }`}>
                             {stats.materialesBajoStock || 0}
@@ -163,8 +177,8 @@ const TrabajadorDashboard = () => {
                                     Operaciones completadas este mes
                                 </p>
                             </div>
-                            <div className="text-8xl opacity-20">
-                                💵
+                            <div className="text-8xl opacity-30">
+                                <FaDollarSign className="text-8xl opacity-40" />
                             </div>
                         </div>
                     </div>
@@ -176,12 +190,12 @@ const TrabajadorDashboard = () => {
                         <span className="text-3xl"></span>
                         Accesos Rápidos
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                         <button 
                             onClick={() => window.location.href = '/trabajador/operations'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
-                            <span className="text-2xl">📋</span>
+                            <FaClipboardList className="text-2xl" /> 
                             <span>Ver Operaciones</span>
                         </button>
                         
@@ -189,7 +203,7 @@ const TrabajadorDashboard = () => {
                             onClick={() => window.location.href = '/trabajador/products'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
-                            <span className="text-2xl">📦</span>
+                            <FaBox className="text-2xl" /> 
                             <span>Gestionar Productos</span>
                         </button>
                         
@@ -197,7 +211,7 @@ const TrabajadorDashboard = () => {
                             onClick={() => window.location.href = '/trabajador/materiales'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-orange-700 hover:to-orange-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
-                            <span className="text-2xl">🔧</span>
+                            <FaWarehouse className="text-2xl" /> 
                             <span>Ver Materiales</span>
                         </button>
                         
@@ -205,8 +219,15 @@ const TrabajadorDashboard = () => {
                             onClick={() => window.location.href = '/trabajador/clientes'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
-                            <span className="text-2xl">👥</span>
+                            <FaUsers className="text-2xl" />
                             <span>Ver Clientes</span>
+                        </button>
+                        <button 
+                            onClick={() => window.location.href = '/trabajador/proveedores'}
+                            className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+                        >
+                            <FaHandshake className="text-2xl" />
+                            <span>Proveedores</span>
                         </button>
                     </div>
                 </div>
@@ -214,10 +235,11 @@ const TrabajadorDashboard = () => {
                 {/* Footer con fecha */}
                 {stats.fecha_consulta && (
                     <div className="mt-8 text-center">
-                        <p className="text-sm text-gray-500 bg-white inline-block px-6 py-3 rounded-full shadow-sm">
-                            🕐 Última actualización: {new Date(stats.fecha_consulta).toLocaleString('es-CL')}
-                        </p>
-                    </div>
+                    <p className="text-sm text-gray-500 bg-white inline-block px-6 py-3 rounded-full shadow-sm">
+                        <FaClock className="inline mr-2" /> 
+                        Última actualización: {new Date(stats.fecha_consulta).toLocaleString('es-CL')}
+                    </p>
+                </div>
                 )}
             </div>
         </div>

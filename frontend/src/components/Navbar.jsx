@@ -2,7 +2,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { logout } from '@services/auth.service.js';
 import { useAuth } from '@context/AuthContext';
 import { useState, useEffect } from "react";
-
+import { FaPowerOff } from 'react-icons/fa';
 // ⭐ ROLES CONSISTENTES CON EL BACKEND
 const RolePermissions = {
   administrador: ["administrador", "gerente", "trabajador_tienda", "cliente"],
@@ -187,6 +187,7 @@ const Navbar = () => {
                             }}
                             className="text-[#036] font-bold md:text-white md:font-normal text-sm no-underline relative px-2.5 pb-0.5 transition-all duration-300 md:before:content-[''] md:before:absolute md:before:bottom-0 md:before:left-0 md:before:w-full md:before:h-[3px] md:before:bg-[#006edf] md:before:scale-x-0 md:before:origin-bottom md:before:transition-transform md:before:duration-300 md:hover:before:scale-x-100 cursor-pointer bg-transparent border-0"
                         >
+                            <FaPowerOff className="inline mr-2" />
                             Cerrar sesión
                         </button>
                     </li>

@@ -11,11 +11,7 @@ import { MaterialesSchema } from "../../entity/materiales.entity.js";
  * ========================================
  */
 
-/**
- * Validar RUT chileno
- * @param {string} rut - RUT a validar
- * @returns {boolean}
- */
+
 function validarRUT(rut) {
     if (!rut || typeof rut !== 'string') return false;
     
@@ -46,12 +42,7 @@ function validarEmail(email) {
     return regex.test(email);
 }
 
-/**
- * Validar datos del proveedor
- * @param {Object} data - Datos del proveedor
- * @param {boolean} isUpdate - Si es actualización
- * @returns {Object} { isValid, errors }
- */
+
 function validarDatosProveedor(data, isUpdate = false) {
     const errors = [];
 
@@ -93,12 +84,7 @@ function validarDatosProveedor(data, isUpdate = false) {
     };
 }
 
-/**
- * Validar datos del representante
- * @param {Object} data - Datos del representante
- * @param {boolean} isUpdate - Si es actualización
- * @returns {Object} { isValid, errors }
- */
+
 function validarDatosRepresentante(data, isUpdate = false) {
     const errors = [];
 
@@ -154,11 +140,7 @@ function validarDatosRepresentante(data, isUpdate = false) {
  * ========================================
  */
 
-/**
- * Crear un nuevo proveedor
- * @param {Object} proveedorData - Datos del proveedor
- * @returns {Promise<[Object|null, string|null]>}
- */
+
 export async function createProveedorService(proveedorData) {
     try {
         // Validar datos
@@ -252,12 +234,7 @@ export async function getProveedoresService(filtros = {}) {
     }
 }
 
-/**
- * Obtener un proveedor por ID con toda su información
- * Incluye: materiales, representantes, estadísticas
- * @param {number} id_proveedor - ID del proveedor
- * @returns {Promise<[Object|null, string|null]>}
- */
+
 export async function getProveedorByIdService(id_proveedor) {
     try {
         const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
@@ -304,12 +281,7 @@ export async function getProveedorByIdService(id_proveedor) {
     }
 }
 
-/**
- * Actualizar un proveedor existente
- * @param {number} id_proveedor - ID del proveedor
- * @param {Object} datosActualizados - Datos a actualizar
- * @returns {Promise<[Object|null, string|null]>}
- */
+
 export async function updateProveedorService(id_proveedor, datosActualizados) {
     try {
         // Validar datos
@@ -379,12 +351,7 @@ export async function updateProveedorService(id_proveedor, datosActualizados) {
     }
 }
 
-/**
- * Eliminar un proveedor
- * Solo se puede eliminar si no tiene materiales asociados
- * @param {number} id_proveedor - ID del proveedor
- * @returns {Promise<[Object|null, string|null]>}
- */
+
 export async function deleteProveedorService(id_proveedor) {
     try {
         const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
@@ -429,12 +396,7 @@ export async function deleteProveedorService(id_proveedor) {
  * ========================================
  */
 
-/**
- * Crear un nuevo representante para un proveedor
- * @param {number} id_proveedor - ID del proveedor
- * @param {Object} representanteData - Datos del representante
- * @returns {Promise<[Object|null, string|null]>}
- */
+
 export async function createRepresentanteService(id_proveedor, representanteData) {
     try {
         // Validar datos
@@ -488,11 +450,7 @@ export async function createRepresentanteService(id_proveedor, representanteData
     }
 }
 
-/**
- * Obtener representantes de un proveedor
- * @param {number} id_proveedor - ID del proveedor
- * @returns {Promise<[Array|null, string|null]>}
- */
+
 export async function getRepresentantesByProveedorService(id_proveedor) {
     try {
         const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
@@ -521,12 +479,7 @@ export async function getRepresentantesByProveedorService(id_proveedor) {
     }
 }
 
-/**
- * Actualizar un representante existente
- * @param {number} id_representante - ID del representante
- * @param {Object} datosActualizados - Datos a actualizar
- * @returns {Promise<[Object|null, string|null]>}
- */
+
 export async function updateRepresentanteService(id_representante, datosActualizados) {
     try {
         // Validar datos
@@ -593,11 +546,7 @@ export async function updateRepresentanteService(id_representante, datosActualiz
     }
 }
 
-/**
- * Eliminar un representante
- * @param {number} id_representante - ID del representante
- * @returns {Promise<[Object|null, string|null]>}
- */
+
 export async function deleteRepresentanteService(id_representante) {
     try {
         const representanteRepository = AppDataSource.getRepository(representanteSchema);

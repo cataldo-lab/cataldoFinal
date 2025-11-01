@@ -477,3 +477,35 @@ select.form-control {
     align-items: flex-start;
   }
 }
+
+
+.btn svg.icon-sm {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.btn-sm svg.icon-sm {
+  width: 14px;
+  height: 14px;
+}
+
+/* Asegura que el color del icono sea visible según el botón */
+.btn-info svg {
+  color: white;
+}
+
+.btn-warning svg {
+  color: white;
+}
+
+.btn-danger svg {
+  color: white;
+}
+
+/* Opcional: Añade un efecto hover a los iconos */
+.btn:hover svg {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}

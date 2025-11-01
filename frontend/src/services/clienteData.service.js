@@ -8,7 +8,7 @@ import axios from './root.service.js';
  */
 export const getAllClientes = async () => {
   try {
-    const response = await axios.get('/ClientesUser');
+    const response = await axios.get('/clientes/ClientesUser');
     return response.data;
   } catch (error) {
     console.error('Error al obtener clientes:', error);
@@ -168,7 +168,7 @@ export const updatePerfilFull = async (id, userData = {}, clienteData = {}) => {
  */
 export const blockUserCliente = async (id, motivo = '') => {
   try {
-    const response = await axios.patch(`/clientes/${id}/block`, {
+    const response = await axios.patch(`/clientes/block/${id}`, {
       motivo
     });
     return response.data;
