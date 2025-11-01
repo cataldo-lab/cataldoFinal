@@ -2,25 +2,8 @@
 import { AppDataSource } from "../../config/configDb.js";
 import { logAuditEvent, TipoEvento, NivelSeveridad } from "../audit.service.js";
 
-/**
- * ========================================
- * SERVICIOS DE OPERACIONES
- * Para uso de EMPLEADOS y GERENTES
- * ========================================
- */
+//Dashboard stats service
 
-/**
- * Crear una nueva operación
- * @param {Object} operacionData - Datos de la operación
- * @param {number} operacionData.id_cliente - ID del cliente
- * @param {Array} operacionData.productos - Array de productos [{id_producto, cantidad, precio_unitario?, especificaciones?}]
- * @param {string} operacionData.estado_operacion - Estado inicial (default: "pendiente")
- * @param {number} operacionData.cantidad_abono - Abono inicial (default: 0)
- * @param {string} operacionData.descripcion_operacion - Descripción
- * @param {Date} operacionData.fecha_entrega_estimada - Fecha estimada de entrega
- * @param {string} usuarioEmail - Email del empleado/gerente que crea
- * @returns {Promise<[Object|null, string|null]>}
- */
 export async function createOperacionService(operacionData, usuarioEmail) {
     try {
 
@@ -348,13 +331,7 @@ export async function updateEstadoOperacionService(id, nuevoEstado, usuarioEmail
     }
 }
 
-/**
- * Actualizar datos de la operación
- * @param {number} id - ID de la operación
- * @param {Object} datosActualizados - Datos a actualizar
- * @param {string} usuarioEmail - Email del empleado/gerente
- * @returns {Promise<[Object|null, string|null]>}
- */
+
 export async function updateOperacionService(id, datosActualizados, usuarioEmail) {
     try {
         const operacionRepository = AppDataSource.getRepository("Operacion");

@@ -10,7 +10,13 @@ import { MaterialesSchema } from "../../entity/materiales.entity.js";
  * VALIDACIONES
  * ========================================
  */
-
+/*function validarTelefono(telefono) {
+    if (!telefono || typeof telefono !== 'string') return false;
+    // Validar formato chileno: +56912345678 o 912345678
+    const telefonoLimpio = telefono.replace(/\s/g, '').replace(/\+/g, '');
+    const regex = /^(56)?[2-9]\d{8}$/;
+    return regex.test(telefonoLimpio);
+}*/
 
 function validarRUT(rut) {
     if (!rut || typeof rut !== 'string') return false;
@@ -52,6 +58,7 @@ function validarDatosProveedor(data, isUpdate = false) {
             errors.push('El rol del proveedor es obligatorio');
         }
 
+
         if (!data.rut_proveedor || data.rut_proveedor.trim() === '') {
             errors.push('El RUT del proveedor es obligatorio');
         } else if (!validarRUT(data.rut_proveedor)) {
@@ -60,7 +67,10 @@ function validarDatosProveedor(data, isUpdate = false) {
 
         if (!data.fono_proveedor || data.fono_proveedor.trim() === '') {
             errors.push('El teléfono es obligatorio');
+        } else if (!validarTelefono(data.fono_proveedor)) {
+            errors.push('El teléfono no es válido');
         }
+
 
         if (!data.correo_proveedor || data.correo_proveedor.trim() === '') {
             errors.push('El correo es obligatorio');
@@ -187,13 +197,7 @@ export async function createProveedorService(proveedorData) {
     }
 }
 
-/**
- * Obtener todos los proveedores con filtros opcionales
- * @param {Object} filtros - Filtros opcionales
- * @param {string} [filtros.rol_proveedor] - Filtrar por rol
- * @param {string} [filtros.search] - Búsqueda general
- * @returns {Promise<[Array|null, string|null]>}
- */
+
 export async function getProveedoresService(filtros = {}) {
     try {
         const proveedorRepository = AppDataSource.getRepository(proveedoresSchema);
