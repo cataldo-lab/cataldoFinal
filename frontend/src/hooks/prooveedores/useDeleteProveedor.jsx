@@ -1,7 +1,7 @@
 // frontend/src/hooks/proveedores/useDeleteProveedor.jsx
 import { useState } from 'react';
 import { deleteProveedor } from '@services/proveedor.service.js';
-import { showErrorAlert, showSuccessAlert, showConfirmAlert } from '@helpers/sweetAlert.js';
+import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
 
 /**
  * Hook para eliminar proveedores
@@ -29,14 +29,8 @@ export const useDeleteProveedor = () => {
 
       // Confirmación
       if (confirm) {
-        const confirmed = await showConfirmAlert(
-          '¿Eliminar proveedor?',
-          'Esta acción no se puede deshacer. Solo se puede eliminar si no tiene materiales asociados.',
-          'warning',
-          'Sí, eliminar'
-        );
-
-        if (!confirmed) {
+        const result = await deleteDataAlert();
+        if (!result.isConfirmed) {
           return false;
         }
       }

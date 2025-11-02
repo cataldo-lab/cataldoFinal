@@ -82,7 +82,11 @@ const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 p-4 mt-20">
+    
+
+
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] justify-center items-center flex" 
+    onClick={onClose}>
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
         
         {/* Header */}

@@ -42,7 +42,8 @@ const PopUpBloquearCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
       />
       
       {/* Contenido del modal */}
-      <div className="fixed inset-0 flex items-center justify-center z-[9999] p-4 pointer-events-none">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] justify-center items-center flex"
+      onClick={onClose}>
         <div 
           className="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden pointer-events-auto"
           onClick={(e) => e.stopPropagation()}

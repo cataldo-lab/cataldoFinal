@@ -19,6 +19,10 @@ import PasskeyIcon from '@assets/PasskeyIcon.svg'; // o usa otro icono para bloq
 import DeleteIcon from '@assets/DeleteIcon.svg';
 import ChevronDownIcon from '@assets/ChevronDownIcon.svg';
 
+import { FaUser } from 'react-icons/fa';
+
+// ==================== COMPONENTE PRINCIPAL: PÁGINA DE CLIENTES ====================
+
 
 const ClientesPage = () => {
   // Estados para controlar los modales
@@ -93,16 +97,23 @@ const ClientesPage = () => {
 
     <div className="mt-30">
     <div className="clientes-page">
-      <div className="clientes-header">
-        <h1>Gestión de Clientes</h1>
-        <button 
-        className="px-6 py-2.5 bg-stone-700 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        onClick={() => setModalCrear(true)}
-        
-     > 
-      + Nuevo Cliente
-    </button>
-    </div>
+      <div className="clientes-header flex items-center justify-between mb-4">
+  
+      <div className="flex items-center gap-2">
+        <FaUser className="text-stone-700 text-xl" />
+        <h1 className="text-xl font-semibold text-stone-800">
+          Gestión de Clientes
+        </h1>
+      </div>
+
+  <button 
+    className="px-6 py-2.5 bg-stone-700 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+    onClick={() => setModalCrear(true)}
+  > 
+    + Nuevo Cliente
+  </button>
+
+</div>
 
       {/* Componente principal con búsqueda integrada */}
       <ListaClientes

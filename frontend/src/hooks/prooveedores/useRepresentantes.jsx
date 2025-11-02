@@ -6,7 +6,7 @@ import {
   updateRepresentante,
   deleteRepresentante
 } from '@services/proveedor.service.js';
-import { showErrorAlert, showSuccessAlert, showConfirmAlert } from '@helpers/sweetAlert.js';
+import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
 
 /**
  * Validar RUT chileno
@@ -184,7 +184,7 @@ export const useRepresentantes = () => {
         throw new Error(response.details || 'Error al crear representante');
       }
 
-      } catch (err) {
+    } catch (err) {
       const errorMessage = err.response?.data?.details || 
                           err.message || 
                           'Error al crear el representante';
@@ -298,14 +298,8 @@ export const useRepresentantes = () => {
 
       // Confirmación
       if (confirm) {
-        const confirmed = await showConfirmAlert(
-          '¿Eliminar representante?',
-          'Esta acción no se puede deshacer.',
-          'warning',
-          'Sí, eliminar'
-        );
-
-        if (!confirmed) {
+        const result = await deleteDataAlert();
+        if (!result.isConfirmed) {
           return false;
         }
       }
