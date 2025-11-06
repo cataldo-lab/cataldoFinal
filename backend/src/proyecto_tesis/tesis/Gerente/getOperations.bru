@@ -1,0 +1,19 @@
+meta {
+  name: getOperations
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3000/api/gerente/operations
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{gerente_token}}
+}
+
+settings {
+  encodeUrl: true
+}

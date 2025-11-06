@@ -1,0 +1,19 @@
+meta {
+  name: getSalesReport
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:3000/api/gerente/reports/sales
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{gerente_token}}
+}
+
+settings {
+  encodeUrl: true
+}

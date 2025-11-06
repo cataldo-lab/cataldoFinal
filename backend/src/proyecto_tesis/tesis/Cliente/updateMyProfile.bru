@@ -1,0 +1,26 @@
+meta {
+  name: updateMyProfile
+  type: http
+  seq: 6
+}
+
+patch {
+  url: http://localhost:3000/api/cliente/profile
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cliente_token}}
+}
+
+body:json {
+  {
+    "telefono": "+56912345678",
+    "direccion": "Nueva dirección 123"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

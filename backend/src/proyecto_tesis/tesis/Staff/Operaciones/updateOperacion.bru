@@ -1,0 +1,26 @@
+meta {
+  name: updateOperacion
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:3000/api/operaciones/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "descripcion_operacion": "Venta actualizada",
+    "estado_operacion": "en_proceso"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

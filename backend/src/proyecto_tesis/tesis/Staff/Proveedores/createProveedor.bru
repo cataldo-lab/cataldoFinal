@@ -1,0 +1,29 @@
+meta {
+  name: createProveedor
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:3000/api/proveedores/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "nombre_proveedor": "Proveedor Test",
+    "rut_proveedor": "76.123.456-7",
+    "telefono": "+56912345678",
+    "email": "proveedor@test.cl",
+    "direccion": "Dirección del proveedor"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

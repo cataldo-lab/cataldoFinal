@@ -1,0 +1,29 @@
+meta {
+  name: createProducto
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:3000/api/productos/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "nombre_producto": "Producto Test",
+    "descripcion": "Descripción del producto",
+    "precio": 5000,
+    "stock": 100,
+    "categoria": "Categoría A"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,27 @@
+meta {
+  name: updateProducto
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:3000/api/productos/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "nombre_producto": "Producto Actualizado",
+    "precio": 6000,
+    "stock": 150
+  }
+}
+
+settings {
+  encodeUrl: true
+}

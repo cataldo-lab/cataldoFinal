@@ -1,0 +1,19 @@
+meta {
+  name: getRepresentantesByProveedor
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:3000/api/proveedores/1/representantes
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+settings {
+  encodeUrl: true
+}

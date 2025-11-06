@@ -1,0 +1,19 @@
+meta {
+  name: getEntityAuditHistory
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:3000/api/admin/audit/entity/usuario/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{admin_token}}
+}
+
+settings {
+  encodeUrl: true
+}

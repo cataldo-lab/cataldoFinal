@@ -1,0 +1,26 @@
+meta {
+  name: updateOperation
+  type: http
+  seq: 3
+}
+
+patch {
+  url: http://localhost:3000/api/gerente/operations/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{gerente_token}}
+}
+
+body:json {
+  {
+    "estado": "completado",
+    "notas": "Operación finalizada con éxito"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
