@@ -1,0 +1,51 @@
+meta {
+  name: createOperacionOrdenTrabajo
+  type: http
+  seq: 15
+}
+
+post {
+  url: http://localhost:3000/api/papeles/operacion
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "operacion": {
+      "id_cliente": 1,
+      "estado_operacion": "orden_trabajo",
+      "descripcion_operacion": "Orden de trabajo - Muebles de cocina personalizados",
+      "cantidad_abono": 200000,
+      "fecha_entrega_estimada": "2025-02-28"
+    },
+    "productos": [
+      {
+        "id_producto": 3,
+        "cantidad": 1,
+        "precio_unitario": 500000,
+        "especificaciones": "Mueble bajo mesón 3 metros lineales"
+      },
+      {
+        "id_producto": 4,
+        "cantidad": 1,
+        "precio_unitario": 400000,
+        "especificaciones": "Mueble alto 3 metros lineales"
+      },
+      {
+        "id_producto": 5,
+        "cantidad": 1,
+        "precio_unitario": 150000,
+        "especificaciones": "Isla central con 4 cajones"
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

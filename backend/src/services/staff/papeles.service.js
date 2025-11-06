@@ -526,17 +526,32 @@ export async function createOperacionConProductosService(operacionData, producto
         const productoRepository = queryRunner.manager.getRepository("Producto");
         const productoOperacionRepository = queryRunner.manager.getRepository("ProductoOperacion");
         const historialRepository = queryRunner.manager.getRepository("Historial");
+        const clienteRepository = queryRunner.manager.getRepository("Cliente");
 
-        // 1. Validar que el cliente existe
-        const clienteExists = await userRepository.findOne({
-            where: { id: operacionData.id_cliente, rol: Role.CLIENTE }
+        // ========================================
+        // 1. Validar entidades User y Cliente
+        // ========================================
+
+        // 1a. Validar que el User existe y tiene rol CLIENTE
+        const userCliente = await userRepository.findOne({
+            where: { id: operacionData.id_cliente, rol: Role.CLIENTE },
+            relations: ["cliente"] // Cargar relación con Cliente
         });
 
-        if (!clienteExists) {
+        if (!userCliente) {
             await queryRunner.rollbackTransaction();
             return {
                 success: false,
-                message: `Cliente con ID ${operacionData.id_cliente} no encontrado`
+                message: `Usuario con ID ${operacionData.id_cliente} no encontrado o no tiene rol de cliente`
+            };
+        }
+
+        // 1b. Validar que el User tenga registro en la tabla Cliente
+        if (!userCliente.cliente) {
+            await queryRunner.rollbackTransaction();
+            return {
+                success: false,
+                message: `El usuario con ID ${operacionData.id_cliente} no tiene perfil de cliente completo. Debe crear primero el perfil de cliente.`
             };
         }
 
