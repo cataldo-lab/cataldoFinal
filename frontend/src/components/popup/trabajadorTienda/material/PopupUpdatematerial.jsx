@@ -63,7 +63,7 @@ export default function PopupUpdateMaterial({
         stock_minimo: parseInt(formData.stock_minimo),
         existencia_material: parseInt(formData.existencia_material),
         id_proveedor: formData.id_proveedor ? parseInt(formData.id_proveedor) : null,
-        activo: formData.activo === 'true'
+        activo: true 
       };
 
       console.log('📤 PopupUpdate - ID del material:', material.id_material, 'Tipo:', typeof material.id_material);
@@ -261,19 +261,7 @@ export default function PopupUpdateMaterial({
             ],
             required: false,
             defaultValue: material.proveedor?.id_proveedor?.toString() || ''
-          },
-            {
-              label: "Estado *",
-              name: "activo",
-              fieldType: 'select',
-              options: [
-                { value: 'false', label: '✗ Inactivo' },
-                { value: 'true', label: '✓ Activo' },
-                
-              ],
-              required: true,
-              defaultValue: material.activo= 'true' 
-            }
+          }
           ]}
           onSubmit={handleSubmit}
           buttonText={loading ? "Actualizando..." : "Actualizar Material"}

@@ -22,6 +22,14 @@ import { FaPhone } from 'react-icons/fa';
 import { FaUser, FaWarehouse } from 'react-icons/fa';
 
 
+function PaginatedTable({data, itemsPerPage=10}){
+  const [currentPage, setCurrentPage] = useState(1);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+}
+
 export default function Materiales() {
   // ===== HOOKS =====
   const { 

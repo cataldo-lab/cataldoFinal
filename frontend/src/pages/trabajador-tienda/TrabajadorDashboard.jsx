@@ -7,6 +7,8 @@ import { FaExclamationTriangle,
          FaClipboardList, FaUsers, 
          FaHandshake, FaClock } from 'react-icons/fa';
 
+import { MdSpaceDashboard } from "react-icons/md";
+
 
 const TrabajadorDashboard = () => {
     const { stats, loading, error, reloadStats } = useTrabajadorDashboard();
@@ -72,7 +74,10 @@ const TrabajadorDashboard = () => {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                     <div>
-                        <h1 className="text-4xl font-bold text-stone-700 mb-2">Panel de Trabajador Tienda</h1>
+                        <h1 className="text-4xl font-bold text-stone-700 mb-2">
+                            <MdSpaceDashboard className="inline-block mr-2" />
+                            Panel de Trabajador Tienda
+                        </h1>
                         <p className="text-gray-600">Dashboard de gestión y estadísticas</p>
                     </div>
                     <button 

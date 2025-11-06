@@ -19,7 +19,6 @@ const Users = () => {
   const [filterRut, setFilterRut] = useState('');
   const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
 
-  // ⭐ Renombrando la función del hook para evitar conflictos
   const { handleCreateUser: createNewUser, isLoading: isCreatingUser } = usePostUsers(fetchUsers);
 
   const {
