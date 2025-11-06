@@ -1,17 +1,20 @@
+// frontend/src/components/popup/PopUpEditarRepresentante.jsx
 import { useState, useEffect } from 'react';
-import CloseIcon from '@assets/XIcon.svg';
+import { useRepresentantes } from '@hooks/prooveedores/useRepresentantes';
+import XIcon from '@assets/XIcon.svg';
+import UpdateIcon from '@assets/updateIcon.svg';
+import PersonIcon from '@assets/PersonIcon.svg';
 
-export default function PopupUpdateRepresentante({ 
-  show, 
-  setShow, 
-  representante,
-  proveedor,
-  onSubmit 
-}) {
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+const PopUpEditarRepresentante = ({ isOpen, onClose, onSuccess, proveedorId }) => {
+  const { 
+    representantes, 
+    loading: loadingReps, 
+    fetchRepresentantes,
+    updateRepresentante,
+    loading: updating
+  } = useRepresentantes();
 
-  // Estados del formulario
+  const [selectedRepresentante, setSelectedRepresentante] = useState(null);
   const [formData, setFormData] = useState({
     nombre_representante: '',
     apellido_representante: '',
@@ -21,20 +24,26 @@ export default function PopupUpdateRepresentante({
     correo_representante: ''
   });
 
-  // Efecto para cargar datos del representante cuando se abre el modal
+  // Cargar representantes cuando se abre el modal
   useEffect(() => {
-    if (show && representante) {
-      setFormData({
-        nombre_representante: representante.nombre_representante || '',
-        apellido_representante: representante.apellido_representante || '',
-        rut_representante: representante.rut_representante || '',
-        cargo_representante: representante.cargo_representante || '',
-        fono_representante: representante.fono_representante || '',
-        correo_representante: representante.correo_representante || ''
-      });
-      setError(null);
+    if (isOpen && proveedorId) {
+      fetchRepresentantes(proveedorId);
     }
-  }, [show, representante]);
+  }, [isOpen, proveedorId]);
+
+  // Cuando se selecciona un representante, llenar el formulario
+  useEffect(() => {
+    if (selectedRepresentante) {
+      setFormData({
+        nombre_representante: selectedRepresentante.nombre_representante || '',
+        apellido_representante: selectedRepresentante.apellido_representante || '',
+        rut_representante: selectedRepresentante.rut_representante || '',
+        cargo_representante: selectedRepresentante.cargo_representante || '',
+        fono_representante: selectedRepresentante.fono_representante || '',
+        correo_representante: selectedRepresentante.correo_representante || ''
+      });
+    }
+  }, [selectedRepresentante]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,447 +53,263 @@ export default function PopupUpdateRepresentante({
     }));
   };
 
+  const handleSelectRepresentante = (representante) => {
+    setSelectedRepresentante(representante);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
 
-    try {
-      // Validar datos del representante
-      if (!formData.nombre_representante || !formData.apellido_representante || 
-          !formData.rut_representante || !formData.cargo_representante || 
-          !formData.fono_representante || !formData.correo_representante) {
-        setError('Por favor completa todos los campos del representante');
-        setLoading(false);
-        return;
-      }
+    if (!selectedRepresentante) {
+      alert('❌ Debes seleccionar un representante');
+      return;
+    }
 
-      // Preparar datos para enviar (solo los que han cambiado)
-      const dataToSend = {};
-      
-      if (formData.nombre_representante !== representante.nombre_representante) {
-        dataToSend.nombre_representante = formData.nombre_representante.trim();
-      }
-      if (formData.apellido_representante !== representante.apellido_representante) {
-        dataToSend.apellido_representante = formData.apellido_representante.trim();
-      }
-      if (formData.rut_representante !== representante.rut_representante) {
-        dataToSend.rut_representante = formData.rut_representante.trim();
-      }
-      if (formData.cargo_representante !== representante.cargo_representante) {
-        dataToSend.cargo_representante = formData.cargo_representante.trim();
-      }
-      if (formData.fono_representante !== representante.fono_representante) {
-        dataToSend.fono_representante = formData.fono_representante.trim();
-      }
-      if (formData.correo_representante !== representante.correo_representante) {
-        dataToSend.correo_representante = formData.correo_representante.trim().toLowerCase();
-      }
+    const resultado = await updateRepresentante(
+      selectedRepresentante.id_representante,
+      formData
+    );
 
-      // Si no hay cambios
-      if (Object.keys(dataToSend).length === 0) {
-        setError('No se han detectado cambios');
-        setLoading(false);
-        return;
-      }
-
-      console.log('📤 Datos del representante a enviar:', dataToSend);
-
-      const [success, errorMsg] = await onSubmit(representante.id_representante, dataToSend);
-      
-      if (success) {
-        setError(null);
-        setShow(false);
-      } else {
-        setError(errorMsg || 'Error al actualizar representante');
-      }
-    } catch (error) {
-      console.error('❌ Error al actualizar representante:', error);
-      setError('Ocurrió un error inesperado');
-    } finally {
-      setLoading(false);
+    if (resultado) {
+      onSuccess();
     }
   };
 
-  const handleClose = () => {
-    setError(null);
-    setShow(false);
+  const handleCancel = () => {
+    setSelectedRepresentante(null);
+    setFormData({
+      nombre_representante: '',
+      apellido_representante: '',
+      rut_representante: '',
+      cargo_representante: '',
+      fono_representante: '',
+      correo_representante: ''
+    });
+    onClose();
   };
 
-  if (!show || !representante) return null;
+  if (!isOpen) return null;
 
   return (
-    <div className="bg">
-      <div className="popup" style={{ 
-        height: 'auto', 
-        maxHeight: '90vh', 
-        maxWidth: '700px', 
-        overflowY: 'auto',
-        padding: '30px'
-      }}>
-        <button 
-          className='close' 
-          onClick={handleClose}
-          disabled={loading}
-          style={{
-            position: 'absolute',
-            top: '15px',
-            right: '15px',
-            background: 'none',
-            border: 'none',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            padding: '5px',
-            zIndex: 10,
-            opacity: loading ? 0.5 : 1
-          }}
-        >
-          <img src={CloseIcon} alt="Cerrar" style={{ width: '24px', height: '24px' }} />
-        </button>
-
-        <h2 style={{ 
-          fontSize: '28px', 
-          fontWeight: 'bold', 
-          marginBottom: '10px',
-          color: '#1f2937',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <span style={{ fontSize: '32px' }}>✏️</span>
-          Editar Representante
-        </h2>
-        <p style={{ color: '#6b7280', marginBottom: '25px', fontSize: '14px' }}>
-          Actualiza la información de {representante.nombre_representante} {representante.apellido_representante}
-        </p>
-
-        {error && (
-          <div style={{
-            margin: '0 0 20px 0',
-            padding: '12px 16px',
-            backgroundColor: '#fee2e2',
-            color: '#991b1b',
-            borderRadius: '8px',
-            border: '1px solid #fecaca',
-            textAlign: 'center',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            ⚠️ {error}
+    <div 
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] justify-center items-center flex"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+        
+        {/* Header */}
+        <div className="relative px-6 pt-6 pb-4 border-b border-stone-200">
+          <div className="flex items-center space-x-2">
+            <img src={UpdateIcon} alt="" className="w-6 h-6" />
+            <h2 className="text-xl font-semibold text-stone-800">
+              Editar Representante
+            </h2>
           </div>
-        )}
+          <button 
+            className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-lg transition-colors"
+            onClick={onClose}
+          >
+            <img src={XIcon} alt="Cerrar" className="w-5 h-5" />
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          {/* ===== INFORMACIÓN DEL PROVEEDOR ===== */}
-          {proveedor && (
-            <div style={{
-              backgroundColor: '#f3f4f6',
-              padding: '15px',
-              borderRadius: '8px',
-              marginBottom: '20px',
-              border: '1px solid #d1d5db'
-            }}>
-              <h4 style={{ 
-                fontSize: '14px', 
-                fontWeight: '600', 
-                marginBottom: '8px',
-                color: '#374151'
-              }}>
-                📋 Proveedor asociado:
-              </h4>
-              <div style={{ fontSize: '13px', color: '#6b7280' }}>
-                <p><strong>Empresa:</strong> {proveedor.rol_proveedor}</p>
-                <p><strong>RUT:</strong> {proveedor.rut_proveedor}</p>
+        {/* Content */}
+        <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
+          {loadingReps ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-stone-200 rounded-full"></div>
+                <div className="w-16 h-16 border-4 border-stone-600 rounded-full animate-spin absolute top-0 border-t-transparent"></div>
               </div>
+              <p className="mt-4 text-stone-600">Cargando representantes...</p>
+            </div>
+          ) : representantes.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="text-6xl mb-4">👤</div>
+              <p className="text-stone-600">Este proveedor no tiene representantes</p>
+            </div>
+          ) : (
+            <div className="p-6 space-y-6">
+              {/* Lista de Representantes */}
+              <div className="bg-stone-50 rounded-lg p-5">
+                <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                  <PersonIcon className="w-5 h-5" />
+                  Selecciona un Representante
+                </h3>
+                <div className="space-y-2">
+                  {representantes.map((rep) => (
+                    <button
+                      key={rep.id_representante}
+                      type="button"
+                      onClick={() => handleSelectRepresentante(rep)}
+                      className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                        selectedRepresentante?.id_representante === rep.id_representante
+                          ? 'border-stone-600 bg-stone-100'
+                          : 'border-stone-200 hover:border-stone-400 bg-white'
+                      }`}
+                    >
+                      <div className="font-semibold text-stone-800">
+                        {rep.nombre_representante} {rep.apellido_representante}
+                      </div>
+                      <div className="text-sm text-stone-600">
+                        {rep.cargo_representante} • {rep.rut_representante}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Formulario de Edición */}
+              {selectedRepresentante && (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="bg-stone-50 rounded-lg p-5">
+                    <h3 className="font-semibold text-stone-800 mb-4">
+                      Datos del Representante
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Nombre */}
+                      <div>
+                        <label htmlFor="nombre_representante" className="block text-sm font-medium text-stone-700 mb-1">
+                          Nombre *
+                        </label>
+                        <input
+                          type="text"
+                          id="nombre_representante"
+                          name="nombre_representante"
+                          value={formData.nombre_representante}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
+                          required
+                        />
+                      </div>
+
+                      {/* Apellido */}
+                      <div>
+                        <label htmlFor="apellido_representante" className="block text-sm font-medium text-stone-700 mb-1">
+                          Apellido *
+                        </label>
+                        <input
+                          type="text"
+                          id="apellido_representante"
+                          name="apellido_representante"
+                          value={formData.apellido_representante}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
+                          required
+                        />
+                      </div>
+
+                      {/* RUT */}
+                      <div>
+                        <label htmlFor="rut_representante" className="block text-sm font-medium text-stone-700 mb-1">
+                          RUT *
+                        </label>
+                        <input
+                          type="text"
+                          id="rut_representante"
+                          name="rut_representante"
+                          value={formData.rut_representante}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
+                          placeholder="12.345.678-9"
+                          required
+                        />
+                      </div>
+
+                      {/* Cargo */}
+                      <div>
+                        <label htmlFor="cargo_representante" className="block text-sm font-medium text-stone-700 mb-1">
+                          Cargo *
+                        </label>
+                        <input
+                          type="text"
+                          id="cargo_representante"
+                          name="cargo_representante"
+                          value={formData.cargo_representante}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
+                          required
+                        />
+                      </div>
+
+                      {/* Teléfono */}
+                      <div>
+                        <label htmlFor="fono_representante" className="block text-sm font-medium text-stone-700 mb-1">
+                          Teléfono
+                        </label>
+                        <input
+                          type="tel"
+                          id="fono_representante"
+                          name="fono_representante"
+                          value={formData.fono_representante}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
+                          placeholder="+56 9 1234 5678"
+                        />
+                      </div>
+
+                      {/* Email */}
+                      <div>
+                        <label htmlFor="correo_representante" className="block text-sm font-medium text-stone-700 mb-1">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          id="correo_representante"
+                          name="correo_representante"
+                          value={formData.correo_representante}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
+                          placeholder="ejemplo@correo.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end space-x-3 pt-4 border-t border-stone-200">
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-lg transition-colors"
+                      disabled={updating}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className={`px-6 py-2.5 bg-stone-600 hover:bg-stone-700 text-white font-medium rounded-lg transition-all flex items-center space-x-2 ${
+                        updating ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      disabled={updating}
+                    >
+                      {updating ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          <span>Guardando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <img src={UpdateIcon} alt="" className="w-4 h-4 filter brightness-0 invert" />
+                          <span>Guardar Cambios</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
-
-          {/* ===== SECCIÓN REPRESENTANTE ===== */}
-          <div style={{
-            backgroundColor: '#fef3c7',
-            padding: '20px',
-            borderRadius: '12px',
-            marginBottom: '20px',
-            border: '2px solid #fcd34d'
-          }}>
-            <h3 style={{ 
-              fontSize: '18px', 
-              fontWeight: '600', 
-              marginBottom: '15px',
-              color: '#92400e',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <span>👤</span> Datos del Representante
-            </h3>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontWeight: '600', 
-                  marginBottom: '6px',
-                  color: '#92400e',
-                  fontSize: '14px'
-                }}>
-                  Nombre *
-                </label>
-                <input
-                  type="text"
-                  name="nombre_representante"
-                  value={formData.nombre_representante}
-                  onChange={handleChange}
-                  placeholder="Juan"
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: '2px solid #fcd34d',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    transition: 'border-color 0.2s'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
-                  onBlur={(e) => e.target.style.borderColor = '#fcd34d'}
-                />
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontWeight: '600', 
-                  marginBottom: '6px',
-                  color: '#92400e',
-                  fontSize: '14px'
-                }}>
-                  Apellido *
-                </label>
-                <input
-                  type="text"
-                  name="apellido_representante"
-                  value={formData.apellido_representante}
-                  onChange={handleChange}
-                  placeholder="Pérez"
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: '2px solid #fcd34d',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    transition: 'border-color 0.2s'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
-                  onBlur={(e) => e.target.style.borderColor = '#fcd34d'}
-                />
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontWeight: '600', 
-                  marginBottom: '6px',
-                  color: '#92400e',
-                  fontSize: '14px'
-                }}>
-                  RUT *
-                </label>
-                <input
-                  type="text"
-                  name="rut_representante"
-                  value={formData.rut_representante}
-                  onChange={handleChange}
-                  placeholder="12.345.678-9"
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: '2px solid #fcd34d',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    transition: 'border-color 0.2s'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
-                  onBlur={(e) => e.target.style.borderColor = '#fcd34d'}
-                />
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontWeight: '600', 
-                  marginBottom: '6px',
-                  color: '#92400e',
-                  fontSize: '14px'
-                }}>
-                  Cargo *
-                </label>
-                <input
-                  type="text"
-                  name="cargo_representante"
-                  value={formData.cargo_representante}
-                  onChange={handleChange}
-                  placeholder="Gerente de Ventas"
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: '2px solid #fcd34d',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    transition: 'border-color 0.2s'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
-                  onBlur={(e) => e.target.style.borderColor = '#fcd34d'}
-                />
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontWeight: '600', 
-                  marginBottom: '6px',
-                  color: '#92400e',
-                  fontSize: '14px'
-                }}>
-                  Teléfono *
-                </label>
-                <input
-                  type="text"
-                  name="fono_representante"
-                  value={formData.fono_representante}
-                  onChange={handleChange}
-                  placeholder="+56987654321"
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: '2px solid #fcd34d',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    transition: 'border-color 0.2s'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
-                  onBlur={(e) => e.target.style.borderColor = '#fcd34d'}
-                />
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontWeight: '600', 
-                  marginBottom: '6px',
-                  color: '#92400e',
-                  fontSize: '14px'
-                }}>
-                  Correo Electrónico *
-                </label>
-                <input
-                  type="email"
-                  name="correo_representante"
-                  value={formData.correo_representante}
-                  onChange={handleChange}
-                  placeholder="representante@proveedor.cl"
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: '2px solid #fcd34d',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    transition: 'border-color 0.2s'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
-                  onBlur={(e) => e.target.style.borderColor = '#fcd34d'}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ===== BOTONES ===== */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '12px', 
-            justifyContent: 'flex-end',
-            marginTop: '25px'
-          }}>
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={loading}
-              style={{
-                padding: '12px 24px',
-                backgroundColor: '#6b7280',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '600',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.5 : 1,
-                transition: 'all 0.2s',
-                fontSize: '14px'
-              }}
-              onMouseOver={(e) => !loading && (e.target.style.backgroundColor = '#4b5563')}
-              onMouseOut={(e) => !loading && (e.target.style.backgroundColor = '#6b7280')}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                padding: '12px 24px',
-                backgroundColor: '#f59e0b',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '600',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.5 : 1,
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '14px'
-              }}
-              onMouseOver={(e) => !loading && (e.target.style.backgroundColor = '#d97706')}
-              onMouseOut={(e) => !loading && (e.target.style.backgroundColor = '#f59e0b')}
-            >
-              {loading ? (
-                <>
-                  <span style={{ 
-                    display: 'inline-block', 
-                    width: '16px', 
-                    height: '16px', 
-                    border: '2px solid white', 
-                    borderTopColor: 'transparent', 
-                    borderRadius: '50%', 
-                    animation: 'spin 0.8s linear infinite' 
-                  }} />
-                  Actualizando...
-                </>
-              ) : (
-                <>
-                  <span>💾</span>
-                  Guardar Cambios
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
-
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
-}
+};
+
+export default PopUpEditarRepresentante;

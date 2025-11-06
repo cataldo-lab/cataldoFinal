@@ -12,6 +12,7 @@ import materialRoutes from "./staff/material.routes.js";
 import clienteGTRoutes from "./staff/cliente.routes.js";
 import proveedorRoutes from "./staff/proveedor.routes.js";
 import direccionRoutes from "./staff/direccion.routes.js";
+import papelesRoutes from "./staff/papeles.routes.js";
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router
     .use("/materiales", materialRoutes)
     .use("/clientes", clienteGTRoutes)
     .use("/direccion",direccionRoutes)
+    .use("/papeles", papelesRoutes)
     .use("/proveedores", proveedorRoutes);   
 export default router;

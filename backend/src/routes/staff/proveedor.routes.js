@@ -21,39 +21,39 @@ const router = Router();
 
 router.use(authenticateJwt);
 
-router.get("/con-representantes", [isEmployee,isManager], getProveedoresConRepresentantes);
-router.post("/con-representante", isEmployee, createProveedorConRepresentante);
+router.get("/con-representantes", isEmployee, isManager, getProveedoresConRepresentantes);
+router.post("/con-representante", isEmployee, isManager, createProveedorConRepresentante);
 
 
 // PUT /api/proveedores/representantes/:id - Actualizar representante
-router.put("/representantes/:id", isEmployee, updateRepresentante);
+router.put("/representantes/:id", isEmployee, isManager, updateRepresentante);
 
 // DELETE /api/proveedores/representantes/:id - Eliminar representante (solo gerente)
-router.delete("/representantes/:id", isManager, deleteRepresentante);
+router.delete("/representantes/:id", isEmployee, isManager, deleteRepresentante);
 
 
 
 // GET /api/proveedores - Obtener todos los proveedores
-router.get("/", [isEmployee,isManager], getProveedores);
+router.get("/", isEmployee, isManager, getProveedores);
 
 // POST /api/proveedores - Crear nuevo proveedor
-router.post("/", [isEmployee,isManager], createProveedor);
+router.post("/", isEmployee, isManager, createProveedor);
 
 // GET /api/proveedores/:id/representantes - Obtener representantes de un proveedor
 // ⚠️ DEBE ir ANTES de GET /:id
-router.get("/:id/representantes", [isEmployee,isManager], getRepresentantesByProveedor);
+router.get("/:id/representantes", isEmployee, isManager, getRepresentantesByProveedor);
 
 // POST /api/proveedores/:id/representantes - Crear representante para un proveedor
-router.post("/:id/representantes", [isEmployee,isManager], createRepresentante);
+router.post("/:id/representantes", isEmployee, isManager, createRepresentante);
 
 // GET /api/proveedores/:id - Obtener un proveedor por ID
-router.get("/:id", [isEmployee,isManager], getProveedorById);
+router.get("/:id", isEmployee, isManager, getProveedorById);
 
 // PUT /api/proveedores/:id - Actualizar proveedor
-router.put("/:id", [isEmployee,isManager], updateProveedor);
+router.put("/:id", isEmployee, isManager, updateProveedor);
 
 // DELETE /api/proveedores/:id - Eliminar proveedor (solo gerente)
-router.delete("/:id", [isEmployee,isManager], deleteProveedor);
+router.delete("/:id", isEmployee, isManager, deleteProveedor);
 
 
 
