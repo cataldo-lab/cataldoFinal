@@ -7,9 +7,14 @@ meta {
 get {
   url: http://localhost:3000/api/admin/audit/user/1
   body: none
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub21icmVDb21wbGV0byI6IkFkbWluaXN0cmFkb3IgZGVsIFNpc3RlbWEiLCJlbWFpbCI6ImFkbWluLnNpc3RlbWFAZ21haWwuY2wiLCJydXQiOiIxMS4xMTEuMTExLTEiLCJyb2wiOiJhZG1pbmlzdHJhZG9yIiwiaWF0IjoxNzYyNDYxMDc0LCJleHAiOjE3NjI1NDc0NzR9.7eXchxaWHj0_jD5qXR7kmefdzGTc-Edmjzk60BOOXEI
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
