@@ -1,9 +1,7 @@
 // frontend/src/components/popup/PopUpEditarRepresentante.jsx
 import { useState, useEffect } from 'react';
 import { useRepresentantes } from '@hooks/prooveedores/useRepresentantes';
-import XIcon from '@assets/XIcon.svg';
-import UpdateIcon from '@assets/updateIcon.svg';
-import PersonIcon from '@assets/PersonIcon.svg';
+import { FaTimes, FaEdit, FaUserTie, FaSpinner } from 'react-icons/fa';
 
 const PopUpEditarRepresentante = ({ isOpen, onClose, onSuccess, proveedorId }) => {
   const { 
@@ -102,16 +100,16 @@ const PopUpEditarRepresentante = ({ isOpen, onClose, onSuccess, proveedorId }) =
         {/* Header */}
         <div className="relative px-6 pt-6 pb-4 border-b border-stone-200">
           <div className="flex items-center space-x-2">
-            <img src={UpdateIcon} alt="" className="w-6 h-6" />
+            <FaEdit className="w-6 h-6 text-stone-600" />
             <h2 className="text-xl font-semibold text-stone-800">
               Editar Representante
             </h2>
           </div>
-          <button 
+          <button
             className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-lg transition-colors"
             onClick={onClose}
           >
-            <img src={XIcon} alt="Cerrar" className="w-5 h-5" />
+            <FaTimes className="w-5 h-5" />
           </button>
         </div>
 
@@ -127,7 +125,7 @@ const PopUpEditarRepresentante = ({ isOpen, onClose, onSuccess, proveedorId }) =
             </div>
           ) : representantes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <div className="text-6xl mb-4">👤</div>
+              <FaUserTie className="text-6xl mb-4 text-stone-300" />
               <p className="text-stone-600">Este proveedor no tiene representantes</p>
             </div>
           ) : (
@@ -135,7 +133,7 @@ const PopUpEditarRepresentante = ({ isOpen, onClose, onSuccess, proveedorId }) =
               {/* Lista de Representantes */}
               <div className="bg-stone-50 rounded-lg p-5">
                 <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
-                  <PersonIcon className="w-5 h-5" />
+                  <FaUserTie className="w-5 h-5 text-stone-600" />
                   Selecciona un Representante
                 </h3>
                 <div className="space-y-2">
@@ -288,15 +286,12 @@ const PopUpEditarRepresentante = ({ isOpen, onClose, onSuccess, proveedorId }) =
                     >
                       {updating ? (
                         <>
-                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
+                          <FaSpinner className="animate-spin h-4 w-4" />
                           <span>Guardando...</span>
                         </>
                       ) : (
                         <>
-                          <img src={UpdateIcon} alt="" className="w-4 h-4 filter brightness-0 invert" />
+                          <FaEdit className="w-4 h-4" />
                           <span>Guardar Cambios</span>
                         </>
                       )}

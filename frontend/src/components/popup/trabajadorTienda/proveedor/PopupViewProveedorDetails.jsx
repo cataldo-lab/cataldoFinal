@@ -1,7 +1,18 @@
 import { useState, useEffect } from 'react';
-import CloseIcon from '@assets/XIcon.svg';
-import UpdateIcon from '@assets/updateIcon.svg';
-import DeleteIcon from '@assets/deleteIcon.svg';
+import {
+  FaTimes,
+  FaBuilding,
+  FaUsers,
+  FaUserTie,
+  FaEdit,
+  FaTrash,
+  FaPlus,
+  FaEnvelope,
+  FaPhone,
+  FaIdCard,
+  FaChartBar,
+  FaClipboardList
+} from 'react-icons/fa';
 
 export default function PopupViewProveedorDetails({ 
   show, 
@@ -31,8 +42,8 @@ export default function PopupViewProveedorDetails({
         overflowY: 'auto',
         padding: '30px'
       }}>
-        <button 
-          className='close' 
+        <button
+          className='close'
           onClick={handleClose}
           style={{
             position: 'absolute',
@@ -45,19 +56,19 @@ export default function PopupViewProveedorDetails({
             zIndex: 10
           }}
         >
-          <img src={CloseIcon} alt="Cerrar" style={{ width: '24px', height: '24px' }} />
+          <FaTimes style={{ width: '24px', height: '24px' }} />
         </button>
 
-        <h2 style={{ 
-          fontSize: '28px', 
-          fontWeight: 'bold', 
+        <h2 style={{
+          fontSize: '28px',
+          fontWeight: 'bold',
           marginBottom: '10px',
           color: '#1f2937',
           display: 'flex',
           alignItems: 'center',
           gap: '10px'
         }}>
-          <span style={{ fontSize: '32px' }}>🏢</span>
+          <FaBuilding style={{ fontSize: '32px', color: '#78716c' }} />
           Detalles del Proveedor
         </h2>
         <p style={{ color: '#6b7280', marginBottom: '25px', fontSize: '14px' }}>
@@ -78,16 +89,16 @@ export default function PopupViewProveedorDetails({
             alignItems: 'center',
             marginBottom: '15px'
           }}>
-            <h3 style={{ 
-              fontSize: '18px', 
-              fontWeight: '600', 
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
               color: '#374151',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
               margin: 0
             }}>
-              <span>🏢</span> Información del Proveedor
+              <FaBuilding /> Información del Proveedor
             </h3>
             <button
               onClick={() => onEditProveedor && onEditProveedor(proveedor)}
@@ -108,20 +119,23 @@ export default function PopupViewProveedorDetails({
               onMouseOver={(e) => e.target.style.backgroundColor = '#57534e'}
               onMouseOut={(e) => e.target.style.backgroundColor = '#78716c'}
             >
-              <img src={UpdateIcon} alt="Editar" style={{ width: '14px', height: '14px' }} />
+              <FaEdit style={{ width: '14px', height: '14px' }} />
               Editar
             </button>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div>
-              <h4 style={{ 
-                fontSize: '14px', 
-                fontWeight: '600', 
+              <h4 style={{
+                fontSize: '14px',
+                fontWeight: '600',
                 color: '#374151',
-                marginBottom: '8px'
+                marginBottom: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
               }}>
-                📋 Datos Generales
+                <FaClipboardList /> Datos Generales
               </h4>
               <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.6' }}>
                 <p><strong>ID:</strong> #{proveedor.id_proveedor}</p>
@@ -131,17 +145,26 @@ export default function PopupViewProveedorDetails({
             </div>
 
             <div>
-              <h4 style={{ 
-                fontSize: '14px', 
-                fontWeight: '600', 
+              <h4 style={{
+                fontSize: '14px',
+                fontWeight: '600',
                 color: '#374151',
-                marginBottom: '8px'
+                marginBottom: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
               }}>
-                📞 Información de Contacto
+                <FaPhone /> Información de Contacto
               </h4>
               <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.6' }}>
-                <p><strong>Teléfono:</strong> <a href={`tel:${proveedor.fono_proveedor}`} style={{ color: '#059669', textDecoration: 'none' }}>{proveedor.fono_proveedor}</a></p>
-                <p><strong>Correo:</strong> <a href={`mailto:${proveedor.correo_proveedor}`} style={{ color: '#0284c7', textDecoration: 'none' }}>{proveedor.correo_proveedor}</a></p>
+                <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <FaPhone className="text-sm" />
+                  <strong>Teléfono:</strong> <a href={`tel:${proveedor.fono_proveedor}`} style={{ color: '#059669', textDecoration: 'none' }}>{proveedor.fono_proveedor}</a>
+                </p>
+                <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <FaEnvelope className="text-sm" />
+                  <strong>Correo:</strong> <a href={`mailto:${proveedor.correo_proveedor}`} style={{ color: '#0284c7', textDecoration: 'none' }}>{proveedor.correo_proveedor}</a>
+                </p>
               </div>
             </div>
           </div>
@@ -149,13 +172,16 @@ export default function PopupViewProveedorDetails({
           {/* Estadísticas si existen */}
           {proveedor.estadisticas && (
             <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid #e5e7eb' }}>
-              <h4 style={{ 
-                fontSize: '14px', 
-                fontWeight: '600', 
+              <h4 style={{
+                fontSize: '14px',
+                fontWeight: '600',
                 color: '#374151',
-                marginBottom: '8px'
+                marginBottom: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
               }}>
-                📊 Estadísticas
+                <FaChartBar /> Estadísticas
               </h4>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
                 <div style={{ padding: '8px 12px', backgroundColor: '#ddd6fe', borderRadius: '6px', textAlign: 'center' }}>
@@ -189,16 +215,16 @@ export default function PopupViewProveedorDetails({
             alignItems: 'center',
             marginBottom: '15px'
           }}>
-            <h3 style={{ 
-              fontSize: '18px', 
-              fontWeight: '600', 
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
               color: '#166534',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
               margin: 0
             }}>
-              <span>👥</span> Representantes ({tieneRepresentantes ? proveedor.representantes.length : 0})
+              <FaUsers /> Representantes ({tieneRepresentantes ? proveedor.representantes.length : 0})
             </h3>
             <button
               onClick={() => onAddRepresentante && onAddRepresentante(proveedor)}
@@ -219,7 +245,7 @@ export default function PopupViewProveedorDetails({
               onMouseOver={(e) => e.target.style.backgroundColor = '#16a34a'}
               onMouseOut={(e) => e.target.style.backgroundColor = '#22c55e'}
             >
-              <span>+</span>
+              <FaPlus />
               Agregar
             </button>
           </div>
@@ -240,13 +266,16 @@ export default function PopupViewProveedorDetails({
                     marginBottom: '10px'
                   }}>
                     <div>
-                      <h4 style={{ 
-                        fontSize: '16px', 
-                        fontWeight: '600', 
+                      <h4 style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
                         color: '#166534',
-                        margin: '0 0 5px 0'
+                        margin: '0 0 5px 0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
                       }}>
-                        👤 {representante.nombre_representante} {representante.apellido_representante}
+                        <FaUserTie /> {representante.nombre_representante} {representante.apellido_representante}
                       </h4>
                       <p style={{ 
                         fontSize: '14px', 
@@ -275,7 +304,7 @@ export default function PopupViewProveedorDetails({
                         onMouseOver={(e) => e.target.style.backgroundColor = '#d97706'}
                         onMouseOut={(e) => e.target.style.backgroundColor = '#f59e0b'}
                       >
-                        <img src={UpdateIcon} alt="Editar" style={{ width: '12px', height: '12px' }} />
+                        <FaEdit style={{ width: '12px', height: '12px' }} />
                       </button>
                       <button
                         onClick={() => onDeleteRepresentante && onDeleteRepresentante(representante.id_representante)}
@@ -294,7 +323,7 @@ export default function PopupViewProveedorDetails({
                         onMouseOver={(e) => e.target.style.backgroundColor = '#dc2626'}
                         onMouseOut={(e) => e.target.style.backgroundColor = '#ef4444'}
                       >
-                        <img src={DeleteIcon} alt="Eliminar" style={{ width: '12px', height: '12px' }} />
+                        <FaTrash style={{ width: '12px', height: '12px' }} />
                       </button>
                     </div>
                   </div>
@@ -318,9 +347,13 @@ export default function PopupViewProveedorDetails({
             <div style={{
               textAlign: 'center',
               padding: '40px 20px',
-              color: '#6b7280'
+              color: '#6b7280',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '10px'
             }}>
-              <div style={{ fontSize: '48px', marginBottom: '10px' }}>👤</div>
+              <FaUserTie style={{ fontSize: '48px', color: '#d1d5db' }} />
               <p style={{ fontSize: '16px', fontWeight: '500', marginBottom: '5px' }}>
                 Sin representantes
               </p>

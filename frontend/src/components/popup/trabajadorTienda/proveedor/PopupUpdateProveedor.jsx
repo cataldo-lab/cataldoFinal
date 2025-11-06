@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import CloseIcon from '@assets/XIcon.svg';
+import { FaTimes, FaBuilding, FaEdit, FaSave, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
 
 export default function PopupUpdateProveedor({ 
   show, 
@@ -110,8 +110,8 @@ export default function PopupUpdateProveedor({
         overflowY: 'auto',
         padding: '30px'
       }}>
-        <button 
-          className='close' 
+        <button
+          className='close'
           onClick={handleClose}
           disabled={loading}
           style={{
@@ -126,19 +126,19 @@ export default function PopupUpdateProveedor({
             opacity: loading ? 0.5 : 1
           }}
         >
-          <img src={CloseIcon} alt="Cerrar" style={{ width: '24px', height: '24px' }} />
+          <FaTimes style={{ width: '24px', height: '24px' }} />
         </button>
 
-        <h2 style={{ 
-          fontSize: '28px', 
-          fontWeight: 'bold', 
+        <h2 style={{
+          fontSize: '28px',
+          fontWeight: 'bold',
           marginBottom: '10px',
           color: '#1f2937',
           display: 'flex',
           alignItems: 'center',
           gap: '10px'
         }}>
-          <span style={{ fontSize: '32px' }}>✏️</span>
+          <FaEdit style={{ fontSize: '32px', color: '#78716c' }} />
           Editar Proveedor
         </h2>
         <p style={{ color: '#6b7280', marginBottom: '25px', fontSize: '14px' }}>
@@ -155,9 +155,14 @@ export default function PopupUpdateProveedor({
             border: '1px solid #fecaca',
             textAlign: 'center',
             fontSize: '14px',
-            fontWeight: '500'
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
           }}>
-            ⚠️ {error}
+            <FaExclamationTriangle />
+            {error}
           </div>
         )}
 
@@ -170,16 +175,16 @@ export default function PopupUpdateProveedor({
             marginBottom: '20px',
             border: '2px solid #e5e7eb'
           }}>
-            <h3 style={{ 
-              fontSize: '18px', 
-              fontWeight: '600', 
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
               marginBottom: '15px',
               color: '#374151',
               display: 'flex',
               alignItems: 'center',
               gap: '8px'
             }}>
-              <span>🏢</span> Información del Proveedor
+              <FaBuilding /> Información del Proveedor
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
@@ -358,20 +363,15 @@ export default function PopupUpdateProveedor({
             >
               {loading ? (
                 <>
-                  <span style={{ 
-                    display: 'inline-block', 
-                    width: '16px', 
-                    height: '16px', 
-                    border: '2px solid white', 
-                    borderTopColor: 'transparent', 
-                    borderRadius: '50%', 
-                    animation: 'spin 0.8s linear infinite' 
+                  <FaSpinner style={{
+                    display: 'inline-block',
+                    animation: 'spin 0.8s linear infinite'
                   }} />
                   Actualizando...
                 </>
               ) : (
                 <>
-                  <span>💾</span>
+                  <FaSave />
                   Guardar Cambios
                 </>
               )}
