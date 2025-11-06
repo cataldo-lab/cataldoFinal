@@ -1,0 +1,27 @@
+meta {
+  name: createRepresentante
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:3000/api/proveedores/1/representantes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "nombre_representante": "Pedro Representante",
+    "email_representante": "pedro.rep@test.cl",
+    "telefono_representante": "+56922222222"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

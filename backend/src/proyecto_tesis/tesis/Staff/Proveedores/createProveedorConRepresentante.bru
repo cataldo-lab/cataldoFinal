@@ -1,0 +1,35 @@
+meta {
+  name: createProveedorConRepresentante
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:3000/api/proveedores/con-representante
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "proveedor": {
+      "nombre_proveedor": "Proveedor con Rep",
+      "rut_proveedor": "76.456.789-0",
+      "telefono": "+56987654321",
+      "email": "proveedor.rep@test.cl"
+    },
+    "representante": {
+      "nombre_representante": "Juan Representante",
+      "email_representante": "juan.rep@test.cl",
+      "telefono_representante": "+56911111111"
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

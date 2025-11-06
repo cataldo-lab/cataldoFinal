@@ -1,0 +1,26 @@
+meta {
+  name: blockCliente
+  type: http
+  seq: 10
+}
+
+patch {
+  url: http://localhost:3000/api/clientes/block/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "bloqueado": true,
+    "motivo": "Incumplimiento de normas"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

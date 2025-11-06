@@ -1,0 +1,25 @@
+meta {
+  name: updateEstadoOperacion
+  type: http
+  seq: 5
+}
+
+patch {
+  url: http://localhost:3000/api/operaciones/1/estado
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "estado": "completada"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

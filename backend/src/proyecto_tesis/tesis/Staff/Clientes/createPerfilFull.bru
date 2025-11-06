@@ -1,0 +1,34 @@
+meta {
+  name: createPerfilFull
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:3000/api/clientes/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "nombreCompleto": "Carlos Cliente Nuevo",
+    "rut": "17.123.456-7",
+    "email": "carlos.cliente@gmail.cl",
+    "password": "password123",
+    "telefono": "+56912341234",
+    "datosCliente": {
+      "fecha_nacimiento": "1990-05-15",
+      "genero": "M",
+      "direccion": "Calle Falsa 123"
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,19 @@
+meta {
+  name: hardDeleteMaterial
+  type: http
+  seq: 8
+}
+
+delete {
+  url: http://localhost:3000/api/materiales/1/permanent
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{gerente_token}}
+}
+
+settings {
+  encodeUrl: true
+}

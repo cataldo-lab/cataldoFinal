@@ -1,0 +1,19 @@
+meta {
+  name: deleteProducto
+  type: http
+  seq: 6
+}
+
+delete {
+  url: http://localhost:3000/api/productos/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{gerente_token}}
+}
+
+settings {
+  encodeUrl: true
+}

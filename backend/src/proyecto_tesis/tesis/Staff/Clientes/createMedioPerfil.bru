@@ -1,0 +1,27 @@
+meta {
+  name: createMedioPerfil
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:3000/api/clientes/1/full
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "fecha_nacimiento": "1995-08-20",
+    "genero": "F",
+    "direccion": "Av. Principal 456"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

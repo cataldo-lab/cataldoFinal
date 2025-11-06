@@ -1,0 +1,19 @@
+meta {
+  name: getMaterialRepresentante
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:3000/api/materiales/1/representante
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,19 @@
+meta {
+  name: deleteRepresentante
+  type: http
+  seq: 11
+}
+
+delete {
+  url: http://localhost:3000/api/proveedores/representantes/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{gerente_token}}
+}
+
+settings {
+  encodeUrl: true
+}

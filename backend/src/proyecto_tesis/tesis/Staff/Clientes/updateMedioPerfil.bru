@@ -1,0 +1,26 @@
+meta {
+  name: updateMedioPerfil
+  type: http
+  seq: 9
+}
+
+patch {
+  url: http://localhost:3000/api/clientes/1/full
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "direccion": "Nueva Dirección 789",
+    "genero": "M"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,26 @@
+meta {
+  name: updatePerfilFull
+  type: http
+  seq: 8
+}
+
+patch {
+  url: http://localhost:3000/api/clientes/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "nombreCompleto": "Carlos Cliente Actualizado",
+    "telefono": "+56987654321"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

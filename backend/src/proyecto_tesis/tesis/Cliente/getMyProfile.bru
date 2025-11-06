@@ -1,0 +1,19 @@
+meta {
+  name: getMyProfile
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:3000/api/cliente/profile
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cliente_token}}
+}
+
+settings {
+  encodeUrl: true
+}

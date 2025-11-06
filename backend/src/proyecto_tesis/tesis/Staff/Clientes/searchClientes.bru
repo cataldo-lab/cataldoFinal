@@ -1,0 +1,19 @@
+meta {
+  name: searchClientes
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3000/api/clientes/search?query=juan
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+settings {
+  encodeUrl: true
+}

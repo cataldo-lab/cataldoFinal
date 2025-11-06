@@ -1,0 +1,19 @@
+meta {
+  name: getProductCatalog
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3000/api/cliente/catalog
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cliente_token}}
+}
+
+settings {
+  encodeUrl: true
+}

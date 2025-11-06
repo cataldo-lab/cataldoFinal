@@ -1,0 +1,33 @@
+meta {
+  name: createOperacion
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:3000/api/operaciones/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "id_cliente": 1,
+    "descripcion_operacion": "Venta de productos",
+    "productos": [
+      {
+        "id_producto": 1,
+        "cantidad": 2,
+        "precio_unitario": 1000
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

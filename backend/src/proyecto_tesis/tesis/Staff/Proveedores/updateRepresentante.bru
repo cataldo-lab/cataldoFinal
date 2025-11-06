@@ -1,0 +1,26 @@
+meta {
+  name: updateRepresentante
+  type: http
+  seq: 9
+}
+
+put {
+  url: http://localhost:3000/api/proveedores/representantes/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "nombre_representante": "Rep Actualizado",
+    "email_representante": "rep.actualizado@test.cl"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
