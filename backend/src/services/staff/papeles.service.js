@@ -508,3 +508,194 @@ export async function getEstadisticasAvanzadasService(fecha_inicio, fecha_fin) {
         };
     }
 }
+
+/**
+ * Crea una nueva operación enlazada con productos
+ * Usa la tabla intermedia ProductoOperacion (N:N)
+ * @param {Object} operacionData - Datos de la operación
+ * @param {Array} productos - Array de productos [{id_producto, cantidad, precio_unitario, especificaciones}]
+ * @returns {Promise<Object>} Operación creada con sus productos
+ */
+export async function createOperacionConProductosService(operacionData, productos) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+        const operacionRepository = queryRunner.manager.getRepository("Operacion");
+        const productoRepository = queryRunner.manager.getRepository("Producto");
+        const productoOperacionRepository = queryRunner.manager.getRepository("ProductoOperacion");
+        const historialRepository = queryRunner.manager.getRepository("Historial");
+
+        // 1. Validar que el cliente existe
+        const clienteExists = await userRepository.findOne({
+            where: { id: operacionData.id_cliente, rol: Role.CLIENTE }
+        });
+
+        if (!clienteExists) {
+            await queryRunner.rollbackTransaction();
+            return {
+                success: false,
+                message: `Cliente con ID ${operacionData.id_cliente} no encontrado`
+            };
+        }
+
+        // 2. Validar productos y calcular costo total
+        if (!productos || productos.length === 0) {
+            await queryRunner.rollbackTransaction();
+            return {
+                success: false,
+                message: "Debe incluir al menos un producto en la operación"
+            };
+        }
+
+        let costoTotal = 0;
+        const productosValidados = [];
+
+        for (const prod of productos) {
+            // Validar que el producto existe
+            const producto = await productoRepository.findOne({
+                where: { id_producto: prod.id_producto, activo: true }
+            });
+
+            if (!producto) {
+                await queryRunner.rollbackTransaction();
+                return {
+                    success: false,
+                    message: `Producto con ID ${prod.id_producto} no encontrado o inactivo`
+                };
+            }
+
+            // Validar cantidad
+            if (!prod.cantidad || prod.cantidad <= 0) {
+                await queryRunner.rollbackTransaction();
+                return {
+                    success: false,
+                    message: `La cantidad del producto ${producto.nombre_producto} debe ser mayor a 0`
+                };
+            }
+
+            // Usar precio_unitario del request o del producto
+            const precioUnitario = prod.precio_unitario || parseFloat(producto.precio_venta);
+            const precioTotal = precioUnitario * prod.cantidad;
+
+            productosValidados.push({
+                producto,
+                cantidad: prod.cantidad,
+                precio_unitario: precioUnitario,
+                precio_total: precioTotal,
+                especificaciones: prod.especificaciones || null
+            });
+
+            costoTotal += precioTotal;
+        }
+
+        // 3. Crear la operación
+        const nuevaOperacion = operacionRepository.create({
+            cliente: { id: operacionData.id_cliente },
+            estado_operacion: operacionData.estado_operacion || "pendiente",
+            costo_operacion: costoTotal,
+            cantidad_abono: operacionData.cantidad_abono || 0,
+            descripcion_operacion: operacionData.descripcion_operacion || null,
+            fecha_entrega_estimada: operacionData.fecha_entrega_estimada || null
+        });
+
+        const operacionGuardada = await operacionRepository.save(nuevaOperacion);
+
+        // 4. Crear registros en ProductoOperacion (tabla intermedia)
+        const productosOperacion = [];
+        for (const prodValidado of productosValidados) {
+            const productoOperacion = productoOperacionRepository.create({
+                operacion: { id_operacion: operacionGuardada.id_operacion },
+                producto: { id_producto: prodValidado.producto.id_producto },
+                cantidad: prodValidado.cantidad,
+                precio_unitario: prodValidado.precio_unitario,
+                precio_total: prodValidado.precio_total,
+                especificaciones: prodValidado.especificaciones
+            });
+
+            const guardado = await productoOperacionRepository.save(productoOperacion);
+            productosOperacion.push(guardado);
+        }
+
+        // 5. Crear registro inicial en Historial
+        const estadoInicial = operacionData.estado_operacion || "pendiente";
+        const historialInicial = historialRepository.create({
+            operacion: { id_operacion: operacionGuardada.id_operacion },
+            cotizacion: estadoInicial === "cotizacion",
+            orden_trabajo: estadoInicial === "orden_trabajo",
+            pendiente: estadoInicial === "pendiente",
+            en_proceso: estadoInicial === "en_proceso",
+            terminada: estadoInicial === "terminada",
+            completada: estadoInicial === "completada",
+            pagada: estadoInicial === "pagada",
+            entregada: estadoInicial === "entregada",
+            anulada: estadoInicial === "anulada"
+        });
+
+        await historialRepository.save(historialInicial);
+
+        // 6. Commit de la transacción
+        await queryRunner.commitTransaction();
+
+        // 7. Cargar la operación completa con todas sus relaciones
+        const operacionCompleta = await operacionRepository.findOne({
+            where: { id_operacion: operacionGuardada.id_operacion },
+            relations: [
+                "cliente",
+                "productosOperacion",
+                "productosOperacion.producto",
+                "historial"
+            ]
+        });
+
+        return {
+            success: true,
+            message: "Operación creada exitosamente con sus productos",
+            data: {
+                id_operacion: operacionCompleta.id_operacion,
+                estado_operacion: operacionCompleta.estado_operacion,
+                costo_operacion: parseFloat(operacionCompleta.costo_operacion),
+                cantidad_abono: parseFloat(operacionCompleta.cantidad_abono),
+                saldo_pendiente: parseFloat(operacionCompleta.costo_operacion) - parseFloat(operacionCompleta.cantidad_abono),
+                descripcion_operacion: operacionCompleta.descripcion_operacion,
+                fecha_creacion: operacionCompleta.fecha_creacion,
+                fecha_entrega_estimada: operacionCompleta.fecha_entrega_estimada,
+                cliente: {
+                    id: operacionCompleta.cliente.id,
+                    nombreCompleto: operacionCompleta.cliente.nombreCompleto,
+                    email: operacionCompleta.cliente.email,
+                    rut: operacionCompleta.cliente.rut
+                },
+                productos: operacionCompleta.productosOperacion.map(po => ({
+                    id_producto_operacion: po.id_producto_operacion,
+                    cantidad: po.cantidad,
+                    precio_unitario: parseFloat(po.precio_unitario),
+                    precio_total: parseFloat(po.precio_total),
+                    especificaciones: po.especificaciones,
+                    producto: {
+                        id_producto: po.producto.id_producto,
+                        nombre_producto: po.producto.nombre_producto,
+                        categoria_producto: po.producto.categoria_producto,
+                        descripcion_producto: po.producto.descripcion_producto
+                    }
+                })),
+                total_productos: operacionCompleta.productosOperacion.length,
+                total_unidades: operacionCompleta.productosOperacion.reduce(
+                    (sum, po) => sum + po.cantidad, 0
+                )
+            }
+        };
+
+    } catch (error) {
+        await queryRunner.rollbackTransaction();
+        console.error("Error al crear operación con productos:", error);
+        return {
+            success: false,
+            message: "Error al crear la operación con productos",
+            error: error.message
+        };
+    } finally {
+        await queryRunner.release();
+    }
+}
