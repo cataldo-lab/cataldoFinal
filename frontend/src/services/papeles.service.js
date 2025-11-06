@@ -60,9 +60,30 @@ export async function getEstadisticasAvanzadas(fecha_inicio, fecha_fin) {
     }
 }
 
+/**
+ * Crea una nueva operación enlazada con productos
+ * Usa la tabla intermedia ProductoOperacion (N:N)
+ * @param {Object} operacionData - Datos de la operación
+ * @param {Array} productos - Array de productos [{id_producto, cantidad, precio_unitario, especificaciones}]
+ * @returns {Promise} Operación creada con sus productos
+ */
+export async function createOperacionConProductos(operacionData, productos) {
+    try {
+        const response = await axios.post('/papeles/operacion', {
+            operacion: operacionData,
+            productos: productos
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error al crear operación con productos:', error);
+        throw error;
+    }
+}
+
 export default {
     getClientesConCompras,
     getClienteConComprasById,
     getClientesConComprasPorFechas,
-    getEstadisticasAvanzadas
+    getEstadisticasAvanzadas,
+    createOperacionConProductos
 };

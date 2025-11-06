@@ -1,0 +1,41 @@
+meta {
+  name: createOperacionCotizacion
+  type: http
+  seq: 14
+}
+
+post {
+  url: http://localhost:3000/api/papeles/operacion
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "operacion": {
+      "id_cliente": 1,
+      "estado_operacion": "cotizacion",
+      "descripcion_operacion": "Cotización para juego de sala"
+    },
+    "productos": [
+      {
+        "id_producto": 1,
+        "cantidad": 3,
+        "especificaciones": "Sofá 3 puestos + 2 sillones"
+      },
+      {
+        "id_producto": 2,
+        "cantidad": 1,
+        "especificaciones": "Mesa de centro"
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

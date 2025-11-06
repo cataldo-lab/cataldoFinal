@@ -1,0 +1,36 @@
+meta {
+  name: createOperacionUnProducto
+  type: http
+  seq: 9
+}
+
+post {
+  url: http://localhost:3000/api/papeles/operacion
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "operacion": {
+      "id_cliente": 2,
+      "estado_operacion": "cotizacion",
+      "descripcion_operacion": "Cotización mesa de comedor"
+    },
+    "productos": [
+      {
+        "id_producto": 3,
+        "cantidad": 1,
+        "especificaciones": "6 puestos, madera de roble"
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}
