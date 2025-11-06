@@ -1,12 +1,14 @@
 // frontend/src/pages/trabajador-tienda/Papeles.jsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useGetClientesConCompras } from '@hooks/papeles/useGetClientesConCompras';
 import { useGetClienteConComprasById } from '@hooks/papeles/useGetClienteConComprasById';
-import { FaEye, FaUser, FaFileInvoiceDollar, FaChartLine, FaSearch, FaTimes, FaFilter } from 'react-icons/fa';
+import { getProductos } from '@services/producto.service';
+import CrearOperacionModal from '@components/operaciones/CrearOperacionModal';
+import { FaEye, FaUser, FaFileInvoiceDollar, FaChartLine, FaSearch, FaTimes, FaFilter, FaPlus } from 'react-icons/fa';
 
 const Papeles = () => {
     const [selectedClienteId, setSelectedClienteId] = useState(null);
-    
+
     // Estados para filtros
     const [searchTerm, setSearchTerm] = useState('');
     const [filterOperaciones, setFilterOperaciones] = useState('all'); // all, 0, 1, 2+
@@ -14,6 +16,10 @@ const Papeles = () => {
     const [sortBy, setSortBy] = useState('nombre'); // nombre, operaciones, gastado, pendiente
     const [sortOrder, setSortOrder] = useState('asc'); // asc, desc
     const [showFilters, setShowFilters] = useState(false);
+
+    // Estados para modal de crear operación
+    const [showCrearModal, setShowCrearModal] = useState(false);
+    const [productos, setProductos] = useState([]);
     
     const { 
         clientes, 
@@ -23,12 +29,27 @@ const Papeles = () => {
         fetchClientes 
     } = useGetClientesConCompras(true);
 
-    const { 
-        cliente, 
-        loading: loadingCliente, 
+    const {
+        cliente,
+        loading: loadingCliente,
         fetchCliente,
         reset: resetCliente
     } = useGetClienteConComprasById();
+
+    // Cargar productos activos
+    useEffect(() => {
+        const fetchProductos = async () => {
+            try {
+                const response = await getProductos({ activo: true });
+                if (response.status === 'Success' && response.data) {
+                    setProductos(response.data);
+                }
+            } catch (error) {
+                console.error('Error al cargar productos:', error);
+            }
+        };
+        fetchProductos();
+    }, []);
 
     // Filtrar y ordenar clientes
     const clientesFiltrados = useMemo(() => {
@@ -122,6 +143,11 @@ const Papeles = () => {
         resetCliente();
     };
 
+    const handleOperacionCreada = (nuevaOperacion) => {
+        fetchClientes(); // Refrescar lista de clientes
+        setShowCrearModal(false);
+    };
+
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('es-CL', {
             style: 'currency',
@@ -169,12 +195,21 @@ const Papeles = () => {
             <div className="max-w-7xl mx-auto pt-20">
                 
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-stone-800 mb-2 flex items-center gap-3">
-                        <FaFileInvoiceDollar className="text-stone-600" />
-                        Papeles - Clientes con Compras
-                    </h1>
-                    <p className="text-stone-600">Gestión de clientes y sus operaciones</p>
+                <div className="mb-8 flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                    <div>
+                        <h1 className="text-4xl font-bold text-stone-800 mb-2 flex items-center gap-3">
+                            <FaFileInvoiceDollar className="text-stone-600" />
+                            Papeles - Clientes con Compras
+                        </h1>
+                        <p className="text-stone-600">Gestión de clientes y sus operaciones</p>
+                    </div>
+                    <button
+                        onClick={() => setShowCrearModal(true)}
+                        className="px-6 py-3 bg-stone-600 text-white rounded-lg hover:bg-stone-700 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl font-medium"
+                    >
+                        <FaPlus />
+                        Nueva Operación
+                    </button>
                 </div>
 
                 {/* Estadísticas Generales */}
@@ -454,8 +489,17 @@ const Papeles = () => {
                     </div>
                 </div>
 
+                {/* Modal de Crear Operación */}
+                <CrearOperacionModal
+                    isOpen={showCrearModal}
+                    onClose={() => setShowCrearModal(false)}
+                    onSuccess={handleOperacionCreada}
+                    clientes={clientes}
+                    productos={productos}
+                />
+
                {selectedClienteId && cliente && (
-    <div 
+    <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={(e) => {
             if (e.target === e.currentTarget) handleCloseModal();
