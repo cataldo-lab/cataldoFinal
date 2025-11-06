@@ -1,0 +1,20 @@
+meta {
+  name: todasCompras
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3000/api/papeles/compras/2
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub21icmVDb21wbGV0byI6IkZlcm5hbmRvIEpvc8OpIEhlcnJlcmEgR8OzbWV6IiwiZW1haWwiOiJmZXJuYW5kby5oZXJyZXJhQGdtYWlsLmNsIiwicnV0IjoiMTIuMzQ1LjY3OC05Iiwicm9sIjoidHJhYmFqYWRvcl90aWVuZGEiLCJpYXQiOjE3NjI0NTA0MzcsImV4cCI6MTc2MjUzNjgzN30.XkVOYkxbqEMC4rk5-r9-hPViRUAwx42jNbhQcWQ29kU
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

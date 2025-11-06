@@ -183,3 +183,33 @@ export async function isOwnerOrAdmin(req, res, next) {
     handleErrorServer(res, 500, error.message);
   }
 }
+
+
+export async function isEmployeeOrManager(req, res, next) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const userFound = await userRepository.findOneBy({ email: req.user.email });
+
+    if (!userFound) {
+      return handleErrorClient(res, 404, "Usuario no encontrado en la base de datos");
+    }
+
+    // Verificar si tiene permiso de trabajador_tienda o gerente
+    const hasPermission = tienePermiso(userFound.rol, "trabajador_tienda") || 
+                         tienePermiso(userFound.rol, "gerente");
+
+    if (!hasPermission) {
+      return handleErrorClient(
+        res,
+        403,
+        "Acceso denegado",
+        "Se requiere rol de empleado o gerente para realizar esta acción."
+      );
+    }
+    
+    req.userRole = userFound.rol;
+    next();
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}

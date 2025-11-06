@@ -88,7 +88,7 @@ const Navbar = () => {
         if (activeRole === "trabajador_tienda" && rolesDisponibles.includes("trabajador_tienda")) {
             routes.push(
                 { path: "/trabajador/dashboard", label: "Dashboard" },
-                { path: "/trabajador/operations", label: "Operaciones" },
+                { path: "/trabajador/papeles", label: "Papeles" },
                 { path: "/trabajador/products", label: "Productos" },
                 { path: "/trabajador/materiales", label: "Materiales" }
             );

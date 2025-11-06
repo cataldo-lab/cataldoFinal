@@ -1,12 +1,11 @@
+
+
 "use strict";
 import { AppDataSource } from "../../config/configDb.js";
-
+import { Role } from "../../entity/personas/user.entity.js";
 
 
 const userRepository = AppDataSource.getRepository("User");
-
-
-
 
 export async function getClientesConComprasService() {
     try {

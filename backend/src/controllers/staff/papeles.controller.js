@@ -2,8 +2,8 @@
 import { 
     getClientesConComprasService, 
     getClienteConComprasByIdService 
-} from "../services/papeles.service.js";
-import { handleErrorClient, handleErrorServer, handleSuccess } from "../handlers/responseHandlers.js";
+} from "../../services/staff/papeles.service.js";
+import { handleErrorClient, handleErrorServer, handleSuccess } from "../../handlers/responseHandlers.js";
 
 
 export async function getClientesConCompras(req, res) {
