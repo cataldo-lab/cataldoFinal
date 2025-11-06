@@ -454,181 +454,189 @@ const Papeles = () => {
                     </div>
                 </div>
 
-                {/* Modal de Detalles - Igual que antes */}
-                {selectedClienteId && cliente && (
-                    <div 
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-                        onClick={(e) => {
-                            if (e.target === e.currentTarget) handleCloseModal();
-                        }}
-                    >
+               {selectedClienteId && cliente && (
+    <div 
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseModal();
+        }}
+    >
+        <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header del Modal - FIJO */}
+            <div className="bg-gradient-to-r from-stone-600 to-stone-700 px-6 py-5 flex justify-between items-center flex-shrink-0">
+                <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
+                        <FaUser className="text-white text-xl" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-white">
+                            {cliente.nombreCompleto}
+                        </h2>
+                        <p className="text-stone-200 text-sm">{cliente.email}</p>
+                    </div>
+                </div>
+                <button
+                    onClick={handleCloseModal}
+                    className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
 
-
-
-
-
-
-                        <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden">
-                            {/* Header del Modal */}
-                            <div className="bg-gradient-to-r from-stone-600 to-stone-700 px-6 py-5 flex justify-between items-center">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
-                                        <FaUser className="text-white text-xl" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-white">
-                                            {cliente.nombreCompleto}
-                                        </h2>
-                                        <p className="text-stone-200 text-sm">{cliente.email}</p>
-                                    </div>
+            {/* Contenido con Scroll */}
+            <div className="flex-1 overflow-y-auto">
+                {loadingCliente ? (
+                    <div className="flex justify-center items-center py-20">
+                        <div className="relative">
+                            <div className="w-16 h-16 border-4 border-stone-200 rounded-full"></div>
+                            <div className="w-16 h-16 border-4 border-stone-600 rounded-full animate-spin absolute top-0 border-t-transparent"></div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="p-6 space-y-6">
+                        {/* Información Personal - Compacta */}
+                        <div className="bg-stone-50 rounded-lg p-4">
+                            <h3 className="text-lg font-bold text-stone-800 mb-3 flex items-center gap-2">
+                                <span>👤</span>
+                                Información Personal
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                <div>
+                                    <p className="text-stone-600 font-medium">RUT</p>
+                                    <p className="font-mono text-stone-800">{cliente.rut}</p>
                                 </div>
-                                <button
-                                    onClick={handleCloseModal}
-                                    className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
+                                <div>
+                                    <p className="text-stone-600 font-medium">Teléfono</p>
+                                    <p className="text-stone-800">{cliente.telefono || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-stone-600 font-medium">Categoría</p>
+                                    <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium mt-1">
+                                        {cliente.info_cliente?.categoria_cliente || 'Regular'}
+                                    </span>
+                                </div>
                             </div>
+                        </div>
 
-                            {/* Contenido del Modal */}
-                            <div className="overflow-y-auto max-h-[calc(90vh-100px)] p-6">
-                                {loadingCliente ? (
-                                    <div className="flex justify-center items-center py-20">
-                                        <div className="relative">
-                                            <div className="w-16 h-16 border-4 border-stone-200 rounded-full"></div>
-                                            <div className="w-16 h-16 border-4 border-stone-600 rounded-full animate-spin absolute top-0 border-t-transparent"></div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-6">
-                                        {/* Información Personal */}
-                                        <div className="bg-stone-50 rounded-lg p-5">
-                                            <h3 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
-                                                <span>👤</span>
-                                                Información Personal
-                                            </h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                <div>
-                                                    <p className="text-sm text-stone-600 font-medium">RUT</p>
-                                                    <p className="font-mono text-stone-800">{cliente.rut}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm text-stone-600 font-medium">Teléfono</p>
-                                                    <p className="text-stone-800">{cliente.telefono || 'N/A'}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm text-stone-600 font-medium">Categoría</p>
-                                                    <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mt-1">
-                                                        {cliente.info_cliente?.categoria_cliente || 'Regular'}
+                        {/* Resumen de Compras - Grid compacto */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                                <p className="text-xs text-blue-700 font-medium">Operaciones</p>
+                                <p className="text-2xl font-bold text-blue-900 mt-1">
+                                    {cliente.resumen_compras.total_operaciones}
+                                </p>
+                            </div>
+                            <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                                <p className="text-xs text-green-700 font-medium">Total Gastado</p>
+                                <p className="text-lg font-bold text-green-900 mt-1">
+                                    {formatCurrency(cliente.resumen_compras.total_gastado)}
+                                </p>
+                            </div>
+                            <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                                <p className="text-xs text-yellow-700 font-medium">Abonado</p>
+                                <p className="text-lg font-bold text-yellow-900 mt-1">
+                                    {formatCurrency(cliente.resumen_compras.total_abonado)}
+                                </p>
+                            </div>
+                            <div className="bg-red-50 rounded-lg p-3 border border-red-200">
+                                <p className="text-xs text-red-700 font-medium">Pendiente</p>
+                                <p className="text-lg font-bold text-red-900 mt-1">
+                                    {formatCurrency(cliente.resumen_compras.total_pendiente)}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Historial de Compras - Diseño lineal y compacto */}
+                        <div>
+                            <h3 className="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+                                <span>🛒</span>
+                                Historial de Compras ({cliente.compras?.length || 0})
+                            </h3>
+
+                            {/* Lista de compras con scroll interno */}
+                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-custom">
+                                {cliente.compras && cliente.compras.length > 0 ? (
+                                    cliente.compras.map((compra) => (
+                                        <div 
+                                            key={compra.id_operacion} 
+                                            className="border border-stone-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
+                                        >
+                                            {/* Header de la compra - Una línea */}
+                                            <div className="flex justify-between items-center mb-3">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-lg font-bold text-stone-800">
+                                                        #{compra.id_operacion}
+                                                    </span>
+                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                        compra.estado_operacion === 'completada' ? 'bg-green-100 text-green-800' :
+                                                        compra.estado_operacion === 'en_proceso' ? 'bg-blue-100 text-blue-800' :
+                                                        compra.estado_operacion === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-stone-100 text-stone-800'
+                                                    }`}>
+                                                        {compra.estado_operacion}
+                                                    </span>
+                                                    <span className="text-xs text-stone-500">
+                                                        {new Date(compra.fecha_creacion).toLocaleDateString('es-CL')}
                                                     </span>
                                                 </div>
+                                                <div className="text-right">
+                                                    <p className="text-xl font-bold text-green-600">
+                                                        {formatCurrency(compra.costo_operacion)}
+                                                    </p>
+                                                    {compra.saldo_pendiente > 0 && (
+                                                        <p className="text-xs text-red-600 font-medium">
+                                                            Pdte: {formatCurrency(compra.saldo_pendiente)}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        {/* Resumen de Compras */}
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                                                <p className="text-sm text-blue-700 font-medium">Operaciones</p>
-                                                <p className="text-2xl font-bold text-blue-900 mt-1">
-                                                    {cliente.resumen_compras.total_operaciones}
-                                                </p>
-                                            </div>
-                                            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                                                <p className="text-sm text-green-700 font-medium">Total Gastado</p>
-                                                <p className="text-xl font-bold text-green-900 mt-1">
-                                                    {formatCurrency(cliente.resumen_compras.total_gastado)}
-                                                </p>
-                                            </div>
-                                            <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                                                <p className="text-sm text-yellow-700 font-medium">Abonado</p>
-                                                <p className="text-xl font-bold text-yellow-900 mt-1">
-                                                    {formatCurrency(cliente.resumen_compras.total_abonado)}
-                                                </p>
-                                            </div>
-                                            <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-                                                <p className="text-sm text-red-700 font-medium">Pendiente</p>
-                                                <p className="text-xl font-bold text-red-900 mt-1">
-                                                    {formatCurrency(cliente.resumen_compras.total_pendiente)}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {/* Lista de Compras */}
-                                        <div>
-                                            <h3 className="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
-                                                <span>🛒</span>
-                                                Historial de Compras ({cliente.compras?.length || 0})
-                                            </h3>
-
-                                            <div className="space-y-4">
-                                                {cliente.compras && cliente.compras.length > 0 ? (
-                                                    cliente.compras.map((compra) => (
-                                                        <div key={compra.id_operacion} className="border border-stone-200 rounded-lg p-5 hover:shadow-md transition-shadow bg-white">
-                                                            <div className="flex justify-between items-start mb-4">
-                                                                <div>
-                                                                    <p className="font-bold text-lg text-stone-800">
-                                                                        Operación #{compra.id_operacion}
-                                                                    </p>
-                                                                    <p className="text-sm text-stone-600 mt-1">
-                                                                        Estado: <span className="font-semibold capitalize">{compra.estado_operacion}</span>
-                                                                    </p>
-                                                                    <p className="text-xs text-stone-500 mt-1">
-                                                                        {new Date(compra.fecha_creacion).toLocaleDateString('es-CL')}
-                                                                    </p>
+                                            {/* Productos - Lista compacta */}
+                                            {compra.productos && compra.productos.length > 0 && (
+                                                <div className="border-t border-stone-100 pt-3">
+                                                    <p className="text-xs font-bold text-stone-700 mb-2">
+                                                        Productos ({compra.productos.length}):
+                                                    </p>
+                                                    <div className="space-y-1">
+                                                        {compra.productos.map((prod) => (
+                                                            <div 
+                                                                key={prod.id_producto_operacion} 
+                                                                className="flex justify-between items-center text-xs bg-stone-50 rounded px-3 py-2"
+                                                            >
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="w-6 h-6 bg-stone-200 rounded-full flex items-center justify-center text-stone-600 font-bold">
+                                                                        {prod.cantidad}
+                                                                    </span>
+                                                                    <span className="text-stone-700 font-medium">
+                                                                        {prod.producto?.nombre_producto}
+                                                                    </span>
                                                                 </div>
-                                                                <div className="text-right">
-                                                                    <p className="text-xl font-bold text-green-600">
-                                                                        {formatCurrency(compra.costo_operacion)}
-                                                                    </p>
-                                                                    {compra.saldo_pendiente > 0 && (
-                                                                        <p className="text-sm text-red-600 font-medium mt-1">
-                                                                            Pendiente: {formatCurrency(compra.saldo_pendiente)}
-                                                                        </p>
-                                                                    )}
-                                                                    {compra.esta_pagado && (
-                                                                        <span className="inline-block mt-2 px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-                                                                            ✓ Pagado
-                                                                        </span>
-                                                                    )}
-                                                                </div>
+                                                                <span className="font-bold text-stone-800">
+                                                                    {formatCurrency(prod.precio_total)}
+                                                                </span>
                                                             </div>
-
-                                                            {compra.productos && compra.productos.length > 0 && (
-                                                                <div className="mt-4 border-t border-stone-200 pt-4">
-                                                                    <p className="text-sm font-bold text-stone-700 mb-2">Productos:</p>
-                                                                    <ul className="space-y-2">
-                                                                        {compra.productos.map((prod) => (
-                                                                            <li key={prod.id_producto_operacion} className="flex justify-between items-center text-sm bg-stone-50 rounded p-2">
-                                                                                <span className="text-stone-700">
-                                                                                    <span className="font-medium">{prod.producto?.nombre_producto}</span>
-                                                                                    <span className="text-stone-500 ml-2">x{prod.cantidad}</span>
-                                                                                </span>
-                                                                                <span className="font-medium text-stone-800">
-                                                                                    {formatCurrency(prod.precio_total)}
-                                                                                </span>
-                                                                            </li>
-                                                                        ))}
-                                                                    </ul>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <div className="text-center py-12">
-                                                        <span className="text-6xl">📦</span>
-                                                        <p className="text-stone-500 mt-4">No hay compras registradas</p>
+                                                        ))}
                                                     </div>
-                                                )}
-                                            </div>
+                                                </div>
+                                            )}
                                         </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-12 bg-stone-50 rounded-lg">
+                                        <span className="text-6xl">📦</span>
+                                        <p className="text-stone-500 mt-4">No hay compras registradas</p>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
                 )}
+            </div>
+        </div>
+    </div>
+)}
             </div>
         </div>
     );
