@@ -1,6 +1,6 @@
 // src/pages/trabajador-tienda/Proveedores.jsx
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useProveedoresConRepresentantes } from '@hooks/prooveedores/useProveedoresConRepresentantes.jsx';
 import { useCreateProveedorConRepresentante } from '@hooks/prooveedores/useCreateProveedorConRepresentante.jsx';
 import { useUpdateProveedor } from '@hooks/prooveedores/useUpdateProveedor.jsx';
@@ -12,15 +12,30 @@ import PopupCreateRepresentante from '@components/popup/trabajadorTienda/proveed
 import PopupUpdateRepresentante from '@components/popup/trabajadorTienda/proveedor/PopupUpdateRepresentante.jsx';
 import PopupViewProveedorDetails from '@components/popup/trabajadorTienda/proveedor/PopupViewProveedorDetails.jsx';
 import { showSuccessAlert, showErrorAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
-import { FaHandshake } from "react-icons/fa";
 
-
-
-// Íconos
-import AddIcon from '@assets/AddIcon.svg';
-import UpdateIcon from '@assets/updateIcon.svg';
-import DeleteIcon from '@assets/deleteIcon.svg';
-import SearchIcon from '@assets/SearchIcon.svg';
+// React Icons
+import {
+  FaHandshake,
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaSearch,
+  FaEye,
+  FaUserPlus,
+  FaFilter,
+  FaRedo,
+  FaBuilding,
+  FaUsers,
+  FaUserTie,
+  FaEnvelope,
+  FaPhone,
+  FaExclamationTriangle,
+  FaCheckCircle,
+  FaInbox,
+  FaChartBar,
+  FaSortAmountDown,
+  FaSortAmountUp
+} from 'react-icons/fa';
 
 export default function Proveedores() {
   // =================== HOOKS PRINCIPALES ===================
@@ -75,83 +90,100 @@ export default function Proveedores() {
   const [selectedRepresentante, setSelectedRepresentante] = useState(null);
 
   // =================== FILTROS Y ORDENAMIENTO ===================
-  
-  // Filtrar proveedores
-  const filteredProveedores = proveedores.filter(proveedor => {
-    // Filtro por búsqueda
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      const matchesSearch = 
-        proveedor.rol_proveedor?.toLowerCase().includes(term) ||
-        proveedor.rut_proveedor?.toLowerCase().includes(term) ||
-        proveedor.correo_proveedor?.toLowerCase().includes(term) ||
-        proveedor.fono_proveedor?.toLowerCase().includes(term) ||
-        proveedor.representante?.nombre_completo?.toLowerCase().includes(term) ||
-        proveedor.representante?.cargo_representante?.toLowerCase().includes(term);
-      
-      if (!matchesSearch) return false;
-    }
 
-    // Filtro por rol
-    if (filterRol) {
-      if (!proveedor.rol_proveedor?.toLowerCase().includes(filterRol.toLowerCase())) {
-        return false;
+  // Filtrar proveedores (memoizado para mejor rendimiento)
+  const filteredProveedores = useMemo(() => {
+    return proveedores.filter(proveedor => {
+      // Filtro por búsqueda
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase();
+        const matchesSearch =
+          proveedor.rol_proveedor?.toLowerCase().includes(term) ||
+          proveedor.rut_proveedor?.toLowerCase().includes(term) ||
+          proveedor.correo_proveedor?.toLowerCase().includes(term) ||
+          proveedor.fono_proveedor?.toLowerCase().includes(term) ||
+          proveedor.representante?.nombre_completo?.toLowerCase().includes(term) ||
+          proveedor.representante?.cargo_representante?.toLowerCase().includes(term);
+
+        if (!matchesSearch) return false;
       }
-    }
 
-    // Filtro por representante
-    if (filterTieneRepresentante === 'con') {
-      if (!proveedor.representante) return false;
-    } else if (filterTieneRepresentante === 'sin') {
-      if (proveedor.representante) return false;
-    }
+      // Filtro por rol
+      if (filterRol) {
+        if (!proveedor.rol_proveedor?.toLowerCase().includes(filterRol.toLowerCase())) {
+          return false;
+        }
+      }
 
-    return true;
-  });
+      // Filtro por representante
+      if (filterTieneRepresentante === 'con') {
+        if (!proveedor.representante) return false;
+      } else if (filterTieneRepresentante === 'sin') {
+        if (proveedor.representante) return false;
+      }
 
-  // Ordenar proveedores
-  const sortedProveedores = [...filteredProveedores].sort((a, b) => {
-    let aValue = a[sortField] || '';
-    let bValue = b[sortField] || '';
-    
-    // Casos especiales para campos anidados
-    if (sortField === 'representante_nombre') {
-      aValue = a.representante?.nombre_completo || '';
-      bValue = b.representante?.nombre_completo || '';
-    }
-    
-    if (typeof aValue === 'string') {
-      aValue = aValue.toLowerCase();
-      bValue = bValue.toLowerCase();
-    }
-    
-    if (sortOrder === 'asc') {
-      return aValue > bValue ? 1 : -1;
-    } else {
-      return aValue < bValue ? 1 : -1;
-    }
-  });
+      return true;
+    });
+  }, [proveedores, searchTerm, filterRol, filterTieneRepresentante]);
 
-  // Obtener roles únicos para el filtro
-  const rolesUnicos = [...new Set(proveedores.map(p => p.rol_proveedor))].filter(Boolean);
+  // Ordenar proveedores (memoizado)
+  const sortedProveedores = useMemo(() => {
+    return [...filteredProveedores].sort((a, b) => {
+      let aValue = a[sortField] || '';
+      let bValue = b[sortField] || '';
+
+      // Casos especiales para campos anidados
+      if (sortField === 'representante_nombre') {
+        aValue = a.representante?.nombre_completo || '';
+        bValue = b.representante?.nombre_completo || '';
+      }
+
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+  }, [filteredProveedores, sortField, sortOrder]);
+
+  // Obtener roles únicos para el filtro (memoizado)
+  const rolesUnicos = useMemo(() => {
+    return [...new Set(proveedores.map(p => p.rol_proveedor))].filter(Boolean);
+  }, [proveedores]);
+
+  // Estadísticas (memoizado)
+  const estadisticas = useMemo(() => ({
+    conRepresentante: proveedores.filter(p => p.representante).length,
+    sinRepresentante: proveedores.filter(p => !p.representante).length,
+    tiposUnicos: rolesUnicos.length
+  }), [proveedores, rolesUnicos]);
 
   // =================== FUNCIONES DE MANEJO ===================
 
   // Función para ordenar
-  const handleSort = (field) => {
+  const handleSort = useCallback((field) => {
     if (sortField === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
       setSortOrder('asc');
     }
-  };
+  }, [sortField, sortOrder]);
 
   // Icono de ordenamiento
-  const getSortIcon = (field) => {
-    if (sortField !== field) return '↕️';
-    return sortOrder === 'asc' ? '↑' : '↓';
-  };
+  const getSortIcon = useCallback((field) => {
+    if (sortField !== field) {
+      return <FaSortAmountDown className="inline ml-1" size={12} />;
+    }
+    return sortOrder === 'asc' ?
+      <FaSortAmountUp className="inline ml-1" size={12} /> :
+      <FaSortAmountDown className="inline ml-1" size={12} />;
+  }, [sortField, sortOrder]);
 
   // Manejar creación de proveedor
   const handleCreateSuccess = async (data) => {
@@ -354,8 +386,9 @@ export default function Proveedores() {
               Administra los proveedores y sus representantes - Total: {proveedores.length} | Mostrando: {sortedProveedores.length}
             </p>
             {selectedItems.length > 0 && (
-              <p className="text-stone-600 font-medium mt-1">
-                📝 {selectedItems.length} elemento{selectedItems.length > 1 ? 's' : ''} seleccionado{selectedItems.length > 1 ? 's' : ''}
+              <p className="text-stone-600 font-medium mt-1 flex items-center gap-2">
+                <FaCheckCircle />
+                {selectedItems.length} elemento{selectedItems.length > 1 ? 's' : ''} seleccionado{selectedItems.length > 1 ? 's' : ''}
               </p>
             )}
           </div>
@@ -366,7 +399,7 @@ export default function Proveedores() {
                 disabled={loadingDelete}
                 className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-semibold px-4 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2"
               >
-                <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5 filter brightness-0 invert" />
+                <FaTrash />
                 Eliminar ({selectedItems.length})
               </button>
             )}
@@ -375,7 +408,7 @@ export default function Proveedores() {
               disabled={loadingCreate}
               className="bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 hover:to-stone-800 disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2"
             >
-              <img src={AddIcon} alt="Agregar" className="w-5 h-5 filter brightness-0 invert" />
+              <FaPlus />
               {loadingCreate ? 'Creando...' : 'Nuevo Proveedor'}
             </button>
           </div>
@@ -385,8 +418,9 @@ export default function Proveedores() {
         <div className="bg-white p-6 rounded-xl shadow-md mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-2">
-              <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                🔍 Buscar:
+              <label className="text-sm font-semibold text-gray-700 mb-2 block flex items-center gap-2">
+                <FaSearch />
+                Buscar:
               </label>
               <div className="relative">
                 <input
@@ -396,25 +430,22 @@ export default function Proveedores() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full px-4 py-2.5 pl-10 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:outline-none transition-colors"
                 />
-                <img 
-                  src={SearchIcon} 
-                  alt="Buscar" 
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" 
-                />
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 font-bold text-lg"
                   >
-                    ✕
+                    ×
                   </button>
                 )}
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                📊 Tipo de Proveedor:
+              <label className="text-sm font-semibold text-gray-700 mb-2 block flex items-center gap-2">
+                <FaBuilding />
+                Tipo de Proveedor:
               </label>
               <select
                 value={filterRol}
@@ -429,8 +460,9 @@ export default function Proveedores() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                👤 Representante:
+              <label className="text-sm font-semibold text-gray-700 mb-2 block flex items-center gap-2">
+                <FaUserTie />
+                Representante:
               </label>
               <select
                 value={filterTieneRepresentante}
@@ -438,17 +470,18 @@ export default function Proveedores() {
                 className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:outline-none transition-colors"
               >
                 <option value="">Todos</option>
-                <option value="con">✓ Con representante</option>
-                <option value="sin">✗ Sin representante</option>
+                <option value="con">Con representante</option>
+                <option value="sin">Sin representante</option>
               </select>
             </div>
 
             <div className="flex items-end">
               <button
                 onClick={limpiarFiltros}
-                className="w-full bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg transition-colors text-sm font-medium"
+                className="w-full bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
               >
-                🔄 Limpiar filtros
+                <FaRedo />
+                Limpiar filtros
               </button>
             </div>
           </div>
@@ -522,20 +555,21 @@ export default function Proveedores() {
                   <tr>
                     <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
                       <div className="flex flex-col items-center gap-2">
-                        <span className="text-4xl">📭</span>
+                        <FaInbox className="text-6xl text-gray-300" />
                         <p className="text-lg">No hay proveedores que mostrar</p>
                         <p className="text-sm">
-                          {proveedores.length === 0 
-                            ? 'Crea tu primer proveedor haciendo clic en "Nuevo Proveedor"' 
+                          {proveedores.length === 0
+                            ? 'Crea tu primer proveedor haciendo clic en "Nuevo Proveedor"'
                             : 'Intenta cambiar los filtros para encontrar lo que buscas'
                           }
                         </p>
                         {proveedores.length === 0 && (
                           <button
                             onClick={openModal}
-                            className="mt-3 bg-stone-600 hover:bg-stone-700 text-white px-6 py-2 rounded-lg transition-colors"
+                            className="mt-3 bg-stone-600 hover:bg-stone-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2"
                           >
-                            ➕ Crear Primer Proveedor
+                            <FaPlus />
+                            Crear Primer Proveedor
                           </button>
                         )}
                       </div>
@@ -574,10 +608,12 @@ export default function Proveedores() {
                       <td className="px-3 py-4">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-1 text-sm">
-                            📧 <a href={`mailto:${proveedor.correo_proveedor}`} className="text-blue-600 hover:text-blue-800 transition-colors">{proveedor.correo_proveedor}</a>
+                            <FaEnvelope className="text-blue-500" />
+                            <a href={`mailto:${proveedor.correo_proveedor}`} className="text-blue-600 hover:text-blue-800 transition-colors">{proveedor.correo_proveedor}</a>
                           </div>
                           <div className="flex items-center gap-1 text-sm">
-                            📞 <a href={`tel:${proveedor.fono_proveedor}`} className="text-green-600 hover:text-green-800 transition-colors">{proveedor.fono_proveedor}</a>
+                            <FaPhone className="text-green-500" />
+                            <a href={`tel:${proveedor.fono_proveedor}`} className="text-green-600 hover:text-green-800 transition-colors">{proveedor.fono_proveedor}</a>
                           </div>
                         </div>
                       </td>
@@ -585,8 +621,9 @@ export default function Proveedores() {
                       <td className="px-3 py-4">
                         {proveedor.representante ? (
                           <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">
-                              👤 {proveedor.representante.nombre_completo}
+                            <span className="font-medium text-gray-900 flex items-center gap-1">
+                              <FaUserTie className="text-stone-500" />
+                              {proveedor.representante.nombre_completo}
                             </span>
                             <span className="text-sm text-gray-500">
                               {proveedor.representante.cargo_representante}
@@ -597,23 +634,26 @@ export default function Proveedores() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
-                              ⚠️ Sin representante
+                            <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium flex items-center gap-1">
+                              <FaExclamationTriangle />
+                              Sin representante
                             </span>
                             <button
                               onClick={() => handleAddRepresentante(proveedor)}
-                              className="text-green-600 hover:text-green-800 transition-colors text-xs"
+                              className="text-green-600 hover:text-green-800 transition-colors text-xs flex items-center gap-1"
                               title="Agregar representante"
                             >
-                              ➕ Agregar
+                              <FaUserPlus />
+                              Agregar
                             </button>
                           </div>
                         )}
                       </td>
 
                       <td className="px-3 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                          ✓ Activo
+                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium flex items-center gap-1 w-fit">
+                          <FaCheckCircle />
+                          Activo
                         </span>
                       </td>
 
@@ -621,34 +661,34 @@ export default function Proveedores() {
                         <div className="flex gap-1">
                           <button
                             onClick={() => handleViewDetails(proveedor)}
-                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors text-blue-600"
                             title="Ver detalles"
                           >
-                            👁️
+                            <FaEye size={18} />
                           </button>
                           <button
                             onClick={() => handleEditProveedor(proveedor)}
-                            className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
+                            className="p-2 hover:bg-stone-100 rounded-lg transition-colors text-stone-600"
                             title="Editar proveedor"
                           >
-                            <img src={UpdateIcon} alt="Editar" className="w-5 h-5" />
+                            <FaEdit size={18} />
                           </button>
                           {!proveedor.representante && (
                             <button
                               onClick={() => handleAddRepresentante(proveedor)}
-                              className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+                              className="p-2 hover:bg-green-50 rounded-lg transition-colors text-green-600"
                               title="Agregar representante"
                             >
-                              👤➕
+                              <FaUserPlus size={18} />
                             </button>
                           )}
                           <button
                             onClick={() => handleDelete(proveedor.id_proveedor)}
                             disabled={loadingDelete}
-                            className="p-2 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 text-red-600"
                             title="Eliminar proveedor"
                           >
-                            <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5" />
+                            <FaTrash size={18} />
                           </button>
                         </div>
                       </td>
@@ -669,9 +709,18 @@ export default function Proveedores() {
             </p>
             {proveedores.length > 0 && (
               <div className="mt-2 flex gap-4 text-xs text-gray-500 justify-center">
-                <span>👥 {proveedores.filter(p => p.representante).length} con representante</span>
-                <span>⚠️ {proveedores.filter(p => !p.representante).length} sin representante</span>
-                <span>📊 {rolesUnicos.length} tipos diferentes</span>
+                <span className="flex items-center gap-1">
+                  <FaUsers />
+                  {estadisticas.conRepresentante} con representante
+                </span>
+                <span className="flex items-center gap-1">
+                  <FaExclamationTriangle />
+                  {estadisticas.sinRepresentante} sin representante
+                </span>
+                <span className="flex items-center gap-1">
+                  <FaChartBar />
+                  {estadisticas.tiposUnicos} tipos diferentes
+                </span>
               </div>
             )}
           </div>
