@@ -1,0 +1,19 @@
+meta {
+  name: getEstadisticasSinFechas
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:3000/api/papeles/estadisticas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+settings {
+  encodeUrl: true
+}

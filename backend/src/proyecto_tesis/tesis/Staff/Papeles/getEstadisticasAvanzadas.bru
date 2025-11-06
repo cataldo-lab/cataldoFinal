@@ -1,0 +1,19 @@
+meta {
+  name: getEstadisticasAvanzadas
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:3000/api/papeles/estadisticas?fecha_inicio=2024-01-01&fecha_fin=2024-12-31
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+settings {
+  encodeUrl: true
+}

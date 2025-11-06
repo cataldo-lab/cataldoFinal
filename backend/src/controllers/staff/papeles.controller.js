@@ -1,7 +1,9 @@
 "use strict";
-import { 
-    getClientesConComprasService, 
-    getClienteConComprasByIdService 
+import {
+    getClientesConComprasService,
+    getClienteConComprasByIdService,
+    getClientesConComprasPorFechasService,
+    getEstadisticasAvanzadasService
 } from "../../services/staff/papeles.service.js";
 import { handleErrorClient, handleErrorServer, handleSuccess } from "../../handlers/responseHandlers.js";
 
@@ -34,6 +36,48 @@ export async function getClienteConComprasById(req, res) {
         }
 
         const result = await getClienteConComprasByIdService(id_usuario);
+
+        if (!result.success) {
+            return handleErrorClient(res, 404, result.message);
+        }
+
+        handleSuccess(res, 200, result.message, result.data);
+    } catch (error) {
+        handleErrorServer(res, error.message);
+    }
+}
+
+/**
+ * Obtiene clientes con compras filtrado por rango de fechas
+ */
+export async function getClientesConComprasPorFechas(req, res) {
+    try {
+        const { fecha_inicio, fecha_fin } = req.query;
+
+        const result = await getClientesConComprasPorFechasService(fecha_inicio, fecha_fin);
+
+        if (!result.success) {
+            return handleErrorClient(res, 404, result.message);
+        }
+
+        handleSuccess(res, 200, result.message, result.data, {
+            count: result.count,
+            periodo: result.periodo,
+            totales: result.totales
+        });
+    } catch (error) {
+        handleErrorServer(res, error.message);
+    }
+}
+
+/**
+ * Obtiene estadísticas avanzadas por periodo
+ */
+export async function getEstadisticasAvanzadas(req, res) {
+    try {
+        const { fecha_inicio, fecha_fin } = req.query;
+
+        const result = await getEstadisticasAvanzadasService(fecha_inicio, fecha_fin);
 
         if (!result.success) {
             return handleErrorClient(res, 404, result.message);

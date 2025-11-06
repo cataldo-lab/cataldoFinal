@@ -370,3 +370,141 @@ export async function getClienteConComprasByIdService(id_usuario) {
         };
     }
 }
+
+/**
+ * Obtiene clientes con compras filtrado por rango de fechas
+ */
+export async function getClientesConComprasPorFechasService(fecha_inicio, fecha_fin) {
+    try {
+        const clientes = await userRepository.find({
+            where: { rol: Role.CLIENTE },
+            relations: [
+                "cliente",
+                "comuna",
+                "comuna.provincia",
+                "comuna.provincia.region",
+                "operaciones",
+                "operaciones.productosOperacion",
+                "operaciones.productosOperacion.producto",
+                "operaciones.historial",
+                "operaciones.encuesta"
+            ]
+        });
+
+        // Filtrar operaciones por fecha
+        const clientesFiltrados = clientes.map(user => {
+            const operacionesFiltradas = user.operaciones?.filter(op => {
+                const fechaOp = new Date(op.fecha_creacion);
+                const inicio = fecha_inicio ? new Date(fecha_inicio) : null;
+                const fin = fecha_fin ? new Date(fecha_fin) : null;
+
+                if (inicio && fin) {
+                    return fechaOp >= inicio && fechaOp <= fin;
+                } else if (inicio) {
+                    return fechaOp >= inicio;
+                } else if (fin) {
+                    return fechaOp <= fin;
+                }
+                return true;
+            }) || [];
+
+            return {
+                ...user,
+                operaciones: operacionesFiltradas
+            };
+        }).filter(cliente => cliente.operaciones.length > 0);
+
+        const totalCompras = clientesFiltrados.reduce((sum, c) =>
+            sum + (c.operaciones?.length || 0), 0);
+        const totalGastado = clientesFiltrados.reduce((sum, c) =>
+            sum + c.operaciones.reduce((s, op) => s + parseFloat(op.costo_operacion || 0), 0), 0);
+
+        return {
+            success: true,
+            data: clientesFiltrados,
+            count: clientesFiltrados.length,
+            message: "Clientes con compras filtrados por fecha obtenidos exitosamente",
+            periodo: { fecha_inicio, fecha_fin },
+            totales: {
+                operaciones: totalCompras,
+                facturado: parseFloat(totalGastado.toFixed(2))
+            }
+        };
+    } catch (error) {
+        console.error("Error al obtener clientes por fechas:", error);
+        return {
+            success: false,
+            message: "Error al obtener clientes con compras por fechas",
+            error: error.message
+        };
+    }
+}
+
+/**
+ * Obtiene estadísticas avanzadas por periodo
+ */
+export async function getEstadisticasAvanzadasService(fecha_inicio, fecha_fin) {
+    try {
+        const clientes = await userRepository.find({
+            where: { rol: Role.CLIENTE },
+            relations: ["operaciones", "operaciones.productosOperacion", "operaciones.encuesta"]
+        });
+
+        let operacionesPeriodo = [];
+        clientes.forEach(cliente => {
+            const ops = cliente.operaciones?.filter(op => {
+                const fechaOp = new Date(op.fecha_creacion);
+                const inicio = fecha_inicio ? new Date(fecha_inicio) : null;
+                const fin = fecha_fin ? new Date(fecha_fin) : null;
+
+                if (inicio && fin) {
+                    return fechaOp >= inicio && fechaOp <= fin;
+                } else if (inicio) {
+                    return fechaOp >= inicio;
+                } else if (fin) {
+                    return fechaOp <= fin;
+                }
+                return true;
+            }) || [];
+            operacionesPeriodo = operacionesPeriodo.concat(ops);
+        });
+
+        const totalVentas = operacionesPeriodo.reduce((sum, op) =>
+            sum + parseFloat(op.costo_operacion || 0), 0);
+        const totalCobrado = operacionesPeriodo.reduce((sum, op) =>
+            sum + parseFloat(op.cantidad_abono || 0), 0);
+
+        const estadisticasPorEstado = operacionesPeriodo.reduce((acc, op) => {
+            if (!acc[op.estado_operacion]) {
+                acc[op.estado_operacion] = { cantidad: 0, monto: 0 };
+            }
+            acc[op.estado_operacion].cantidad++;
+            acc[op.estado_operacion].monto += parseFloat(op.costo_operacion || 0);
+            return acc;
+        }, {});
+
+        return {
+            success: true,
+            data: {
+                periodo: { fecha_inicio, fecha_fin },
+                total_operaciones: operacionesPeriodo.length,
+                total_ventas: parseFloat(totalVentas.toFixed(2)),
+                total_cobrado: parseFloat(totalCobrado.toFixed(2)),
+                total_pendiente: parseFloat((totalVentas - totalCobrado).toFixed(2)),
+                ticket_promedio: operacionesPeriodo.length > 0
+                    ? parseFloat((totalVentas / operacionesPeriodo.length).toFixed(2))
+                    : 0,
+                por_estado: estadisticasPorEstado,
+                clientes_activos: new Set(operacionesPeriodo.map(op => op.id_usuario)).size
+            },
+            message: "Estadísticas avanzadas obtenidas exitosamente"
+        };
+    } catch (error) {
+        console.error("Error al obtener estadísticas avanzadas:", error);
+        return {
+            success: false,
+            message: "Error al obtener estadísticas avanzadas",
+            error: error.message
+        };
+    }
+}
