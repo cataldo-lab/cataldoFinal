@@ -1,0 +1,45 @@
+meta {
+  name: createOperacionConProductos
+  type: http
+  seq: 8
+}
+
+post {
+  url: http://localhost:3000/api/papeles/operacion
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{empleado_token}}
+}
+
+body:json {
+  {
+    "operacion": {
+      "id_cliente": 1,
+      "estado_operacion": "pendiente",
+      "descripcion_operacion": "Pedido de muebles personalizados para sala",
+      "cantidad_abono": 50000,
+      "fecha_entrega_estimada": "2024-12-31"
+    },
+    "productos": [
+      {
+        "id_producto": 1,
+        "cantidad": 2,
+        "precio_unitario": 150000,
+        "especificaciones": "Color nogal, acabado mate"
+      },
+      {
+        "id_producto": 2,
+        "cantidad": 1,
+        "precio_unitario": 80000,
+        "especificaciones": "Tapizado en cuero sintético gris"
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

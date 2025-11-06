@@ -3,7 +3,8 @@ import {
     getClientesConComprasService,
     getClienteConComprasByIdService,
     getClientesConComprasPorFechasService,
-    getEstadisticasAvanzadasService
+    getEstadisticasAvanzadasService,
+    createOperacionConProductosService
 } from "../../services/staff/papeles.service.js";
 import { handleErrorClient, handleErrorServer, handleSuccess } from "../../handlers/responseHandlers.js";
 
@@ -84,6 +85,50 @@ export async function getEstadisticasAvanzadas(req, res) {
         }
 
         handleSuccess(res, 200, result.message, result.data);
+    } catch (error) {
+        handleErrorServer(res, error.message);
+    }
+}
+
+/**
+ * Crea una nueva operación enlazada con productos
+ * Usa la tabla intermedia ProductoOperacion (N:N)
+ */
+export async function createOperacionConProductos(req, res) {
+    try {
+        const { operacion, productos } = req.body;
+
+        // Validar que se recibieron los datos necesarios
+        if (!operacion) {
+            return handleErrorClient(res, 400, "Faltan datos de la operación");
+        }
+
+        if (!operacion.id_cliente) {
+            return handleErrorClient(res, 400, "El ID del cliente es requerido");
+        }
+
+        if (!productos || !Array.isArray(productos) || productos.length === 0) {
+            return handleErrorClient(res, 400, "Debe incluir al menos un producto");
+        }
+
+        // Validar estructura de productos
+        for (let i = 0; i < productos.length; i++) {
+            const prod = productos[i];
+            if (!prod.id_producto) {
+                return handleErrorClient(res, 400, `El producto en la posición ${i} no tiene id_producto`);
+            }
+            if (!prod.cantidad || prod.cantidad <= 0) {
+                return handleErrorClient(res, 400, `El producto en la posición ${i} debe tener cantidad mayor a 0`);
+            }
+        }
+
+        const result = await createOperacionConProductosService(operacion, productos);
+
+        if (!result.success) {
+            return handleErrorClient(res, 400, result.message);
+        }
+
+        handleSuccess(res, 201, result.message, result.data);
     } catch (error) {
         handleErrorServer(res, error.message);
     }

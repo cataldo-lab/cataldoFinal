@@ -4,7 +4,8 @@ import {
     getClientesConCompras,
     getClienteConComprasById,
     getClientesConComprasPorFechas,
-    getEstadisticasAvanzadas
+    getEstadisticasAvanzadas,
+    createOperacionConProductos
 } from "../../controllers/staff/papeles.controller.js";
 import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
 import { isEmployeeOrManager } from "../../middlewares/authorization.middleware.js";
@@ -20,5 +21,8 @@ router.get("/compras/filtro/fechas", isEmployeeOrManager, getClientesConComprasP
 // Rutas generales
 router.get("/compras", isEmployeeOrManager, getClientesConCompras);
 router.get("/compras/:id", isEmployeeOrManager, getClienteConComprasById);
+
+// Ruta para crear operación con productos (tabla intermedia N:N)
+router.post("/operacion", isEmployeeOrManager, createOperacionConProductos);
 
 export default router;
