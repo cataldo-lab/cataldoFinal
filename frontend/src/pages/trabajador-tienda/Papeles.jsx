@@ -5,7 +5,7 @@ import { useGetClienteConComprasById } from '@hooks/papeles/useGetClienteConComp
 import { getProductos } from '@services/producto.service';
 import { updateEstadoOperacion, updateOperacion, EstadosOperacion, getEstadoLabel, getEstadoColor } from '@services/operacion.service';
 import CrearOperacionModal from '@components/operaciones/CrearOperacionModal';
-import { FaEye, FaUser, FaFileInvoiceDollar, FaChartLine, FaSearch, FaTimes, FaFilter, FaPlus, FaHistory, FaMoneyBillWave } from 'react-icons/fa';
+import { FaEye, FaUser, FaFileInvoiceDollar, FaChartLine, FaSearch, FaTimes, FaFilter, FaPlus, FaHistory, FaMoneyBillWave, FaPrint, FaFileAlt } from 'react-icons/fa';
 
 const Papeles = () => {
     const [selectedClienteId, setSelectedClienteId] = useState(null);
@@ -299,6 +299,211 @@ const Papeles = () => {
         } finally {
             setProcesandoAbono(prev => ({ ...prev, [idOperacion]: false }));
         }
+    };
+
+    const generarDocumento = (operacion, cliente, tipo = 'cotizacion') => {
+        const titulo = tipo === 'cotizacion' ? 'COTIZACIÓN' : 'ORDEN DE TRABAJO';
+        const fechaActual = new Date().toLocaleDateString('es-CL', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        const htmlContent = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${titulo} #${operacion.id_operacion}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background: white; color: #333; }
+        .documento { max-width: 800px; margin: 0 auto; border: 2px solid #333; padding: 30px; }
+        .header { text-align: center; border-bottom: 3px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { font-size: 32px; color: #333; margin-bottom: 10px; letter-spacing: 2px; }
+        .header .numero { font-size: 18px; color: #666; margin-bottom: 5px; }
+        .header .fecha { font-size: 14px; color: #999; }
+
+        .seccion { margin-bottom: 25px; }
+        .seccion-titulo { background: #333; color: white; padding: 10px 15px; font-weight: bold; font-size: 16px; margin-bottom: 15px; }
+
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .info-item { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .info-item label { font-weight: bold; color: #555; display: block; font-size: 12px; margin-bottom: 3px; }
+        .info-item value { color: #333; font-size: 14px; }
+
+        .tabla { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .tabla thead { background: #f5f5f5; }
+        .tabla th { padding: 12px; text-align: left; font-weight: bold; border-bottom: 2px solid #333; font-size: 14px; }
+        .tabla td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 14px; }
+        .tabla tbody tr:hover { background: #fafafa; }
+        .tabla .text-right { text-align: right; }
+        .tabla .text-center { text-align: center; }
+
+        .totales { margin-top: 20px; border-top: 2px solid #333; padding-top: 15px; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 16px; }
+        .total-row.final { font-weight: bold; font-size: 20px; border-top: 2px solid #333; padding-top: 12px; margin-top: 10px; }
+        .total-row.final .valor { color: #2563eb; }
+
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #333; text-align: center; }
+        .firma { margin-top: 60px; }
+        .firma-linea { border-top: 2px solid #333; width: 300px; margin: 0 auto; padding-top: 10px; }
+
+        .estado-badge { display: inline-block; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+        .estado-cotizacion { background: #dbeafe; color: #1e40af; }
+        .estado-orden { background: #dcfce7; color: #166534; }
+
+        @media print {
+            body { padding: 0; }
+            .documento { border: none; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="documento">
+        <!-- Header -->
+        <div class="header">
+            <h1>${titulo}</h1>
+            <div class="numero">N° ${operacion.id_operacion}</div>
+            <div class="fecha">${fechaActual}</div>
+            <span class="estado-badge ${tipo === 'cotizacion' ? 'estado-cotizacion' : 'estado-orden'}">
+                ${tipo === 'cotizacion' ? 'COTIZACIÓN' : 'ORDEN DE TRABAJO'}
+            </span>
+        </div>
+
+        <!-- Datos del Cliente -->
+        <div class="seccion">
+            <div class="seccion-titulo">DATOS DEL CLIENTE</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Nombre Completo:</label>
+                    <value>${cliente.nombreCompleto || 'N/A'}</value>
+                </div>
+                <div class="info-item">
+                    <label>RUT:</label>
+                    <value>${cliente.rut || 'N/A'}</value>
+                </div>
+                <div class="info-item">
+                    <label>Correo Electrónico:</label>
+                    <value>${cliente.email || 'N/A'}</value>
+                </div>
+                <div class="info-item">
+                    <label>Teléfono:</label>
+                    <value>${cliente.telefono || 'N/A'}</value>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <label>Dirección:</label>
+                    <value>${cliente.direccion || 'N/A'}</value>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalles de la Operación -->
+        <div class="seccion">
+            <div class="seccion-titulo">DETALLE DE LA OPERACIÓN</div>
+
+            ${operacion.descripcion_operacion ? `
+                <div class="info-item" style="margin-bottom: 15px;">
+                    <label>Descripción:</label>
+                    <value>${operacion.descripcion_operacion}</value>
+                </div>
+            ` : ''}
+
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;" class="text-center">Cant.</th>
+                        <th>Producto</th>
+                        <th>Especificaciones</th>
+                        <th class="text-right">Precio Unit.</th>
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${operacion.productos && operacion.productos.length > 0
+                        ? operacion.productos.map(prod => `
+                            <tr>
+                                <td class="text-center">${prod.cantidad}</td>
+                                <td><strong>${prod.producto?.nombre_producto || 'N/A'}</strong></td>
+                                <td>${prod.especificaciones || '-'}</td>
+                                <td class="text-right">${formatCurrency(prod.precio_unitario || 0)}</td>
+                                <td class="text-right"><strong>${formatCurrency(prod.precio_total || 0)}</strong></td>
+                            </tr>
+                        `).join('')
+                        : '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #999;">No hay productos</td></tr>'
+                    }
+                </tbody>
+            </table>
+
+            <!-- Totales -->
+            <div class="totales">
+                <div class="total-row final">
+                    <span>TOTAL:</span>
+                    <span class="valor">${formatCurrency(operacion.costo_operacion || 0)}</span>
+                </div>
+                ${operacion.cantidad_abono > 0 ? `
+                    <div class="total-row">
+                        <span>Abonado:</span>
+                        <span>${formatCurrency(operacion.cantidad_abono || 0)}</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Saldo Pendiente:</span>
+                        <span style="color: #dc2626;">${formatCurrency(operacion.saldo_pendiente || 0)}</span>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+
+        <!-- Información Adicional -->
+        <div class="seccion">
+            <div class="seccion-titulo">INFORMACIÓN ADICIONAL</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Fecha de Creación:</label>
+                    <value>${new Date(operacion.fecha_creacion).toLocaleDateString('es-CL')}</value>
+                </div>
+                ${operacion.fecha_entrega_estimada ? `
+                    <div class="info-item">
+                        <label>Fecha de Entrega Estimada:</label>
+                        <value>${new Date(operacion.fecha_entrega_estimada).toLocaleDateString('es-CL')}</value>
+                    </div>
+                ` : ''}
+                <div class="info-item">
+                    <label>Estado:</label>
+                    <value><strong>${operacion.estado_operacion.toUpperCase().replace('_', ' ')}</strong></value>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer con Firma -->
+        <div class="footer">
+            <div class="firma">
+                <div class="firma-linea">
+                    <strong>Firma y Timbre</strong>
+                </div>
+            </div>
+            <p style="margin-top: 30px; font-size: 12px; color: #999;">
+                Documento generado el ${new Date().toLocaleString('es-CL')}
+            </p>
+        </div>
+
+        <!-- Botón de Impresión -->
+        <div class="no-print" style="text-align: center; margin-top: 30px;">
+            <button onclick="window.print()" style="background: #333; color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;">
+                🖨️ Imprimir / Guardar PDF
+            </button>
+        </div>
+    </div>
+</body>
+</html>
+        `;
+
+        // Abrir en nueva ventana
+        const ventana = window.open('', '_blank');
+        ventana.document.write(htmlContent);
+        ventana.document.close();
     };
 
     const formatCurrency = (value) => {
@@ -793,6 +998,26 @@ const Papeles = () => {
                                                         </p>
                                                     )}
                                                 </div>
+                                            </div>
+
+                                            {/* Botones de Documentos */}
+                                            <div className="flex gap-2 mb-3">
+                                                <button
+                                                    onClick={() => generarDocumento(compra, cliente, 'cotizacion')}
+                                                    className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium flex items-center justify-center gap-2"
+                                                    title="Generar Cotización"
+                                                >
+                                                    <FaFileAlt />
+                                                    Cotización
+                                                </button>
+                                                <button
+                                                    onClick={() => generarDocumento(compra, cliente, 'orden_trabajo')}
+                                                    className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs font-medium flex items-center justify-center gap-2"
+                                                    title="Generar Orden de Trabajo"
+                                                >
+                                                    <FaPrint />
+                                                    Orden de Trabajo
+                                                </button>
                                             </div>
 
                                             {/* Selector de estado */}
