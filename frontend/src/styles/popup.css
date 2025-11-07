@@ -6,8 +6,15 @@
     align-items: center;
     justify-content: center;
     overflow: hidden; /* Prevenir scroll en el overlay */
-    z-index: 1000;
+    z-index: 9999; /* Aumentado para asegurar que esté sobre otros elementos */
 }
+
+/* Los popups se renderizan múltiples veces en el DOM,
+   cada uno necesita un z-index más alto que el anterior */
+.bg:nth-of-type(1) { z-index: 9999; }
+.bg:nth-of-type(2) { z-index: 10099; }
+.bg:nth-of-type(3) { z-index: 10199; }
+.bg:nth-of-type(4) { z-index: 10299; }
 
 .popup{
     height: 700px;
