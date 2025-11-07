@@ -102,7 +102,13 @@ export default function PopupUpdateProveedor({
   if (!show || !proveedor) return null;
 
   return (
-    <div className="bg">
+    <div
+      className="bg popup-layer-2"
+      style={{
+        background: 'rgba(0, 0, 0, 0.6)',
+        backdropFilter: 'blur(4px)'
+      }}
+    >
       <div className="popup" style={{ 
         height: 'auto', 
         maxHeight: '90vh', 
