@@ -153,7 +153,29 @@ const Papeles = () => {
         setShowCrearModal(false);
     };
 
-    const handleCambiarEstado = async (idOperacion, nuevoEstado) => {
+    const handleCambiarEstado = async (idOperacion, nuevoEstado, compra) => {
+        // Validación para estado "pagada"
+        if (nuevoEstado === EstadosOperacion.PAGADA) {
+            const saldoPendiente = parseFloat(compra.saldo_pendiente || 0);
+            const costoOperacion = parseFloat(compra.costo_operacion || 0);
+            const cantidadAbono = parseFloat(compra.cantidad_abono || 0);
+
+            // El saldo pendiente debe ser exactamente 0 y el abono debe ser igual al costo total
+            if (saldoPendiente !== 0 || cantidadAbono !== costoOperacion) {
+                setMensajeEstado({
+                    tipo: 'error',
+                    texto: `No se puede marcar como "Pagada". El saldo pendiente debe ser $0 y el monto abonado debe ser igual al total de la operación. Actual: Abonado ${formatCurrency(cantidadAbono)} de ${formatCurrency(costoOperacion)}, Pendiente: ${formatCurrency(saldoPendiente)}`
+                });
+
+                // Limpiar mensaje después de 5 segundos
+                setTimeout(() => {
+                    setMensajeEstado({ tipo: null, texto: null });
+                }, 5000);
+
+                return; // No continuar con el cambio de estado
+            }
+        }
+
         setCambiandoEstado(prev => ({ ...prev, [idOperacion]: true }));
         setMensajeEstado({ tipo: null, texto: null });
 
@@ -694,7 +716,7 @@ const Papeles = () => {
                                                 </label>
                                                 <select
                                                     value={compra.estado_operacion}
-                                                    onChange={(e) => handleCambiarEstado(compra.id_operacion, e.target.value)}
+                                                    onChange={(e) => handleCambiarEstado(compra.id_operacion, e.target.value, compra)}
                                                     disabled={cambiandoEstado[compra.id_operacion]}
                                                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent text-sm ${
                                                         cambiandoEstado[compra.id_operacion] ? 'opacity-50 cursor-not-allowed' : ''
