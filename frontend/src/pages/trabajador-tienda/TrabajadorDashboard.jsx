@@ -2,12 +2,10 @@
 import { useTrabajadorDashboard } from '../../hooks/Dashboard/useTrabajadorDashborad.jsx';
 
 import { FaExclamationTriangle,
-         FaCheckCircle, FaBox,
-         FaDollarSign, FaWarehouse,
-         FaClipboardList, FaUsers,
-         FaHandshake, FaClock,
-         FaCalendarTimes, FaUserSlash,
-         FaCalendarAlt } from 'react-icons/fa';
+         FaCheckCircle, FaBox, 
+         FaDollarSign, FaWarehouse, 
+         FaClipboardList, FaUsers, 
+         FaHandshake, FaClock } from 'react-icons/fa';
 
 import { MdSpaceDashboard } from "react-icons/md";
 
@@ -93,7 +91,7 @@ const TrabajadorDashboard = () => {
                     </button>
                 </div>
 
-                {/* Grid de Estadísticas Principales */}
+                {/* Grid de Estadísticas */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     {/* Operaciones Pendientes */}
                     <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 
@@ -164,115 +162,6 @@ const TrabajadorDashboard = () => {
                             stats.materialesBajoStock > 0 ? 'text-red-600 font-semibold' : 'text-gray-500'
                         }`}>
                             {stats.materialesBajoStock > 0 ? 'Requiere atención' : 'Stock adecuado'}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Grid de Indicadores Visuales */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    {/* Operaciones Atrasadas */}
-                    <div className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 ${
-                        stats.operacionesAtrasadas > 0 ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50'
-                    } transform hover:-translate-y-1`}>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                                Operaciones Atrasadas
-                            </h3>
-                            <FaCalendarTimes className={`text-3xl ${
-                                stats.operacionesAtrasadas > 0 ? 'text-red-500' : 'text-green-500'
-                            }`} />
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                            <p className={`text-5xl font-bold mb-2 ${
-                                stats.operacionesAtrasadas > 0 ? 'text-red-600' : 'text-green-600'
-                            }`}>
-                                {stats.operacionesAtrasadas || 0}
-                            </p>
-                            {stats.operacionesAtrasadas > 0 && (
-                                <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                    ATRASADA
-                                </span>
-                            )}
-                        </div>
-                        <p className={`text-sm ${
-                            stats.operacionesAtrasadas > 0 ? 'text-red-600 font-semibold' : 'text-green-600'
-                        }`}>
-                            {stats.operacionesAtrasadas > 0
-                                ? 'Pasaron la fecha estimada'
-                                : 'Todo al día'}
-                        </p>
-                    </div>
-
-                    {/* Clientes con Deuda */}
-                    <div className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 ${
-                        stats.clientesConDeuda > 0 ? 'border-orange-500 bg-orange-50' : 'border-green-500 bg-green-50'
-                    } transform hover:-translate-y-1`}>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                                Clientes con Deuda
-                            </h3>
-                            <FaUserSlash className={`text-3xl ${
-                                stats.clientesConDeuda > 0 ? 'text-orange-500' : 'text-green-500'
-                            }`} />
-                        </div>
-                        <p className={`text-5xl font-bold mb-2 ${
-                            stats.clientesConDeuda > 0 ? 'text-orange-600' : 'text-green-600'
-                        }`}>
-                            {stats.clientesConDeuda || 0}
-                        </p>
-                        <p className={`text-sm ${
-                            stats.clientesConDeuda > 0 ? 'text-orange-600 font-semibold' : 'text-green-600'
-                        }`}>
-                            {stats.clientesConDeuda > 0
-                                ? `Mayor a ${stats.diasLimiteDeuda} días`
-                                : 'Sin deudas vencidas'}
-                        </p>
-                    </div>
-
-                    {/* Días desde última operación */}
-                    <div className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 ${
-                        stats.diasDesdeUltimaOperacion === 0
-                            ? 'border-green-500 bg-green-50'
-                            : stats.diasDesdeUltimaOperacion <= 3
-                            ? 'border-blue-500 bg-blue-50'
-                            : stats.diasDesdeUltimaOperacion <= 7
-                            ? 'border-yellow-500 bg-yellow-50'
-                            : 'border-red-500 bg-red-50'
-                    } transform hover:-translate-y-1`}>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                                Última Operación
-                            </h3>
-                            <FaCalendarAlt className={`text-3xl ${
-                                stats.diasDesdeUltimaOperacion === 0
-                                    ? 'text-green-500'
-                                    : stats.diasDesdeUltimaOperacion <= 3
-                                    ? 'text-blue-500'
-                                    : stats.diasDesdeUltimaOperacion <= 7
-                                    ? 'text-yellow-500'
-                                    : 'text-red-500'
-                            }`} />
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                            <p className={`text-5xl font-bold mb-2 ${
-                                stats.diasDesdeUltimaOperacion === 0
-                                    ? 'text-green-600'
-                                    : stats.diasDesdeUltimaOperacion <= 3
-                                    ? 'text-blue-600'
-                                    : stats.diasDesdeUltimaOperacion <= 7
-                                    ? 'text-yellow-600'
-                                    : 'text-red-600'
-                            }`}>
-                                {stats.diasDesdeUltimaOperacion}
-                            </p>
-                            <span className="text-2xl text-gray-500">días</span>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                            {stats.diasDesdeUltimaOperacion === 0
-                                ? 'Hoy se registró operación'
-                                : stats.diasDesdeUltimaOperacion === 1
-                                ? 'Ayer fue la última'
-                                : 'Desde última operación'}
                         </p>
                     </div>
                 </div>
