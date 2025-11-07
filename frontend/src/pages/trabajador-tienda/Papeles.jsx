@@ -3,9 +3,9 @@ import { useState, useMemo, useEffect } from 'react';
 import { useGetClientesConCompras } from '@hooks/papeles/useGetClientesConCompras';
 import { useGetClienteConComprasById } from '@hooks/papeles/useGetClienteConComprasById';
 import { getProductos } from '@services/producto.service';
-import { updateEstadoOperacion, EstadosOperacion, getEstadoLabel, getEstadoColor } from '@services/operacion.service';
+import { updateEstadoOperacion, updateOperacion, EstadosOperacion, getEstadoLabel, getEstadoColor } from '@services/operacion.service';
 import CrearOperacionModal from '@components/operaciones/CrearOperacionModal';
-import { FaEye, FaUser, FaFileInvoiceDollar, FaChartLine, FaSearch, FaTimes, FaFilter, FaPlus, FaHistory } from 'react-icons/fa';
+import { FaEye, FaUser, FaFileInvoiceDollar, FaChartLine, FaSearch, FaTimes, FaFilter, FaPlus, FaHistory, FaMoneyBillWave } from 'react-icons/fa';
 
 const Papeles = () => {
     const [selectedClienteId, setSelectedClienteId] = useState(null);
@@ -25,6 +25,11 @@ const Papeles = () => {
     // Estados para cambio de estado de operaciones
     const [cambiandoEstado, setCambiandoEstado] = useState({});
     const [mensajeEstado, setMensajeEstado] = useState({ tipo: null, texto: null });
+
+    // Estados para abonos
+    const [mostrarAbonoModal, setMostrarAbonoModal] = useState({});
+    const [montoAbono, setMontoAbono] = useState({});
+    const [procesandoAbono, setProcesandoAbono] = useState({});
     
     const { 
         clientes, 
@@ -212,6 +217,87 @@ const Papeles = () => {
             });
         } finally {
             setCambiandoEstado(prev => ({ ...prev, [idOperacion]: false }));
+        }
+    };
+
+    const handleMostrarAbono = (idOperacion, saldoPendiente) => {
+        setMostrarAbonoModal(prev => ({ ...prev, [idOperacion]: true }));
+        // Sugerir el saldo pendiente como monto inicial
+        setMontoAbono(prev => ({ ...prev, [idOperacion]: saldoPendiente }));
+    };
+
+    const handleCancelarAbono = (idOperacion) => {
+        setMostrarAbonoModal(prev => ({ ...prev, [idOperacion]: false }));
+        setMontoAbono(prev => ({ ...prev, [idOperacion]: 0 }));
+    };
+
+    const handleRealizarAbono = async (idOperacion, compra) => {
+        const monto = parseFloat(montoAbono[idOperacion] || 0);
+        const abonoActual = parseFloat(compra.cantidad_abono || 0);
+        const costoTotal = parseFloat(compra.costo_operacion || 0);
+
+        // Validaciones
+        if (monto <= 0) {
+            setMensajeEstado({
+                tipo: 'error',
+                texto: 'El monto del abono debe ser mayor a $0'
+            });
+            setTimeout(() => setMensajeEstado({ tipo: null, texto: null }), 3000);
+            return;
+        }
+
+        const nuevoAbono = abonoActual + monto;
+
+        if (nuevoAbono > costoTotal) {
+            setMensajeEstado({
+                tipo: 'error',
+                texto: `El abono total no puede exceder el costo de la operación. Máximo permitido: ${formatCurrency(costoTotal - abonoActual)}`
+            });
+            setTimeout(() => setMensajeEstado({ tipo: null, texto: null }), 5000);
+            return;
+        }
+
+        setProcesandoAbono(prev => ({ ...prev, [idOperacion]: true }));
+        setMensajeEstado({ tipo: null, texto: null });
+
+        try {
+            const response = await updateOperacion(idOperacion, {
+                cantidad_abono: nuevoAbono
+            });
+
+            if (response.status === 'Success') {
+                setMensajeEstado({
+                    tipo: 'success',
+                    texto: `Abono de ${formatCurrency(monto)} realizado exitosamente. Nuevo total abonado: ${formatCurrency(nuevoAbono)}`
+                });
+
+                // Refrescar datos
+                if (selectedClienteId) {
+                    await fetchCliente(selectedClienteId);
+                }
+                await fetchClientes();
+
+                // Cerrar modal de abono
+                handleCancelarAbono(idOperacion);
+
+                // Limpiar mensaje después de 3 segundos
+                setTimeout(() => {
+                    setMensajeEstado({ tipo: null, texto: null });
+                }, 3000);
+            } else {
+                setMensajeEstado({
+                    tipo: 'error',
+                    texto: response.message || 'Error al realizar el abono'
+                });
+            }
+        } catch (error) {
+            console.error('Error al realizar abono:', error);
+            setMensajeEstado({
+                tipo: 'error',
+                texto: 'Error de conexión al realizar el abono'
+            });
+        } finally {
+            setProcesandoAbono(prev => ({ ...prev, [idOperacion]: false }));
         }
     };
 
@@ -761,6 +847,91 @@ const Papeles = () => {
                                                         <div className="w-3 h-3 border-2 border-stone-500 rounded-full animate-spin border-t-transparent"></div>
                                                         <span className="text-xs text-stone-500">Actualizando estado...</span>
                                                     </div>
+                                                )}
+                                            </div>
+
+                                            {/* Sección de Abonos */}
+                                            <div className="mb-3 border-t border-stone-100 pt-3">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <FaMoneyBillWave className="text-green-600 text-xs" />
+                                                        <p className="text-xs font-bold text-stone-700">Información de Pago</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-2 mb-2">
+                                                    <div className="bg-green-50 border border-green-200 rounded px-2 py-1">
+                                                        <p className="text-xs text-green-700 font-medium">Abonado</p>
+                                                        <p className="text-sm font-bold text-green-800">
+                                                            {formatCurrency(compra.cantidad_abono || 0)}
+                                                        </p>
+                                                    </div>
+                                                    <div className={`border rounded px-2 py-1 ${
+                                                        compra.saldo_pendiente > 0
+                                                            ? 'bg-red-50 border-red-200'
+                                                            : 'bg-green-50 border-green-200'
+                                                    }`}>
+                                                        <p className={`text-xs font-medium ${
+                                                            compra.saldo_pendiente > 0 ? 'text-red-700' : 'text-green-700'
+                                                        }`}>
+                                                            Pendiente
+                                                        </p>
+                                                        <p className={`text-sm font-bold ${
+                                                            compra.saldo_pendiente > 0 ? 'text-red-800' : 'text-green-800'
+                                                        }`}>
+                                                            {formatCurrency(compra.saldo_pendiente || 0)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Botón/Campo de abono */}
+                                                {compra.saldo_pendiente > 0 && (
+                                                    <>
+                                                        {!mostrarAbonoModal[compra.id_operacion] ? (
+                                                            <button
+                                                                onClick={() => handleMostrarAbono(compra.id_operacion, compra.saldo_pendiente)}
+                                                                className="w-full px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-medium flex items-center justify-center gap-2"
+                                                            >
+                                                                <FaMoneyBillWave />
+                                                                Realizar Abono
+                                                            </button>
+                                                        ) : (
+                                                            <div className="space-y-2">
+                                                                <label className="block text-xs font-bold text-stone-700">
+                                                                    Monto a Abonar:
+                                                                </label>
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    max={compra.saldo_pendiente}
+                                                                    value={montoAbono[compra.id_operacion] || ''}
+                                                                    onChange={(e) => setMontoAbono(prev => ({
+                                                                        ...prev,
+                                                                        [compra.id_operacion]: e.target.value
+                                                                    }))}
+                                                                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                                                                    placeholder="Ingrese el monto"
+                                                                    disabled={procesandoAbono[compra.id_operacion]}
+                                                                />
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={() => handleRealizarAbono(compra.id_operacion, compra)}
+                                                                        disabled={procesandoAbono[compra.id_operacion]}
+                                                                        className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    >
+                                                                        {procesandoAbono[compra.id_operacion] ? 'Procesando...' : 'Confirmar'}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleCancelarAbono(compra.id_operacion)}
+                                                                        disabled={procesandoAbono[compra.id_operacion]}
+                                                                        className="flex-1 px-3 py-2 bg-stone-300 text-stone-700 rounded-lg hover:bg-stone-400 transition-colors text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    >
+                                                                        Cancelar
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </>
                                                 )}
                                             </div>
 
