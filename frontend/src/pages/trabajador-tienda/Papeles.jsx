@@ -30,6 +30,9 @@ const Papeles = () => {
     const [mostrarAbonoModal, setMostrarAbonoModal] = useState({});
     const [montoAbono, setMontoAbono] = useState({});
     const [procesandoAbono, setProcesandoAbono] = useState({});
+
+    // Estados para historial desplegable
+    const [historialAbierto, setHistorialAbierto] = useState({});
     
     const { 
         clientes, 
@@ -1160,54 +1163,69 @@ const Papeles = () => {
                                                 )}
                                             </div>
 
-                                            {/* Historial de cambios */}
+                                            {/* Historial de cambios - Desplegable */}
                                             {compra.historial && compra.historial.length > 0 && (
                                                 <div className="mb-3 border-t border-stone-100 pt-3">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <FaHistory className="text-stone-600 text-xs" />
-                                                        <p className="text-xs font-bold text-stone-700">
-                                                            Historial de Cambios ({compra.historial.length}):
-                                                        </p>
-                                                    </div>
-                                                    <div className="space-y-1 max-h-32 overflow-y-auto">
-                                                        {compra.historial
-                                                            .sort((a, b) => new Date(b.fecha_cambio) - new Date(a.fecha_cambio))
-                                                            .map((hist, idx) => {
-                                                                // Determinar qué estado fue activado
-                                                                const estadoActivado = Object.entries(hist).find(([key, value]) =>
-                                                                    value === true && key !== 'id_h_operacion' && key !== 'fecha_cambio'
-                                                                );
+                                                    <button
+                                                        onClick={() => setHistorialAbierto(prev => ({
+                                                            ...prev,
+                                                            [compra.id_operacion]: !prev[compra.id_operacion]
+                                                        }))}
+                                                        className="w-full flex items-center justify-between px-3 py-2 bg-stone-50 hover:bg-stone-100 rounded-lg transition-colors"
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <FaHistory className="text-stone-600 text-xs" />
+                                                            <p className="text-xs font-bold text-stone-700">
+                                                                Historial de Cambios ({compra.historial.length})
+                                                            </p>
+                                                        </div>
+                                                        <span className={`text-stone-600 transform transition-transform ${
+                                                            historialAbierto[compra.id_operacion] ? 'rotate-180' : ''
+                                                        }`}>
+                                                            ▼
+                                                        </span>
+                                                    </button>
 
-                                                                if (!estadoActivado) return null;
+                                                    {historialAbierto[compra.id_operacion] && (
+                                                        <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                                                            {compra.historial
+                                                                .sort((a, b) => new Date(b.fecha_cambio) - new Date(a.fecha_cambio))
+                                                                .map((hist, idx) => {
+                                                                    // Determinar qué estado fue activado
+                                                                    const estadoActivado = Object.entries(hist).find(([key, value]) =>
+                                                                        value === true && key !== 'id_h_operacion' && key !== 'fecha_cambio'
+                                                                    );
 
-                                                                const [estado] = estadoActivado;
-                                                                const colorEstado = getEstadoColor(estado);
+                                                                    if (!estadoActivado) return null;
 
-                                                                return (
-                                                                    <div
-                                                                        key={hist.id_h_operacion || idx}
-                                                                        className={`flex justify-between items-center text-xs bg-${colorEstado}-50 rounded px-2 py-1 border border-${colorEstado}-200`}
-                                                                    >
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className={`w-2 h-2 bg-${colorEstado}-500 rounded-full`}></span>
-                                                                            <span className="font-medium text-stone-700">
-                                                                                {getEstadoLabel(estado)}
+                                                                    const [estado] = estadoActivado;
+
+                                                                    return (
+                                                                        <div
+                                                                            key={hist.id_h_operacion || idx}
+                                                                            className="flex justify-between items-center text-xs bg-stone-100 rounded px-3 py-2 border border-stone-200 hover:bg-stone-200 transition-colors"
+                                                                        >
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className="w-2 h-2 bg-stone-500 rounded-full"></span>
+                                                                                <span className="font-medium text-stone-700">
+                                                                                    {getEstadoLabel(estado)}
+                                                                                </span>
+                                                                            </div>
+                                                                            <span className="text-stone-500">
+                                                                                {new Date(hist.fecha_cambio).toLocaleDateString('es-CL', {
+                                                                                    year: 'numeric',
+                                                                                    month: 'short',
+                                                                                    day: 'numeric',
+                                                                                    hour: '2-digit',
+                                                                                    minute: '2-digit'
+                                                                                })}
                                                                             </span>
                                                                         </div>
-                                                                        <span className="text-stone-500">
-                                                                            {new Date(hist.fecha_cambio).toLocaleDateString('es-CL', {
-                                                                                year: 'numeric',
-                                                                                month: 'short',
-                                                                                day: 'numeric',
-                                                                                hour: '2-digit',
-                                                                                minute: '2-digit'
-                                                                            })}
-                                                                        </span>
-                                                                    </div>
-                                                                );
-                                                            })
-                                                        }
-                                                    </div>
+                                                                    );
+                                                                })
+                                                            }
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
 
