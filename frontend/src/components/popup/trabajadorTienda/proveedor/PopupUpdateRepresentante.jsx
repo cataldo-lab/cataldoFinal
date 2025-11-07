@@ -89,8 +89,12 @@ const PopUpEditarRepresentante = ({ isOpen, onClose, onSuccess, proveedorId }) =
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] justify-center items-center flex"
+    <div
+      className="bg popup-layer-2"
+      style={{
+        background: 'rgba(0, 0, 0, 0.6)',
+        backdropFilter: 'blur(4px)'
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

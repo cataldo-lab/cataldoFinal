@@ -526,7 +526,7 @@ export default function PopupViewProveedorDetails({
                   </span>
                 </div>
               </div>
-              {!tieneRepresentantes && (
+              {!tieneRepresentantes ? (
                 <button
                   onClick={() => onAddRepresentante && onAddRepresentante(proveedor)}
                   style={{
@@ -555,6 +555,39 @@ export default function PopupViewProveedorDetails({
                 >
                   <FaPlus />
                   Agregar
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    const representante = proveedor.representantes[0];
+                    onEditRepresentante && onEditRepresentante(representante, proveedor);
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 4px rgba(245, 158, 11, 0.3)'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(245, 158, 11, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(245, 158, 11, 0.3)';
+                  }}
+                >
+                  <FaEdit />
+                  Actualizar
                 </button>
               )}
             </div>
