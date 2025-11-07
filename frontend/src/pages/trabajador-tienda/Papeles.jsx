@@ -5,7 +5,7 @@ import { useGetClienteConComprasById } from '@hooks/papeles/useGetClienteConComp
 import { getProductos } from '@services/producto.service';
 import { updateEstadoOperacion, updateOperacion, EstadosOperacion, getEstadoLabel, getEstadoColor } from '@services/operacion.service';
 import CrearOperacionModal from '@components/operaciones/CrearOperacionModal';
-import { FaEye, FaUser, FaFileInvoiceDollar, FaChartLine, FaSearch, FaTimes, FaFilter, FaPlus, FaHistory, FaMoneyBillWave, FaPrint, FaFileAlt } from 'react-icons/fa';
+import { FaEye, FaUser, FaFileInvoiceDollar, FaChartLine, FaSearch, FaTimes, FaFilter, FaPlus, FaHistory, FaMoneyBillWave, FaPrint, FaFileAlt, FaCheckCircle, FaTimesCircle, FaShoppingCart, FaSyncAlt, FaHourglassHalf, FaBox } from 'react-icons/fa';
 
 const Papeles = () => {
     const [selectedClienteId, setSelectedClienteId] = useState(null);
@@ -495,7 +495,7 @@ const Papeles = () => {
         <!-- Botón de Impresión -->
         <div class="no-print" style="text-align: center; margin-top: 30px;">
             <button onclick="window.print()" style="background: #333; color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;">
-                🖨️ Imprimir / Guardar PDF
+                Imprimir / Guardar PDF
             </button>
         </div>
     </div>
@@ -536,15 +536,16 @@ const Papeles = () => {
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-stone-50 to-stone-100">
                 <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-6 max-w-md shadow-lg">
                     <div className="flex items-center mb-2">
-                        <span className="text-2xl mr-3">❌</span>
+                        <FaTimesCircle className="text-2xl mr-3 text-red-600" />
                         <h3 className="text-lg font-semibold text-red-800">Error</h3>
                     </div>
                     <p className="text-red-700 mb-4">{errorClientes}</p>
-                    <button 
+                    <button
                         onClick={fetchClientes}
-                        className="w-full px-4 py-2 bg-stone-600 text-white rounded-lg hover:bg-stone-700 transition-colors font-medium"
+                        className="w-full px-4 py-2 bg-stone-600 text-white rounded-lg hover:bg-stone-700 transition-colors font-medium flex items-center justify-center gap-2"
                     >
-                        🔄 Reintentar
+                        <FaSyncAlt />
+                        Reintentar
                     </button>
                 </div>
             </div>
@@ -608,7 +609,7 @@ const Papeles = () => {
                                         {formatCurrency(estadisticas.total_facturado)}
                                     </p>
                                 </div>
-                                <span className="text-4xl opacity-20">💰</span>
+                                <FaMoneyBillWave className="text-4xl text-green-500 opacity-20" />
                             </div>
                         </div>
 
@@ -620,7 +621,7 @@ const Papeles = () => {
                                         {formatCurrency(estadisticas.total_por_cobrar)}
                                     </p>
                                 </div>
-                                <span className="text-4xl opacity-20">⏳</span>
+                                <FaHourglassHalf className="text-4xl text-red-500 opacity-20" />
                             </div>
                         </div>
                     </div>
@@ -773,9 +774,9 @@ const Papeles = () => {
                                     <tr>
                                         <td colSpan="6" className="px-6 py-12 text-center">
                                             <div className="flex flex-col items-center">
-                                                <span className="text-6xl mb-4">🔍</span>
+                                                <FaSearch className="text-6xl mb-4 text-stone-300" />
                                                 <p className="text-stone-500 text-lg">
-                                                    {hayFiltrosActivos 
+                                                    {hayFiltrosActivos
                                                         ? 'No se encontraron clientes con los filtros aplicados'
                                                         : 'No hay clientes con compras registradas'
                                                     }
@@ -909,7 +910,11 @@ const Papeles = () => {
                                     : 'bg-red-50 border-red-500 text-red-800'
                             }`}>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl">{mensajeEstado.tipo === 'success' ? '✅' : '❌'}</span>
+                                    {mensajeEstado.tipo === 'success' ? (
+                                        <FaCheckCircle className="text-xl" />
+                                    ) : (
+                                        <FaTimesCircle className="text-xl" />
+                                    )}
                                     <p className="font-medium">{mensajeEstado.texto}</p>
                                 </div>
                             </div>
@@ -917,7 +922,7 @@ const Papeles = () => {
                         {/* Información Personal - Compacta */}
                         <div className="bg-stone-50 rounded-lg p-4">
                             <h3 className="text-lg font-bold text-stone-800 mb-3 flex items-center gap-2">
-                                <span>👤</span>
+                                <FaUser className="text-stone-600" />
                                 Información Personal
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
@@ -969,7 +974,7 @@ const Papeles = () => {
                         {/* Historial de Compras - Diseño lineal y compacto */}
                         <div>
                             <h3 className="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
-                                <span>🛒</span>
+                                <FaShoppingCart className="text-stone-600" />
                                 Historial de Compras ({cliente.compras?.length || 0})
                             </h3>
 
@@ -1261,7 +1266,7 @@ const Papeles = () => {
                                     ))
                                 ) : (
                                     <div className="text-center py-12 bg-stone-50 rounded-lg">
-                                        <span className="text-6xl">📦</span>
+                                        <FaBox className="text-6xl text-stone-300 mx-auto mb-4" />
                                         <p className="text-stone-500 mt-4">No hay compras registradas</p>
                                     </div>
                                 )}
