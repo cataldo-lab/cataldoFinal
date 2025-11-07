@@ -54,23 +54,68 @@ export async function getDashboardStats() {
         console.log("💰 Operaciones completadas este mes:", operacionesCompletadas.length);
         
         const ingresosMesActual = operacionesCompletadas.reduce(
-            (total, op) => total + parseFloat(op.costo_operacion || 0), 
+            (total, op) => total + parseFloat(op.costo_operacion || 0),
             0
         );
         console.log("💵 Ingresos mes actual:", ingresosMesActual);
-        
+
+        // 🔔 INDICADORES VISUALES - Operaciones Atrasadas
+        const hoy = new Date();
+        const operacionesAtrasadas = await operacionRepository
+            .createQueryBuilder("operacion")
+            .where("operacion.estado_operacion IN (:...estados)", { estados: ["pendiente", "en_proceso"] })
+            .andWhere("operacion.fecha_estimada_entrega < :hoy", { hoy })
+            .getCount();
+        console.log("⏰ Operaciones atrasadas:", operacionesAtrasadas);
+
+        // 💰 INDICADORES VISUALES - Clientes con deuda mayor a X días
+        const diasLimiteDeuda = 30; // Días para considerar deuda significativa
+        const fechaLimiteDeuda = new Date();
+        fechaLimiteDeuda.setDate(fechaLimiteDeuda.getDate() - diasLimiteDeuda);
+
+        const clientesConDeuda = await operacionRepository
+            .createQueryBuilder("operacion")
+            .leftJoinAndSelect("operacion.cliente", "cliente")
+            .where("operacion.estado_operacion = :estado", { estado: "completada" })
+            .andWhere("operacion.monto_pagado < operacion.costo_operacion")
+            .andWhere("operacion.fecha_creacion < :fechaLimite", { fechaLimite: fechaLimiteDeuda })
+            .select("COUNT(DISTINCT cliente.rut_cliente)", "count")
+            .getRawOne();
+
+        const clientesConDeudaCount = parseInt(clientesConDeuda?.count || 0);
+        console.log(`💳 Clientes con deuda mayor a ${diasLimiteDeuda} días:`, clientesConDeudaCount);
+
+        // 📅 INDICADORES VISUALES - Días desde última operación
+        const ultimaOperacion = await operacionRepository
+            .createQueryBuilder("operacion")
+            .orderBy("operacion.fecha_creacion", "DESC")
+            .getOne();
+
+        let diasDesdeUltimaOperacion = 0;
+        if (ultimaOperacion && ultimaOperacion.fecha_creacion) {
+            const fechaUltima = new Date(ultimaOperacion.fecha_creacion);
+            const diferenciaMilisegundos = hoy - fechaUltima;
+            diasDesdeUltimaOperacion = Math.floor(diferenciaMilisegundos / (1000 * 60 * 60 * 24));
+        }
+        console.log("📆 Días desde última operación:", diasDesdeUltimaOperacion);
+
         const resultado = {
             operacionesPendientes,
             operacionesEnProceso,
             productoCount,
             materialesBajoStock,
             ingresosMesActual: parseFloat(ingresosMesActual.toFixed(2)),
+            // Nuevos indicadores visuales
+            operacionesAtrasadas,
+            clientesConDeuda: clientesConDeudaCount,
+            diasLimiteDeuda,
+            diasDesdeUltimaOperacion,
             fecha_consulta: new Date()
         };
-        
+
         console.log("📊 RESULTADO FINAL:", JSON.stringify(resultado, null, 2));
         console.log("=== FIN getDashboardStats ===");
-        
+
         // ⚠️ CAMBIO IMPORTANTE: Retorna el objeto directamente, NO en un array
         return [resultado, null];
         
