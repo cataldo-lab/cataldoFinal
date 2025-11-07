@@ -3,8 +3,9 @@ import { useState, useMemo, useEffect } from 'react';
 import { useGetClientesConCompras } from '@hooks/papeles/useGetClientesConCompras';
 import { useGetClienteConComprasById } from '@hooks/papeles/useGetClienteConComprasById';
 import { getProductos } from '@services/producto.service';
+import { updateEstadoOperacion, EstadosOperacion, getEstadoLabel, getEstadoColor } from '@services/operacion.service';
 import CrearOperacionModal from '@components/operaciones/CrearOperacionModal';
-import { FaEye, FaUser, FaFileInvoiceDollar, FaChartLine, FaSearch, FaTimes, FaFilter, FaPlus } from 'react-icons/fa';
+import { FaEye, FaUser, FaFileInvoiceDollar, FaChartLine, FaSearch, FaTimes, FaFilter, FaPlus, FaHistory } from 'react-icons/fa';
 
 const Papeles = () => {
     const [selectedClienteId, setSelectedClienteId] = useState(null);
@@ -20,6 +21,10 @@ const Papeles = () => {
     // Estados para modal de crear operación
     const [showCrearModal, setShowCrearModal] = useState(false);
     const [productos, setProductos] = useState([]);
+
+    // Estados para cambio de estado de operaciones
+    const [cambiandoEstado, setCambiandoEstado] = useState({});
+    const [mensajeEstado, setMensajeEstado] = useState({ tipo: null, texto: null });
     
     const { 
         clientes, 
@@ -146,6 +151,46 @@ const Papeles = () => {
     const handleOperacionCreada = (nuevaOperacion) => {
         fetchClientes(); // Refrescar lista de clientes
         setShowCrearModal(false);
+    };
+
+    const handleCambiarEstado = async (idOperacion, nuevoEstado) => {
+        setCambiandoEstado(prev => ({ ...prev, [idOperacion]: true }));
+        setMensajeEstado({ tipo: null, texto: null });
+
+        try {
+            const response = await updateEstadoOperacion(idOperacion, nuevoEstado);
+
+            if (response.status === 'Success') {
+                setMensajeEstado({
+                    tipo: 'success',
+                    texto: `Estado actualizado a "${getEstadoLabel(nuevoEstado)}" exitosamente`
+                });
+
+                // Refrescar datos del cliente
+                if (selectedClienteId) {
+                    await fetchCliente(selectedClienteId);
+                }
+                await fetchClientes();
+
+                // Limpiar mensaje después de 3 segundos
+                setTimeout(() => {
+                    setMensajeEstado({ tipo: null, texto: null });
+                }, 3000);
+            } else {
+                setMensajeEstado({
+                    tipo: 'error',
+                    texto: response.message || 'Error al actualizar el estado'
+                });
+            }
+        } catch (error) {
+            console.error('Error al cambiar estado:', error);
+            setMensajeEstado({
+                tipo: 'error',
+                texto: 'Error de conexión al cambiar el estado'
+            });
+        } finally {
+            setCambiandoEstado(prev => ({ ...prev, [idOperacion]: false }));
+        }
     };
 
     const formatCurrency = (value) => {
@@ -540,6 +585,19 @@ const Papeles = () => {
                     </div>
                 ) : (
                     <div className="p-6 space-y-6">
+                        {/* Mensaje de éxito/error */}
+                        {mensajeEstado.texto && (
+                            <div className={`p-4 rounded-lg border ${
+                                mensajeEstado.tipo === 'success'
+                                    ? 'bg-green-50 border-green-500 text-green-800'
+                                    : 'bg-red-50 border-red-500 text-red-800'
+                            }`}>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xl">{mensajeEstado.tipo === 'success' ? '✅' : '❌'}</span>
+                                    <p className="font-medium">{mensajeEstado.texto}</p>
+                                </div>
+                            </div>
+                        )}
                         {/* Información Personal - Compacta */}
                         <div className="bg-stone-50 rounded-lg p-4">
                             <h3 className="text-lg font-bold text-stone-800 mb-3 flex items-center gap-2">
@@ -603,23 +661,15 @@ const Papeles = () => {
                             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-custom">
                                 {cliente.compras && cliente.compras.length > 0 ? (
                                     cliente.compras.map((compra) => (
-                                        <div 
-                                            key={compra.id_operacion} 
+                                        <div
+                                            key={compra.id_operacion}
                                             className="border border-stone-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
                                         >
                                             {/* Header de la compra - Una línea */}
-                                            <div className="flex justify-between items-center mb-3">
+                                            <div className="flex justify-between items-start mb-3">
                                                 <div className="flex items-center gap-3">
                                                     <span className="text-lg font-bold text-stone-800">
                                                         #{compra.id_operacion}
-                                                    </span>
-                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                                        compra.estado_operacion === 'completada' ? 'bg-green-100 text-green-800' :
-                                                        compra.estado_operacion === 'en_proceso' ? 'bg-blue-100 text-blue-800' :
-                                                        compra.estado_operacion === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-stone-100 text-stone-800'
-                                                    }`}>
-                                                        {compra.estado_operacion}
                                                     </span>
                                                     <span className="text-xs text-stone-500">
                                                         {new Date(compra.fecha_creacion).toLocaleDateString('es-CL')}
@@ -636,6 +686,112 @@ const Papeles = () => {
                                                     )}
                                                 </div>
                                             </div>
+
+                                            {/* Selector de estado */}
+                                            <div className="mb-3">
+                                                <label className="block text-xs font-bold text-stone-700 mb-1">
+                                                    Cambiar Estado:
+                                                </label>
+                                                <select
+                                                    value={compra.estado_operacion}
+                                                    onChange={(e) => handleCambiarEstado(compra.id_operacion, e.target.value)}
+                                                    disabled={cambiandoEstado[compra.id_operacion]}
+                                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent text-sm ${
+                                                        cambiandoEstado[compra.id_operacion] ? 'opacity-50 cursor-not-allowed' : ''
+                                                    } ${
+                                                        compra.estado_operacion === 'completada' || compra.estado_operacion === 'pagada' || compra.estado_operacion === 'entregada' ? 'bg-green-50 border-green-300' :
+                                                        compra.estado_operacion === 'en_proceso' ? 'bg-blue-50 border-blue-300' :
+                                                        compra.estado_operacion === 'pendiente' ? 'bg-yellow-50 border-yellow-300' :
+                                                        compra.estado_operacion === 'anulada' ? 'bg-red-50 border-red-300' :
+                                                        'bg-stone-50 border-stone-300'
+                                                    }`}
+                                                >
+                                                    <option value={EstadosOperacion.COTIZACION}>
+                                                        {getEstadoLabel(EstadosOperacion.COTIZACION)}
+                                                    </option>
+                                                    <option value={EstadosOperacion.ORDEN_TRABAJO}>
+                                                        {getEstadoLabel(EstadosOperacion.ORDEN_TRABAJO)}
+                                                    </option>
+                                                    <option value={EstadosOperacion.PENDIENTE}>
+                                                        {getEstadoLabel(EstadosOperacion.PENDIENTE)}
+                                                    </option>
+                                                    <option value={EstadosOperacion.EN_PROCESO}>
+                                                        {getEstadoLabel(EstadosOperacion.EN_PROCESO)}
+                                                    </option>
+                                                    <option value={EstadosOperacion.TERMINADA}>
+                                                        {getEstadoLabel(EstadosOperacion.TERMINADA)}
+                                                    </option>
+                                                    <option value={EstadosOperacion.COMPLETADA}>
+                                                        {getEstadoLabel(EstadosOperacion.COMPLETADA)}
+                                                    </option>
+                                                    <option value={EstadosOperacion.ENTREGADA}>
+                                                        {getEstadoLabel(EstadosOperacion.ENTREGADA)}
+                                                    </option>
+                                                    <option value={EstadosOperacion.PAGADA}>
+                                                        {getEstadoLabel(EstadosOperacion.PAGADA)}
+                                                    </option>
+                                                    <option value={EstadosOperacion.ANULADA}>
+                                                        {getEstadoLabel(EstadosOperacion.ANULADA)}
+                                                    </option>
+                                                </select>
+                                                {cambiandoEstado[compra.id_operacion] && (
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <div className="w-3 h-3 border-2 border-stone-500 rounded-full animate-spin border-t-transparent"></div>
+                                                        <span className="text-xs text-stone-500">Actualizando estado...</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Historial de cambios */}
+                                            {compra.historial && compra.historial.length > 0 && (
+                                                <div className="mb-3 border-t border-stone-100 pt-3">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <FaHistory className="text-stone-600 text-xs" />
+                                                        <p className="text-xs font-bold text-stone-700">
+                                                            Historial de Cambios ({compra.historial.length}):
+                                                        </p>
+                                                    </div>
+                                                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                                                        {compra.historial
+                                                            .sort((a, b) => new Date(b.fecha_cambio) - new Date(a.fecha_cambio))
+                                                            .map((hist, idx) => {
+                                                                // Determinar qué estado fue activado
+                                                                const estadoActivado = Object.entries(hist).find(([key, value]) =>
+                                                                    value === true && key !== 'id_h_operacion' && key !== 'fecha_cambio'
+                                                                );
+
+                                                                if (!estadoActivado) return null;
+
+                                                                const [estado] = estadoActivado;
+                                                                const colorEstado = getEstadoColor(estado);
+
+                                                                return (
+                                                                    <div
+                                                                        key={hist.id_h_operacion || idx}
+                                                                        className={`flex justify-between items-center text-xs bg-${colorEstado}-50 rounded px-2 py-1 border border-${colorEstado}-200`}
+                                                                    >
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className={`w-2 h-2 bg-${colorEstado}-500 rounded-full`}></span>
+                                                                            <span className="font-medium text-stone-700">
+                                                                                {getEstadoLabel(estado)}
+                                                                            </span>
+                                                                        </div>
+                                                                        <span className="text-stone-500">
+                                                                            {new Date(hist.fecha_cambio).toLocaleDateString('es-CL', {
+                                                                                year: 'numeric',
+                                                                                month: 'short',
+                                                                                day: 'numeric',
+                                                                                hour: '2-digit',
+                                                                                minute: '2-digit'
+                                                                            })}
+                                                                        </span>
+                                                                    </div>
+                                                                );
+                                                            })
+                                                        }
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             {/* Productos - Lista compacta */}
                                             {compra.productos && compra.productos.length > 0 && (
