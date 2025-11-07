@@ -3,7 +3,6 @@ import { Router } from "express";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isEmployee } from "../middlewares/authorization.middleware.js";
 import { getDashboard } from "../controllers/trabajadorTienda.controller.js";
-import { sendEmailController, sendBulkEmailController } from "../controllers/email.controller.js";
 
 
 const router = Router();
@@ -36,11 +35,7 @@ router
   // Gestión de clientes
   .get("/clients", getClients)
   .get("/clients/:id", getClient)
-
-  // Envío de correos
-  .post("/send-email", sendEmailController)
-  .post("/send-bulk-email", sendBulkEmailController)
-
+  
   // Operaciones de venta
   .post("/operations", createOperation)
   .get("/operations", getOperations);
