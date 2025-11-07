@@ -11,6 +11,7 @@ import PopUpEditarCliente from '@components/popup/trabajadorTienda/cliente/popUp
 import PopUpDetalleCliente from '@components/popup/trabajadorTienda/cliente/popUpDetalleCliente';
 import PopUpBloquearCliente from '@components/popup/trabajadorTienda/cliente/popUpBloquearCliente';
 import PopUpEliminarCliente from '@components/popup/trabajadorTienda/cliente/popUpEliminarCliente';
+import PopUpEnviarCorreo from '@components/popup/trabajadorTienda/cliente/popUpEnviarCorreo';
 
 import '@styles/trabajadorTienda/Clientes.css';
 import ViewIcon from '@assets/ViewIcon.svg';
@@ -31,6 +32,7 @@ const ClientesPage = () => {
   const [modalDetalle, setModalDetalle] = useState(false);
   const [modalBloquear, setModalBloquear] = useState(false);
   const [modalEliminar, setModalEliminar] = useState(false);
+  const [modalEnviarCorreo, setModalEnviarCorreo] = useState(false);
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
 
   // Hooks
@@ -71,6 +73,11 @@ const ClientesPage = () => {
   const handleAbrirEliminar = (cliente) => {
     setClienteSeleccionado(cliente);
     setModalEliminar(true);
+  };
+
+  const handleAbrirEnviarCorreo = (cliente) => {
+    setClienteSeleccionado(cliente);
+    setModalEnviarCorreo(true);
   };
 
   const handleBuscar = (filtros) => {
@@ -125,6 +132,7 @@ const ClientesPage = () => {
         onEditar={handleAbrirEditar}
         onBloquear={handleAbrirBloquear}
         onEliminar={handleAbrirEliminar}
+        onEnviarCorreo={handleAbrirEnviarCorreo}
         onBuscar={handleBuscar}
         onLimpiarBusqueda={handleLimpiarBusqueda}
         modoBusqueda={modoBusqueda}
@@ -190,6 +198,18 @@ const ClientesPage = () => {
           cliente={clienteSeleccionado}
         />
       )}
+
+      {/* PopUp: Enviar Correo */}
+      {clienteSeleccionado && (
+        <PopUpEnviarCorreo
+          isOpen={modalEnviarCorreo}
+          onClose={() => setModalEnviarCorreo(false)}
+          onSuccess={() => {
+            setModalEnviarCorreo(false);
+          }}
+          cliente={clienteSeleccionado}
+        />
+      )}
     </div>
     </div>
   );
@@ -197,15 +217,16 @@ const ClientesPage = () => {
 
 // ==================== COMPONENTE: LISTA DE CLIENTES CON BÚSQUEDA ====================
 
-const ListaClientes = ({ 
-  clientes, 
-  loading, 
-  error, 
-  refetch, 
-  onVerDetalle, 
-  onEditar, 
+const ListaClientes = ({
+  clientes,
+  loading,
+  error,
+  refetch,
+  onVerDetalle,
+  onEditar,
   onBloquear,
   onEliminar,
+  onEnviarCorreo,
   onBuscar,
   onLimpiarBusqueda,
   modoBusqueda,
@@ -425,30 +446,39 @@ const ListaClientes = ({
         >
           <img src={ViewIcon} alt="Ver" className="w-4 h-4" />
         </button>
-        
+
         <button
           onClick={() => onEditar(cliente)}
-          className="inline-flex items-center justify-center p-1.5 bg-stone-100 hover:bg-stone-200 
+          className="inline-flex items-center justify-center p-1.5 bg-stone-100 hover:bg-stone-200
           text-stone-600 hover:text-stone-700 rounded transition-all duration-200"
           title="Editar"
         >
           <img src={UpdateIcon} alt="Editar" className="w-4 h-4" />
         </button>
-        
+
+        <button
+          onClick={() => onEnviarCorreo(cliente)}
+          className="inline-flex items-center justify-center p-1.5 bg-blue-100 hover:bg-blue-200
+          text-blue-600 hover:text-blue-700 rounded transition-all duration-200"
+          title="Enviar Correo"
+        >
+          <span className="text-base">📧</span>
+        </button>
+
         {cliente.rol !== 'bloqueado' && (
           <button
             onClick={() => onBloquear(cliente)}
-            className="inline-flex items-center justify-center p-1.5 bg-stone-100 hover:bg-stone-200 
+            className="inline-flex items-center justify-center p-1.5 bg-stone-100 hover:bg-stone-200
             text-stone-600 hover:text-stone-700 rounded transition-all duration-200"
             title="Bloquear"
           >
             <img src={PasskeyIcon} alt="Bloquear" className="w-4 h-4" />
           </button>
         )}
-        
+
         <button
           onClick={() => onEliminar(cliente)}
-          className="inline-flex items-center justify-center p-1.5 bg-red-100 hover:bg-red-200 
+          className="inline-flex items-center justify-center p-1.5 bg-red-100 hover:bg-red-200
           text-red-600 hover:text-red-700 rounded transition-all duration-200"
           title="Eliminar"
         >
