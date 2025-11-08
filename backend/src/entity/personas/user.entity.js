@@ -71,6 +71,12 @@ const UserSchema = new EntitySchema({
       length: 20,
       nullable: true,
     },
+    calle: {
+      type: "varchar",
+      length: 255,
+      nullable: true,
+      comment: "Dirección de calle del usuario"
+    },
     createdAt: {
       type: "timestamp with time zone",
       default: () => "CURRENT_TIMESTAMP",
