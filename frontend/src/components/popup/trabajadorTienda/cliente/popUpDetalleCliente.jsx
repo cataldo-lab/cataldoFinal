@@ -112,7 +112,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                     <div className="bg-white rounded-lg p-4 shadow-sm md:col-span-2">
                       <p className="text-xs font-medium text-gray-500 uppercase mb-1">Fecha de Registro</p>
                       <p className="text-base text-gray-700">
-                        {usuario?.createdAt 
+                        {usuario?.createdAt
                           ? new Date(usuario.createdAt).toLocaleDateString('es-CL', {
                               year: 'numeric',
                               month: 'long',
@@ -123,6 +123,44 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                           : '—'}
                       </p>
                     </div>
+
+                    {/* Dirección - Calle */}
+                    <div className="bg-white rounded-lg p-4 shadow-sm md:col-span-2">
+                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">Dirección (Calle)</p>
+                      <p className="text-base text-gray-700">{usuario?.calle || '—'}</p>
+                    </div>
+
+                    {/* Comuna */}
+                    {usuario?.comuna && (
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Comuna</p>
+                        <p className="text-base text-gray-700">{usuario.comuna.nombre_comuna}</p>
+                      </div>
+                    )}
+
+                    {/* Provincia */}
+                    {usuario?.comuna?.provincia && (
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Provincia</p>
+                        <p className="text-base text-gray-700">{usuario.comuna.provincia.nombre_provincia}</p>
+                      </div>
+                    )}
+
+                    {/* Región */}
+                    {usuario?.comuna?.provincia?.region && (
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">Región</p>
+                        <p className="text-base text-gray-700">{usuario.comuna.provincia.region.nombre_region}</p>
+                      </div>
+                    )}
+
+                    {/* País */}
+                    {usuario?.comuna?.provincia?.region?.pais && (
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">País</p>
+                        <p className="text-base text-gray-700">{usuario.comuna.provincia.region.pais.nombre_pais}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 

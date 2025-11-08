@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useClienteDetalle } from '@hooks/clientes/useClienteDetalle';
 import { useUpdateCliente } from '@hooks/clientes/useUpdateCliente';
+import { getPaises } from '@services/direccion.service';
 import XIcon from '@assets/XIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
 import PersonIcon from '@assets/PersonIcon.svg';
@@ -12,10 +13,22 @@ const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
   const { usuario, clienteDetalle, loading: loadingData } = useClienteDetalle(clienteId);
   const { updateFull, loading, error, resetState } = useUpdateCliente();
 
+  // Estados para direcciones
+  const [paises, setPaises] = useState([]);
+  const [regiones, setRegiones] = useState([]);
+  const [provincias, setProvincias] = useState([]);
+  const [comunas, setComunas] = useState([]);
+  const [loadingDirecciones, setLoadingDirecciones] = useState(false);
+
   const [formData, setFormData] = useState({
     nombreCompleto: '',
     email: '',
     telefono: '',
+    calle: '',
+    id_pais: '',
+    id_region: '',
+    id_provincia: '',
+    id_comuna: '',
     whatsapp_cliente: '',
     correo_alterno_cliente: '',
     categoria_cliente: 'regular',
@@ -24,12 +37,73 @@ const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
     Acepta_uso_datos: false
   });
 
+  // Cargar países al abrir el modal
   useEffect(() => {
-    if (usuario && clienteDetalle) {
+    if (isOpen) {
+      loadPaises();
+    }
+  }, [isOpen]);
+
+  const loadPaises = async () => {
+    try {
+      setLoadingDirecciones(true);
+      const data = await getPaises();
+      setPaises(data.data || []);
+    } catch (error) {
+      console.error('Error al cargar países:', error);
+    } finally {
+      setLoadingDirecciones(false);
+    }
+  };
+
+  // Cargar datos del cliente y dirección
+  useEffect(() => {
+    if (usuario && clienteDetalle && paises.length > 0) {
+      // Buscar la comuna en la jerarquía de países
+      let paisEncontrado = null;
+      let regionEncontrada = null;
+      let provinciaEncontrada = null;
+      let comunaEncontrada = null;
+
+      if (usuario.comuna) {
+        for (const pais of paises) {
+          for (const region of pais.regiones || []) {
+            for (const provincia of region.provincias || []) {
+              const comuna = provincia.comunas?.find(c => c.id_comuna === usuario.comuna.id_comuna);
+              if (comuna) {
+                paisEncontrado = pais;
+                regionEncontrada = region;
+                provinciaEncontrada = provincia;
+                comunaEncontrada = comuna;
+                break;
+              }
+            }
+            if (comunaEncontrada) break;
+          }
+          if (comunaEncontrada) break;
+        }
+
+        // Establecer las listas cascada
+        if (paisEncontrado) {
+          setRegiones(paisEncontrado.regiones || []);
+        }
+        if (regionEncontrada) {
+          setProvincias(regionEncontrada.provincias || []);
+        }
+        if (provinciaEncontrada) {
+          setComunas(provinciaEncontrada.comunas || []);
+        }
+      }
+
       setFormData({
         nombreCompleto: usuario.nombreCompleto || '',
         email: usuario.email || '',
         telefono: usuario.telefono || '',
+        calle: usuario.calle || '',
+        id_pais: paisEncontrado?.id_pais?.toString() || '',
+        id_region: regionEncontrada?.id_region?.toString() || '',
+        id_provincia: provinciaEncontrada?.id_provincia?.toString() || '',
+        id_comuna: comunaEncontrada?.id_comuna?.toString() || '',
         whatsapp_cliente: clienteDetalle.whatsapp_cliente || '',
         correo_alterno_cliente: clienteDetalle.correo_alterno_cliente || '',
         categoria_cliente: clienteDetalle.categoria_cliente || 'regular',
@@ -38,14 +112,48 @@ const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
         Acepta_uso_datos: clienteDetalle.Acepta_uso_datos || false
       });
     }
-  }, [usuario, clienteDetalle]);
+  }, [usuario, clienteDetalle, paises]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+
+    // Manejar cambios en cascada para dirección
+    if (name === 'id_pais') {
+      const paisSeleccionado = paises.find(p => p.id_pais === parseInt(value));
+      setRegiones(paisSeleccionado?.regiones || []);
+      setProvincias([]);
+      setComunas([]);
+      setFormData((prev) => ({
+        ...prev,
+        id_pais: value,
+        id_region: '',
+        id_provincia: '',
+        id_comuna: ''
+      }));
+    } else if (name === 'id_region') {
+      const regionSeleccionada = regiones.find(r => r.id_region === parseInt(value));
+      setProvincias(regionSeleccionada?.provincias || []);
+      setComunas([]);
+      setFormData((prev) => ({
+        ...prev,
+        id_region: value,
+        id_provincia: '',
+        id_comuna: ''
+      }));
+    } else if (name === 'id_provincia') {
+      const provinciaSeleccionada = provincias.find(p => p.id_provincia === parseInt(value));
+      setComunas(provinciaSeleccionada?.comunas || []);
+      setFormData((prev) => ({
+        ...prev,
+        id_provincia: value,
+        id_comuna: ''
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -54,7 +162,9 @@ const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
     const userData = {
       nombreCompleto: formData.nombreCompleto,
       email: formData.email,
-      telefono: formData.telefono
+      telefono: formData.telefono,
+      calle: formData.calle,
+      id_comuna: formData.id_comuna ? parseInt(formData.id_comuna) : null
     };
 
     const clienteData = {
@@ -189,6 +299,122 @@ const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
                       className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all text-stone-900 bg-white"
                       placeholder="+56 9 1234 5678"
                     />
+                  </div>
+
+                  {/* Dirección */}
+                  <div className="space-y-4 pt-4">
+                    <h4 className="text-sm font-semibold text-stone-700 border-b pb-2">Dirección</h4>
+
+                    {/* Calle */}
+                    <div>
+                      <label htmlFor="calle" className="block text-sm font-medium text-stone-700 mb-1">
+                        Calle
+                      </label>
+                      <input
+                        type="text"
+                        id="calle"
+                        name="calle"
+                        value={formData.calle}
+                        onChange={handleChange}
+                        disabled={loading}
+                        className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all text-stone-900 bg-white disabled:bg-gray-100"
+                        placeholder="Ej: Av. Libertador 1234, Depto 101"
+                      />
+                    </div>
+
+                    {/* País */}
+                    <div>
+                      <label htmlFor="id_pais" className="block text-sm font-medium text-stone-700 mb-1">
+                        País
+                      </label>
+                      <select
+                        id="id_pais"
+                        name="id_pais"
+                        value={formData.id_pais}
+                        onChange={handleChange}
+                        disabled={loading || loadingDirecciones}
+                        className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all appearance-none bg-white text-stone-900 cursor-pointer disabled:bg-gray-100"
+                      >
+                        <option value="">Seleccione un país</option>
+                        {paises.map(pais => (
+                          <option key={pais.id_pais} value={pais.id_pais}>
+                            {pais.nombre_pais}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Región */}
+                    {formData.id_pais && (
+                      <div>
+                        <label htmlFor="id_region" className="block text-sm font-medium text-stone-700 mb-1">
+                          Región
+                        </label>
+                        <select
+                          id="id_region"
+                          name="id_region"
+                          value={formData.id_region}
+                          onChange={handleChange}
+                          disabled={loading || regiones.length === 0}
+                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all appearance-none bg-white text-stone-900 cursor-pointer disabled:bg-gray-100"
+                        >
+                          <option value="">Seleccione una región</option>
+                          {regiones.map(region => (
+                            <option key={region.id_region} value={region.id_region}>
+                              {region.nombre_region}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Provincia */}
+                    {formData.id_region && (
+                      <div>
+                        <label htmlFor="id_provincia" className="block text-sm font-medium text-stone-700 mb-1">
+                          Provincia
+                        </label>
+                        <select
+                          id="id_provincia"
+                          name="id_provincia"
+                          value={formData.id_provincia}
+                          onChange={handleChange}
+                          disabled={loading || provincias.length === 0}
+                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all appearance-none bg-white text-stone-900 cursor-pointer disabled:bg-gray-100"
+                        >
+                          <option value="">Seleccione una provincia</option>
+                          {provincias.map(provincia => (
+                            <option key={provincia.id_provincia} value={provincia.id_provincia}>
+                              {provincia.nombre_provincia}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Comuna */}
+                    {formData.id_provincia && (
+                      <div>
+                        <label htmlFor="id_comuna" className="block text-sm font-medium text-stone-700 mb-1">
+                          Comuna
+                        </label>
+                        <select
+                          id="id_comuna"
+                          name="id_comuna"
+                          value={formData.id_comuna}
+                          onChange={handleChange}
+                          disabled={loading || comunas.length === 0}
+                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all appearance-none bg-white text-stone-900 cursor-pointer disabled:bg-gray-100"
+                        >
+                          <option value="">Seleccione una comuna</option>
+                          {comunas.map(comuna => (
+                            <option key={comuna.id_comuna} value={comuna.id_comuna}>
+                              {comuna.nombre_comuna}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
