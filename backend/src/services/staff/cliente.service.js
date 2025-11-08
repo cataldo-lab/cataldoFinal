@@ -307,40 +307,74 @@ export async function updatePerfilFull(userId, userData, clienteData) {
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    
+
     try {
       const userRepo = queryRunner.manager.getRepository(UserSchema);
       const usuario = await userRepo.findOne({
         where: { id: userId },
-        relations: ["cliente"]
+        relations: ["cliente", "comuna"]
       });
-      
+
       if (!usuario) {
         throw new Error(`No existe un usuario con ID ${userId}`);
       }
-      
+
       if (usuario.rol !== Role.CLIENTE) {
         throw new Error(`Esta función solo actualiza perfiles de usuarios con rol cliente`);
       }
-      
+
       if (!usuario.cliente) {
         throw new Error(`El usuario no tiene un perfil de cliente asociado`);
       }
-      
+
       if (userData.rol) {
         delete userData.rol;
       }
-      
+
       if (userData.password) {
         userData.password = await encryptPassword(userData.password);
       }
-      
-      await userRepo.update(
-        { id: userId },
-        Object.fromEntries(
-          Object.entries(userData).filter(([_, v]) => v !== undefined)
-        )
+
+      // Manejar id_comuna de forma especial (es una relación)
+      let id_comuna = null;
+      if (userData.id_comuna !== undefined) {
+        id_comuna = userData.id_comuna;
+        delete userData.id_comuna;
+      }
+
+      console.log('🔍 DEBUG - userData después de eliminar id_comuna:', userData);
+      console.log('🔍 DEBUG - id_comuna extraído:', id_comuna);
+
+      // Actualizar datos básicos del usuario
+      const userDataToUpdate = Object.fromEntries(
+        Object.entries(userData).filter(([_, v]) => v !== undefined)
       );
+
+      console.log('🔍 DEBUG - Datos a actualizar en User:', userDataToUpdate);
+
+      if (Object.keys(userDataToUpdate).length > 0) {
+        await userRepo.update(
+          { id: userId },
+          userDataToUpdate
+        );
+      }
+
+      // Actualizar la relación de comuna si se proporcionó
+      if (id_comuna !== null) {
+        if (id_comuna) {
+          // Asignar nueva comuna
+          await queryRunner.manager.query(
+            'UPDATE users SET id_comuna = $1 WHERE id = $2',
+            [id_comuna, userId]
+          );
+        } else {
+          // Remover comuna
+          await queryRunner.manager.query(
+            'UPDATE users SET id_comuna = NULL WHERE id = $1',
+            [userId]
+          );
+        }
+      }
       
       const clienteRepo = queryRunner.manager.getRepository(ClienteSchema);
       const clienteId = usuario.cliente.id_cliente;
