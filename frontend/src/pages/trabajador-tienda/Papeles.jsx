@@ -33,6 +33,12 @@ const Papeles = () => {
 
     // Estados para historial desplegable
     const [historialAbierto, setHistorialAbierto] = useState({});
+
+    // Estados para modal de fecha de entrega
+    const [mostrarModalFechaEntrega, setMostrarModalFechaEntrega] = useState({});
+    const [diasHabilesSeleccionados, setDiasHabilesSeleccionados] = useState({});
+    const [operacionParaOrden, setOperacionParaOrden] = useState(null);
+    const [clienteParaOrden, setClienteParaOrden] = useState(null);
     
     const { 
         clientes, 
@@ -301,6 +307,73 @@ const Papeles = () => {
             });
         } finally {
             setProcesandoAbono(prev => ({ ...prev, [idOperacion]: false }));
+        }
+    };
+
+    // Calcular fecha de entrega sumando días hábiles (excluyendo sábados y domingos)
+    const calcularFechaEntrega = (diasHabiles) => {
+        const fecha = new Date();
+        let diasAgregados = 0;
+
+        while (diasAgregados < diasHabiles) {
+            fecha.setDate(fecha.getDate() + 1);
+            const diaSemana = fecha.getDay();
+            // 0 = Domingo, 6 = Sábado
+            if (diaSemana !== 0 && diaSemana !== 6) {
+                diasAgregados++;
+            }
+        }
+
+        return fecha;
+    };
+
+    const handleMostrarModalFechaEntrega = (operacion, cliente) => {
+        setOperacionParaOrden(operacion);
+        setClienteParaOrden(cliente);
+        setMostrarModalFechaEntrega(prev => ({ ...prev, [operacion.id_operacion]: true }));
+        // Valor por defecto: 30 días hábiles
+        setDiasHabilesSeleccionados(prev => ({ ...prev, [operacion.id_operacion]: 30 }));
+    };
+
+    const handleCancelarModalFechaEntrega = (idOperacion) => {
+        setMostrarModalFechaEntrega(prev => ({ ...prev, [idOperacion]: false }));
+        setDiasHabilesSeleccionados(prev => ({ ...prev, [idOperacion]: 30 }));
+        setOperacionParaOrden(null);
+        setClienteParaOrden(null);
+    };
+
+    const handleGenerarOrdenConFecha = async (operacion, cliente) => {
+        const diasHabiles = parseInt(diasHabilesSeleccionados[operacion.id_operacion] || 30);
+        const fechaEntrega = calcularFechaEntrega(diasHabiles);
+
+        // Actualizar la operación con la fecha de entrega estimada
+        try {
+            await updateOperacion(operacion.id_operacion, {
+                fecha_entrega_estimada: fechaEntrega.toISOString()
+            });
+
+            // Refrescar datos
+            if (selectedClienteId) {
+                await fetchCliente(selectedClienteId);
+            }
+
+            // Crear objeto operacion actualizado con la nueva fecha
+            const operacionActualizada = {
+                ...operacion,
+                fecha_entrega_estimada: fechaEntrega.toISOString()
+            };
+
+            // Generar el documento con la fecha actualizada
+            generarDocumento(operacionActualizada, cliente, 'orden_trabajo');
+
+            // Cerrar modal
+            handleCancelarModalFechaEntrega(operacion.id_operacion);
+        } catch (error) {
+            console.error('Error al actualizar fecha de entrega:', error);
+            setMensajeEstado({
+                tipo: 'error',
+                texto: 'Error al actualizar la fecha de entrega'
+            });
         }
     };
 
@@ -1021,7 +1094,7 @@ const Papeles = () => {
                                                     </button>
                                                 ) : (
                                                     <button
-                                                        onClick={() => generarDocumento(compra, cliente, 'orden_trabajo')}
+                                                        onClick={() => handleMostrarModalFechaEntrega(compra, cliente)}
                                                         className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs font-medium flex items-center justify-center gap-2"
                                                         title="Generar Orden de Trabajo"
                                                     >
@@ -1281,6 +1354,115 @@ const Papeles = () => {
         </div>
     </div>
 )}
+
+                {/* Modal de Fecha de Entrega para Orden de Trabajo */}
+                {operacionParaOrden && mostrarModalFechaEntrega[operacionParaOrden.id_operacion] && (
+                    <div
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60]"
+                        onClick={(e) => {
+                            if (e.target === e.currentTarget) handleCancelarModalFechaEntrega(operacionParaOrden.id_operacion);
+                        }}
+                    >
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4 rounded-t-2xl">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <FaPrint />
+                                    Fecha de Entrega Estimada
+                                </h3>
+                                <p className="text-purple-100 text-sm mt-1">
+                                    Orden de Trabajo #{operacionParaOrden.id_operacion}
+                                </p>
+                            </div>
+
+                            {/* Body */}
+                            <div className="p-6">
+                                <div className="mb-4">
+                                    <label className="block text-sm font-bold text-stone-700 mb-3">
+                                        Seleccione el plazo de entrega en días hábiles:
+                                    </label>
+
+                                    {/* Opciones predefinidas */}
+                                    <div className="grid grid-cols-2 gap-3 mb-4">
+                                        {[5, 15, 30, 40, 60].map((dias) => (
+                                            <button
+                                                key={dias}
+                                                onClick={() => setDiasHabilesSeleccionados(prev => ({
+                                                    ...prev,
+                                                    [operacionParaOrden.id_operacion]: dias
+                                                }))}
+                                                className={`px-4 py-3 rounded-lg border-2 transition-all font-medium ${
+                                                    diasHabilesSeleccionados[operacionParaOrden.id_operacion] === dias
+                                                        ? 'bg-purple-600 text-white border-purple-600 shadow-lg'
+                                                        : 'bg-white text-stone-700 border-stone-300 hover:border-purple-400 hover:bg-purple-50'
+                                                }`}
+                                            >
+                                                {dias} días hábiles
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Opción personalizada */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-stone-600 mb-2">
+                                            O ingrese días hábiles personalizados:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="365"
+                                            value={diasHabilesSeleccionados[operacionParaOrden.id_operacion] || ''}
+                                            onChange={(e) => setDiasHabilesSeleccionados(prev => ({
+                                                ...prev,
+                                                [operacionParaOrden.id_operacion]: parseInt(e.target.value) || 0
+                                            }))}
+                                            className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                            placeholder="Ej: 25"
+                                        />
+                                    </div>
+
+                                    {/* Vista previa de la fecha */}
+                                    {diasHabilesSeleccionados[operacionParaOrden.id_operacion] > 0 && (
+                                        <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                                            <p className="text-sm text-purple-700 font-medium mb-1">
+                                                Fecha de entrega estimada:
+                                            </p>
+                                            <p className="text-lg font-bold text-purple-900">
+                                                {calcularFechaEntrega(diasHabilesSeleccionados[operacionParaOrden.id_operacion]).toLocaleDateString('es-CL', {
+                                                    weekday: 'long',
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                })}
+                                            </p>
+                                            <p className="text-xs text-purple-600 mt-1">
+                                                ({diasHabilesSeleccionados[operacionParaOrden.id_operacion]} días hábiles desde hoy, excluyendo fines de semana)
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Botones de acción */}
+                                <div className="flex gap-3 mt-6">
+                                    <button
+                                        onClick={() => handleCancelarModalFechaEntrega(operacionParaOrden.id_operacion)}
+                                        className="flex-1 px-4 py-3 bg-stone-300 text-stone-700 rounded-lg hover:bg-stone-400 transition-colors font-medium"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={() => handleGenerarOrdenConFecha(operacionParaOrden, clienteParaOrden)}
+                                        disabled={!diasHabilesSeleccionados[operacionParaOrden.id_operacion] || diasHabilesSeleccionados[operacionParaOrden.id_operacion] <= 0}
+                                        className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    >
+                                        <FaPrint />
+                                        Generar Orden
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
