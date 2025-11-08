@@ -90,9 +90,9 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
       />
 
       {/* Modal Container */}
-      <div className="fixed inset-0 flex items-center justify-center z-[9999] p-4 pointer-events-none">
-        <div 
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto"
+      <div className="fixed inset-0 flex items-center justify-center z-[9999] p-4 pt-20 pointer-events-none">
+        <div
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden pointer-events-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -110,7 +110,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           {/* Form Container con Scroll */}
-          <div className="overflow-y-auto max-h-[calc(90vh-140px)] px-6 py-5">
+          <div className="overflow-y-auto max-h-[calc(80vh-140px)] px-6 py-5">
             <form onSubmit={handleSubmit} className="space-y-6">
 
               {/* Sección: Datos de Usuario */}
