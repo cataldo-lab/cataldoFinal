@@ -20,6 +20,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
     password: '',
     rut: '',
     telefono: '',
+    calle: '',
     whatsapp_cliente: '',
     correo_alterno_cliente: '',
     categoria_cliente: 'regular',
@@ -100,6 +101,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
       password: '',
       rut: '',
       telefono: '',
+      calle: '',
       whatsapp_cliente: '',
       correo_alterno_cliente: '',
       categoria_cliente: 'regular',
@@ -131,6 +133,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
       password: formData.password,
       rut: formData.rut,
       telefono: formData.telefono,
+      calle: formData.calle,
       id_comuna: formData.id_comuna ? parseInt(formData.id_comuna) : null
     };
 
@@ -430,6 +433,23 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                   {/* Dirección */}
                   <div className="space-y-4 pt-2">
                     <h4 className="text-sm font-semibold text-gray-700 border-b pb-2">Dirección</h4>
+
+                    {/* Calle */}
+                    <div>
+                      <label htmlFor="calle" className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Calle
+                      </label>
+                      <input
+                        type="text"
+                        id="calle"
+                        name="calle"
+                        value={formData.calle}
+                        onChange={handleChange}
+                        disabled={loading}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        placeholder="Ej: Av. Libertador 1234, Depto 101"
+                      />
+                    </div>
 
                     {/* País */}
                     <div>
