@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaTimes, FaPlus, FaTrash, FaShoppingCart } from 'react-icons/fa';
+import { FaTimes, FaPlus, FaTrash, FaShoppingCart, FaCalendarAlt } from 'react-icons/fa';
 import { useCrearOperacion } from '@hooks/papeles/useCrearOperacion';
 
 const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], productos = [] }) => {
@@ -11,6 +11,9 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
         cantidad_abono: 0,
         fecha_entrega_estimada: ''
     });
+
+    // Estados para días hábiles
+    const [diasHabiles, setDiasHabiles] = useState(30);
 
     const [productosSeleccionados, setProductosSeleccionados] = useState([]);
     const [productoActual, setProductoActual] = useState({
@@ -30,6 +33,39 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
     }, 0);
 
     const saldoPendiente = costoTotal - (parseFloat(formData.cantidad_abono) || 0);
+
+    // Calcular fecha de entrega sumando días hábiles (excluyendo sábados y domingos)
+    const calcularFechaEntrega = (diasHabilesParam) => {
+        const fecha = new Date();
+        let diasAgregados = 0;
+
+        while (diasAgregados < diasHabilesParam) {
+            fecha.setDate(fecha.getDate() + 1);
+            const diaSemana = fecha.getDay();
+            // 0 = Domingo, 6 = Sábado
+            if (diaSemana !== 0 && diaSemana !== 6) {
+                diasAgregados++;
+            }
+        }
+
+        return fecha;
+    };
+
+    // Actualizar fecha de entrega cuando cambian los días hábiles
+    useEffect(() => {
+        if (formData.cantidad_abono > 0 && diasHabiles > 0) {
+            const fechaCalculada = calcularFechaEntrega(diasHabiles);
+            setFormData(prev => ({
+                ...prev,
+                fecha_entrega_estimada: fechaCalculada.toISOString().split('T')[0]
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                fecha_entrega_estimada: ''
+            }));
+        }
+    }, [diasHabiles, formData.cantidad_abono]);
 
     // Agregar producto a la lista
     const handleAgregarProducto = () => {
@@ -152,6 +188,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
             precio_unitario: '',
             especificaciones: ''
         });
+        setDiasHabiles(30);
         reset();
         onClose();
     };
@@ -227,7 +264,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                 </div>
 
                                 {/* Abono Inicial */}
-                                <div>
+                                <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-stone-700 mb-1">
                                         Abono Inicial
                                     </label>
@@ -241,20 +278,12 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
                                         placeholder="0"
                                     />
-                                </div>
-
-                                {/* Fecha Entrega */}
-                                <div>
-                                    <label className="block text-sm font-medium text-stone-700 mb-1">
-                                        Fecha Entrega Estimada
-                                    </label>
-                                    <input
-                                        type="date"
-                                        name="fecha_entrega_estimada"
-                                        value={formData.fecha_entrega_estimada}
-                                        onChange={handleChange}
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
-                                    />
+                                    {formData.cantidad_abono > 0 && (
+                                        <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                                            <FaCalendarAlt />
+                                            Orden de Trabajo - Configure la fecha de entrega abajo
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Descripción */}
@@ -273,6 +302,78 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                 </div>
                             </div>
                         </div>
+
+                        {/* Fecha de Entrega - Solo si hay abono */}
+                        {formData.cantidad_abono > 0 && (
+                            <div className="bg-purple-50 rounded-lg p-5 border-2 border-purple-200">
+                                <h3 className="text-lg font-bold text-purple-800 mb-4 flex items-center gap-2">
+                                    <FaCalendarAlt />
+                                    Fecha de Entrega Estimada (Orden de Trabajo)
+                                </h3>
+
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-stone-700 mb-3">
+                                        Seleccione el plazo de entrega en días hábiles:
+                                    </label>
+
+                                    {/* Opciones predefinidas */}
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                                        {[5, 15, 30, 40, 60].map((dias) => (
+                                            <button
+                                                key={dias}
+                                                type="button"
+                                                onClick={() => setDiasHabiles(dias)}
+                                                className={`px-4 py-3 rounded-lg border-2 transition-all font-medium ${
+                                                    diasHabiles === dias
+                                                        ? 'bg-purple-600 text-white border-purple-600 shadow-lg'
+                                                        : 'bg-white text-stone-700 border-stone-300 hover:border-purple-400 hover:bg-purple-50'
+                                                }`}
+                                            >
+                                                {dias} días
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Opción personalizada */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-medium text-stone-600 mb-2">
+                                                O ingrese días hábiles personalizados:
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max="365"
+                                                value={diasHabiles}
+                                                onChange={(e) => setDiasHabiles(parseInt(e.target.value) || 0)}
+                                                className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                placeholder="Ej: 25"
+                                            />
+                                        </div>
+
+                                        {/* Vista previa de la fecha */}
+                                        {diasHabiles > 0 && (
+                                            <div className="p-4 bg-white border-2 border-purple-300 rounded-lg">
+                                                <p className="text-xs text-purple-700 font-medium mb-1">
+                                                    Fecha de entrega estimada:
+                                                </p>
+                                                <p className="text-base font-bold text-purple-900">
+                                                    {calcularFechaEntrega(diasHabiles).toLocaleDateString('es-CL', {
+                                                        weekday: 'long',
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
+                                                </p>
+                                                <p className="text-xs text-purple-600 mt-1">
+                                                    ({diasHabiles} días hábiles)
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Agregar Productos */}
                         <div className="bg-blue-50 rounded-lg p-5">
