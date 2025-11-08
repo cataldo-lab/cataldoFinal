@@ -13,11 +13,9 @@ import {
   FaTrophy,
   FaCalendarAlt
 } from 'react-icons/fa';
-import { getDashboardStats } from '../../services/gerente.service';
 
 const GerenteDashboard = () => {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState({
     ventas: {
       total: 0,
@@ -40,34 +38,39 @@ const GerenteDashboard = () => {
     productos: {
       total: 0,
       bajoStock: 0
-    },
-    metricas: {
-      tasaConversion: 0,
-      ticketPromedio: 0,
-      satisfaccionCliente: 0
     }
   });
 
   useEffect(() => {
-    cargarDashboard();
-  }, []);
-
-  const cargarDashboard = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getDashboardStats();
-
-      if (response && response.data) {
-        setDashboardData(response.data);
-      }
-    } catch (err) {
-      console.error('Error al cargar dashboard:', err);
-      setError('Error al cargar las estadÃ­sticas del dashboard');
-    } finally {
+    // Simular carga de datos
+    setTimeout(() => {
+      setDashboardData({
+        ventas: {
+          total: 15850000,
+          mes: 4250000,
+          semana: 980000,
+          hoy: 145000
+        },
+        clientes: {
+          total: 347,
+          nuevos: 23,
+          vip: 45,
+          premium: 18
+        },
+        operaciones: {
+          total: 892,
+          pendientes: 34,
+          enProceso: 12,
+          completadas: 846
+        },
+        productos: {
+          total: 1250,
+          bajoStock: 8
+        }
+      });
       setLoading(false);
-    }
-  };
+    }, 1000);
+  }, []);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-CL', {
@@ -85,26 +88,6 @@ const GerenteDashboard = () => {
             <div className="w-20 h-20 border-4 border-stone-600 rounded-full animate-spin absolute top-0 border-t-transparent"></div>
           </div>
           <p className="mt-4 text-stone-600 font-medium">Cargando dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-stone-100 flex items-center justify-center p-6">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full border border-red-200">
-          <div className="flex items-center gap-3 mb-4">
-            <FaExclamationTriangle className="text-3xl text-red-600" />
-            <h2 className="text-xl font-bold text-stone-800">Error al cargar datos</h2>
-          </div>
-          <p className="text-stone-600 mb-6">{error}</p>
-          <button
-            onClick={cargarDashboard}
-            className="w-full px-4 py-2 bg-stone-600 text-white rounded-lg hover:bg-stone-700 transition-colors font-medium"
-          >
-            Reintentar
-          </button>
         </div>
       </div>
     );
@@ -153,7 +136,7 @@ const GerenteDashboard = () => {
             </div>
             <h3 className="text-sm font-medium text-stone-600 mb-1">Ventas Totales</h3>
             <p className="text-2xl font-bold text-stone-800">{formatCurrency(dashboardData.ventas.total)}</p>
-            <p className="text-xs text-stone-500 mt-2">Histï¿½rico acumulado</p>
+            <p className="text-xs text-stone-500 mt-2">Histórico acumulado</p>
           </div>
 
           {/* Ventas del Mes */}
@@ -183,7 +166,7 @@ const GerenteDashboard = () => {
             </div>
             <h3 className="text-sm font-medium text-stone-600 mb-1">Ventas Semanales</h3>
             <p className="text-2xl font-bold text-stone-800">{formatCurrency(dashboardData.ventas.semana)}</p>
-            <p className="text-xs text-stone-500 mt-2">ï¿½ltimos 7 dï¿½as</p>
+            <p className="text-xs text-stone-500 mt-2">Últimos 7 días</p>
           </div>
 
           {/* Ventas de Hoy */}
@@ -212,7 +195,7 @@ const GerenteDashboard = () => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-stone-800">Clientes</h3>
-                <p className="text-xs text-stone-500">Gestiï¿½n de clientes</p>
+                <p className="text-xs text-stone-500">Gestión de clientes</p>
               </div>
             </div>
 
@@ -250,7 +233,7 @@ const GerenteDashboard = () => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-stone-800">Operaciones</h3>
-                <p className="text-xs text-stone-500">Estado de ï¿½rdenes</p>
+                <p className="text-xs text-stone-500">Estado de órdenes</p>
               </div>
             </div>
 
@@ -328,13 +311,13 @@ const GerenteDashboard = () => {
                     style={{ width: '85%' }}
                   />
                 </div>
-                <p className="text-xs text-stone-500 mt-2">85% con stock ï¿½ptimo</p>
+                <p className="text-xs text-stone-500 mt-2">85% con stock óptimo</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Resumen Rï¿½pido */}
+        {/* Resumen Rápido */}
         <div className="bg-white rounded-xl shadow-lg p-6 border border-stone-200">
           <h3 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
             <FaChartLine className="text-stone-600" />
@@ -343,21 +326,21 @@ const GerenteDashboard = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
-              <p className="text-sm font-medium text-green-700 mb-1">Tasa de Conversiï¿½n</p>
-              <p className="text-3xl font-bold text-green-700">{dashboardData.metricas?.tasaConversion || 0}%</p>
-              <p className="text-xs text-green-600 mt-1">ï¿½ +5.2% vs mes anterior</p>
+              <p className="text-sm font-medium text-green-700 mb-1">Tasa de Conversión</p>
+              <p className="text-3xl font-bold text-green-700">68.5%</p>
+              <p className="text-xs text-green-600 mt-1">‘ +5.2% vs mes anterior</p>
             </div>
 
             <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
               <p className="text-sm font-medium text-blue-700 mb-1">Ticket Promedio</p>
-              <p className="text-3xl font-bold text-blue-700">{formatCurrency(dashboardData.metricas?.ticketPromedio || 0)}</p>
-              <p className="text-xs text-blue-600 mt-1">ï¿½ +3.8% vs mes anterior</p>
+              <p className="text-3xl font-bold text-blue-700">{formatCurrency(185500)}</p>
+              <p className="text-xs text-blue-600 mt-1">‘ +3.8% vs mes anterior</p>
             </div>
 
             <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
-              <p className="text-sm font-medium text-purple-700 mb-1">Satisfacciï¿½n Cliente</p>
-              <p className="text-3xl font-bold text-purple-700">{dashboardData.metricas?.satisfaccionCliente || 0}/5.0</p>
-              <p className="text-xs text-purple-600 mt-1">Basado en 156 reseï¿½as</p>
+              <p className="text-sm font-medium text-purple-700 mb-1">Satisfacción Cliente</p>
+              <p className="text-3xl font-bold text-purple-700">4.7/5.0</p>
+              <p className="text-xs text-purple-600 mt-1">Basado en 156 reseñas</p>
             </div>
           </div>
         </div>
