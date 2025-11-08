@@ -9,6 +9,7 @@ import Error404 from '@pages/Error404';
 import Navbar from '@components/Navbar';
 import ProtectedRoute from '@components/ProtectedRoute';
 import TrabajadorDashboard from '@pages/trabajador-tienda/TrabajadorDashboard';
+import GerenteDashboard from '@pages/gerente/gerenteDashboard';
 import AuditLogs from '@pages/adm/AuditLogs';
 import ProductosTrabajador from '@pages/trabajador-tienda/Productos';
 import MaterialesTrabajador from '@pages/trabajador-tienda/Materiales';
@@ -148,8 +149,16 @@ const router = createBrowserRouter([
                 <PapelesStaff />
               </ProtectedRoute>
             )
+          },
+          {
+            path: '/gerente/dashboard',
+            element:(
+              <ProtectedRoute allowedRoles={['administrador', 'gerente']}>
+                <GerenteDashboard />
+              </ProtectedRoute>
+            )
           }
-        
+
 
         ]
       }
