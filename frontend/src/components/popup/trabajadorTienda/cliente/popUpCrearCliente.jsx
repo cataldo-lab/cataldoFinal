@@ -1,10 +1,18 @@
 // frontend/src/components/popup/trabajadorTienda/cliente/popUpCrearCliente.jsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCreateCliente } from '@hooks/clientes/useCreateCliente';
+import { getPaises } from '@services/direccion.service';
 
 const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
   const { createFull, loading, error, resetState } = useCreateCliente();
+
+  // Estados para direcciones
+  const [paises, setPaises] = useState([]);
+  const [regiones, setRegiones] = useState([]);
+  const [provincias, setProvincias] = useState([]);
+  const [comunas, setComunas] = useState([]);
+  const [loadingDirecciones, setLoadingDirecciones] = useState(false);
 
   const [formData, setFormData] = useState({
     nombreCompleto: '',
@@ -17,15 +25,72 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
     categoria_cliente: 'regular',
     descuento_cliente: 0,
     cumpleanos_cliente: '',
-    Acepta_uso_datos: false
+    Acepta_uso_datos: false,
+    id_pais: '',
+    id_region: '',
+    id_provincia: '',
+    id_comuna: ''
   });
+
+  // Cargar países al abrir el modal
+  useEffect(() => {
+    if (isOpen) {
+      loadPaises();
+    }
+  }, [isOpen]);
+
+  const loadPaises = async () => {
+    try {
+      setLoadingDirecciones(true);
+      const data = await getPaises();
+      setPaises(data.data || []);
+    } catch (error) {
+      console.error('Error al cargar países:', error);
+    } finally {
+      setLoadingDirecciones(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+
+    // Manejar cambios en cascada para dirección
+    if (name === 'id_pais') {
+      const paisSeleccionado = paises.find(p => p.id_pais === parseInt(value));
+      setRegiones(paisSeleccionado?.regiones || []);
+      setProvincias([]);
+      setComunas([]);
+      setFormData((prev) => ({
+        ...prev,
+        id_pais: value,
+        id_region: '',
+        id_provincia: '',
+        id_comuna: ''
+      }));
+    } else if (name === 'id_region') {
+      const regionSeleccionada = regiones.find(r => r.id_region === parseInt(value));
+      setProvincias(regionSeleccionada?.provincias || []);
+      setComunas([]);
+      setFormData((prev) => ({
+        ...prev,
+        id_region: value,
+        id_provincia: '',
+        id_comuna: ''
+      }));
+    } else if (name === 'id_provincia') {
+      const provinciaSeleccionada = provincias.find(p => p.id_provincia === parseInt(value));
+      setComunas(provinciaSeleccionada?.comunas || []);
+      setFormData((prev) => ({
+        ...prev,
+        id_provincia: value,
+        id_comuna: ''
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   const resetForm = () => {
@@ -40,8 +105,15 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
       categoria_cliente: 'regular',
       descuento_cliente: 0,
       cumpleanos_cliente: '',
-      Acepta_uso_datos: false
+      Acepta_uso_datos: false,
+      id_pais: '',
+      id_region: '',
+      id_provincia: '',
+      id_comuna: ''
     });
+    setRegiones([]);
+    setProvincias([]);
+    setComunas([]);
     resetState();
   };
 
@@ -58,7 +130,8 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
       email: formData.email,
       password: formData.password,
       rut: formData.rut,
-      telefono: formData.telefono
+      telefono: formData.telefono,
+      id_comuna: formData.id_comuna ? parseInt(formData.id_comuna) : null
     };
 
     const clienteData = {
@@ -352,6 +425,105 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                       disabled={loading}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
                     />
+                  </div>
+
+                  {/* Dirección */}
+                  <div className="space-y-4 pt-2">
+                    <h4 className="text-sm font-semibold text-gray-700 border-b pb-2">Dirección</h4>
+
+                    {/* País */}
+                    <div>
+                      <label htmlFor="id_pais" className="block text-sm font-medium text-gray-700 mb-1.5">
+                        País
+                      </label>
+                      <select
+                        id="id_pais"
+                        name="id_pais"
+                        value={formData.id_pais}
+                        onChange={handleChange}
+                        disabled={loading || loadingDirecciones}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        <option value="">Seleccione un país</option>
+                        {paises.map(pais => (
+                          <option key={pais.id_pais} value={pais.id_pais}>
+                            {pais.nombre_pais}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Región */}
+                    {formData.id_pais && (
+                      <div>
+                        <label htmlFor="id_region" className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Región
+                        </label>
+                        <select
+                          id="id_region"
+                          name="id_region"
+                          value={formData.id_region}
+                          onChange={handleChange}
+                          disabled={loading || regiones.length === 0}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          <option value="">Seleccione una región</option>
+                          {regiones.map(region => (
+                            <option key={region.id_region} value={region.id_region}>
+                              {region.nombre_region}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Provincia */}
+                    {formData.id_region && (
+                      <div>
+                        <label htmlFor="id_provincia" className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Provincia
+                        </label>
+                        <select
+                          id="id_provincia"
+                          name="id_provincia"
+                          value={formData.id_provincia}
+                          onChange={handleChange}
+                          disabled={loading || provincias.length === 0}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          <option value="">Seleccione una provincia</option>
+                          {provincias.map(provincia => (
+                            <option key={provincia.id_provincia} value={provincia.id_provincia}>
+                              {provincia.nombre_provincia}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Comuna */}
+                    {formData.id_provincia && (
+                      <div>
+                        <label htmlFor="id_comuna" className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Comuna
+                        </label>
+                        <select
+                          id="id_comuna"
+                          name="id_comuna"
+                          value={formData.id_comuna}
+                          onChange={handleChange}
+                          disabled={loading || comunas.length === 0}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          <option value="">Seleccione una comuna</option>
+                          {comunas.map(comuna => (
+                            <option key={comuna.id_comuna} value={comuna.id_comuna}>
+                              {comuna.nombre_comuna}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
 
                   {/* Checkbox */}
