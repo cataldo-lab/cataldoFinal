@@ -1008,24 +1008,27 @@ const Papeles = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Botones de Documentos */}
+                                            {/* Botones de Documentos - Condicionados por abono */}
                                             <div className="flex gap-2 mb-3">
-                                                <button
-                                                    onClick={() => generarDocumento(compra, cliente, 'cotizacion')}
-                                                    className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium flex items-center justify-center gap-2"
-                                                    title="Generar Cotización"
-                                                >
-                                                    <FaFileAlt />
-                                                    Cotización
-                                                </button>
-                                                <button
-                                                    onClick={() => generarDocumento(compra, cliente, 'orden_trabajo')}
-                                                    className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs font-medium flex items-center justify-center gap-2"
-                                                    title="Generar Orden de Trabajo"
-                                                >
-                                                    <FaPrint />
-                                                    Orden de Trabajo
-                                                </button>
+                                                {compra.cantidad_abono === 0 || compra.cantidad_abono === null ? (
+                                                    <button
+                                                        onClick={() => generarDocumento(compra, cliente, 'cotizacion')}
+                                                        className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium flex items-center justify-center gap-2"
+                                                        title="Generar Cotización"
+                                                    >
+                                                        <FaFileAlt />
+                                                        Cotización
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => generarDocumento(compra, cliente, 'orden_trabajo')}
+                                                        className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs font-medium flex items-center justify-center gap-2"
+                                                        title="Generar Orden de Trabajo"
+                                                    >
+                                                        <FaPrint />
+                                                        Orden de Trabajo
+                                                    </button>
+                                                )}
                                             </div>
 
                                             {/* Selector de estado */}
