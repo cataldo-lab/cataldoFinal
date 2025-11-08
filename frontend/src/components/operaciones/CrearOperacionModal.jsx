@@ -237,7 +237,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-stone-600 to-stone-700 px-6 py-5 flex justify-between items-center flex-shrink-0">
                     <div className="flex items-center gap-3">
@@ -261,11 +261,15 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                 <div className="flex-1 overflow-y-auto p-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Datos de Operación */}
-                        <div className="bg-stone-50 rounded-lg p-5">
-                            <h3 className="text-lg font-bold text-stone-800 mb-4">Datos de la Operación</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Cliente con búsqueda */}
-                                <div className="md:col-span-2">
+                        <div className="bg-stone-50 rounded-lg p-6 border border-stone-200">
+                            <h3 className="text-lg font-bold text-stone-800 mb-5 flex items-center gap-2">
+                                <FaShoppingCart className="text-stone-600" />
+                                Datos de la Operación
+                            </h3>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Columna 1: Cliente */}
+                                <div className="lg:col-span-2">
                                     <div className="flex items-center justify-between mb-2">
                                         <label className="block text-sm font-medium text-stone-700">
                                             Cliente *
@@ -273,7 +277,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                         <button
                                             type="button"
                                             onClick={() => setMostrarPopupCrearCliente(true)}
-                                            className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1.5"
+                                            className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1.5 font-medium"
                                         >
                                             <FaUserPlus />
                                             Nuevo Cliente
@@ -288,7 +292,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                             placeholder="Buscar cliente por nombre, email o RUT..."
                                             value={busquedaCliente}
                                             onChange={(e) => setBusquedaCliente(e.target.value)}
-                                            className="w-full pl-10 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent text-sm"
+                                            className="w-full pl-10 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent text-sm bg-white"
                                         />
                                     </div>
 
@@ -297,7 +301,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                         value={formData.id_cliente}
                                         onChange={handleChange}
                                         required
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent bg-white"
                                     >
                                         <option value="">Seleccione un cliente</option>
                                         {clientesFiltrados.map(cliente => (
@@ -307,69 +311,74 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                         ))}
                                     </select>
                                     {busquedaCliente && clientesFiltrados.length === 0 && (
-                                        <p className="text-xs text-red-600 mt-1">
+                                        <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                                            <span>⚠️</span>
                                             No se encontraron clientes. Puede crear uno nuevo con el botón "+ Nuevo Cliente"
                                         </p>
                                     )}
                                     {busquedaCliente && clientesFiltrados.length > 0 && (
-                                        <p className="text-xs text-stone-500 mt-1">
+                                        <p className="text-xs text-green-600 mt-1.5 flex items-center gap-1">
+                                            <span>✓</span>
                                             Mostrando {clientesFiltrados.length} de {clientes.length} clientes
                                         </p>
                                     )}
                                 </div>
 
-                                {/* Estado */}
-                                <div>
-                                    <label className="block text-sm font-medium text-stone-700 mb-1">
-                                        Estado *
-                                    </label>
-                                    <select
-                                        name="estado_operacion"
-                                        value={formData.estado_operacion}
-                                        onChange={handleChange}
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
-                                    >
-                                        <option value="cotizacion">Cotización</option>
-                                        <option value="orden_trabajo">Orden de Trabajo</option>
-                                        <option value="pendiente">Pendiente</option>
-                                        <option value="en_proceso">En Proceso</option>
-                                    </select>
+                                {/* Columna 2: Estado y Abono */}
+                                <div className="space-y-4">
+                                    {/* Estado */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-stone-700 mb-2">
+                                            Estado *
+                                        </label>
+                                        <select
+                                            name="estado_operacion"
+                                            value={formData.estado_operacion}
+                                            onChange={handleChange}
+                                            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent bg-white"
+                                        >
+                                            <option value="cotizacion">Cotización</option>
+                                            <option value="orden_trabajo">Orden de Trabajo</option>
+                                            <option value="pendiente">Pendiente</option>
+                                            <option value="en_proceso">En Proceso</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Abono Inicial */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-stone-700 mb-2">
+                                            Abono Inicial
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="cantidad_abono"
+                                            value={formData.cantidad_abono}
+                                            onChange={handleChange}
+                                            min="0"
+                                            step="1"
+                                            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent bg-white"
+                                            placeholder="$0"
+                                        />
+                                        {formData.cantidad_abono > 0 && (
+                                            <p className="text-xs text-blue-600 mt-1.5 flex items-center gap-1 font-medium">
+                                                <FaCalendarAlt />
+                                                Orden de Trabajo
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* Abono Inicial */}
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-stone-700 mb-1">
-                                        Abono Inicial
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="cantidad_abono"
-                                        value={formData.cantidad_abono}
-                                        onChange={handleChange}
-                                        min="0"
-                                        step="1"
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
-                                        placeholder="0"
-                                    />
-                                    {formData.cantidad_abono > 0 && (
-                                        <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
-                                            <FaCalendarAlt />
-                                            Orden de Trabajo - Configure la fecha de entrega abajo
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Descripción */}
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                                {/* Descripción - Full width */}
+                                <div className="lg:col-span-3">
+                                    <label className="block text-sm font-medium text-stone-700 mb-2">
                                         Descripción
                                     </label>
                                     <textarea
                                         name="descripcion_operacion"
                                         value={formData.descripcion_operacion}
                                         onChange={handleChange}
-                                        rows="3"
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
+                                        rows="2"
+                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent resize-none bg-white"
                                         placeholder="Descripción de la operación..."
                                     />
                                 </div>
@@ -378,59 +387,62 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
 
                         {/* Fecha de Entrega - Solo si hay abono */}
                         {formData.cantidad_abono > 0 && (
-                            <div className="bg-purple-50 rounded-lg p-5 border-2 border-purple-200">
-                                <h3 className="text-lg font-bold text-purple-800 mb-4 flex items-center gap-2">
+                            <div className="bg-gradient-to-br from-stone-50 to-stone-100 rounded-lg p-6 border-2 border-stone-200 shadow-sm">
+                                <h3 className="text-lg font-bold text-stone-800 mb-5 flex items-center gap-2">
                                     <FaCalendarAlt />
-                                    Fecha de Entrega Estimada (Orden de Trabajo)
+                                    Fecha de Entrega Estimada
                                 </h3>
 
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-stone-700 mb-3">
+                                <div className="space-y-4">
+                                    <label className="block text-sm font-medium text-stone-700">
                                         Seleccione el plazo de entrega en días hábiles:
                                     </label>
 
-                                    {/* Opciones predefinidas */}
-                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-                                        {[5, 15, 30, 40, 60].map((dias) => (
-                                            <button
-                                                key={dias}
-                                                type="button"
-                                                onClick={() => setDiasHabiles(dias)}
-                                                className={`px-4 py-3 rounded-lg border-2 transition-all font-medium ${
-                                                    diasHabiles === dias
-                                                        ? 'bg-purple-600 text-white border-purple-600 shadow-lg'
-                                                        : 'bg-white text-stone-700 border-stone-300 hover:border-purple-400 hover:bg-purple-50'
-                                                }`}
-                                            >
-                                                {dias} días
-                                            </button>
-                                        ))}
-                                    </div>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* Columna izquierda: Opciones */}
+                                        <div className="space-y-4">
+                                            {/* Opciones predefinidas */}
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[5, 15, 30, 40, 60].map((dias) => (
+                                                    <button
+                                                        key={dias}
+                                                        type="button"
+                                                        onClick={() => setDiasHabiles(dias)}
+                                                        className={`px-3 py-2.5 rounded-lg border-2 transition-all font-semibold text-sm ${
+                                                            diasHabiles === dias
+                                                                ? 'bg-stone-700 text-white border-stone-700 shadow-md transform scale-105'
+                                                                : 'bg-white text-stone-700 border-stone-300 hover:border-stone-400 hover:bg-stone-50'
+                                                        }`}
+                                                    >
+                                                        {dias} días
+                                                    </button>
+                                                ))}
+                                            </div>
 
-                                    {/* Opción personalizada */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-xs font-medium text-stone-600 mb-2">
-                                                O ingrese días hábiles personalizados:
-                                            </label>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                max="365"
-                                                value={diasHabiles}
-                                                onChange={(e) => setDiasHabiles(parseInt(e.target.value) || 0)}
-                                                className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                placeholder="Ej: 25"
-                                            />
+                                            {/* Opción personalizada */}
+                                            <div>
+                                                <label className="block text-xs font-medium text-stone-600 mb-2">
+                                                    O ingrese días hábiles personalizados:
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    max="365"
+                                                    value={diasHabiles}
+                                                    onChange={(e) => setDiasHabiles(parseInt(e.target.value) || 0)}
+                                                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent bg-white font-medium"
+                                                    placeholder="Ej: 25"
+                                                />
+                                            </div>
                                         </div>
 
-                                        {/* Vista previa de la fecha */}
+                                        {/* Columna derecha: Vista previa */}
                                         {diasHabiles > 0 && (
-                                            <div className="p-4 bg-white border-2 border-purple-300 rounded-lg">
-                                                <p className="text-xs text-purple-700 font-medium mb-1">
+                                            <div className="p-5 bg-white border-2 border-stone-300 rounded-lg shadow-sm flex flex-col justify-center">
+                                                <p className="text-xs text-stone-700 font-semibold mb-2 uppercase tracking-wide">
                                                     Fecha de entrega estimada:
                                                 </p>
-                                                <p className="text-base font-bold text-purple-900">
+                                                <p className="text-xl font-bold text-stone-900 mb-2">
                                                     {calcularFechaEntrega(diasHabiles).toLocaleDateString('es-CL', {
                                                         weekday: 'long',
                                                         year: 'numeric',
@@ -438,8 +450,9 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                                         day: 'numeric'
                                                     })}
                                                 </p>
-                                                <p className="text-xs text-purple-600 mt-1">
-                                                    ({diasHabiles} días hábiles)
+                                                <p className="text-xs text-stone-600 flex items-center gap-1">
+                                                    <span className="inline-block w-2 h-2 bg-stone-700 rounded-full"></span>
+                                                    {diasHabiles} días hábiles desde hoy
                                                 </p>
                                             </div>
                                         )}
@@ -449,12 +462,15 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                         )}
 
                         {/* Agregar Productos */}
-                        <div className="bg-blue-50 rounded-lg p-5">
-                            <h3 className="text-lg font-bold text-stone-800 mb-4">Agregar Productos</h3>
+                        <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                            <h3 className="text-lg font-bold text-stone-800 mb-5 flex items-center gap-2">
+                                <FaPlus className="text-blue-600" />
+                                Agregar Productos
+                            </h3>
 
                             {/* Buscador de productos */}
-                            <div className="relative mb-3">
-                                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 text-sm" />
+                            <div className="relative mb-4">
+                                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400" />
                                 <input
                                     type="text"
                                     placeholder="Buscar producto por nombre..."
@@ -464,18 +480,21 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                 />
                             </div>
                             {busquedaProducto && productosFiltrados.length > 0 && (
-                                <p className="text-xs text-stone-500 mb-3">
+                                <p className="text-xs text-green-600 mb-4 flex items-center gap-1">
+                                    <span>✓</span>
                                     Mostrando {productosFiltrados.length} de {productos.length} productos
                                 </p>
                             )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                                <div className="md:col-span-2">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
+                                {/* Producto */}
+                                <div className="lg:col-span-5">
+                                    <label className="block text-xs font-medium text-stone-700 mb-1">Producto *</label>
                                     <select
                                         name="id_producto"
                                         value={productoActual.id_producto}
                                         onChange={handleProductoChange}
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
                                     >
                                         <option value="">Seleccione producto</option>
                                         {productosFiltrados.map(prod => (
@@ -486,50 +505,57 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                     </select>
                                 </div>
 
-                                <div>
+                                {/* Cantidad */}
+                                <div className="lg:col-span-2">
+                                    <label className="block text-xs font-medium text-stone-700 mb-1">Cantidad</label>
                                     <input
                                         type="number"
                                         name="cantidad"
                                         value={productoActual.cantidad}
                                         onChange={handleProductoChange}
                                         min="1"
-                                        placeholder="Cant."
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="1"
+                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
                                     />
                                 </div>
 
-                                <div>
+                                {/* Precio */}
+                                <div className="lg:col-span-3">
+                                    <label className="block text-xs font-medium text-stone-700 mb-1">Precio Unit.</label>
                                     <input
                                         type="number"
                                         name="precio_unitario"
                                         value={productoActual.precio_unitario}
                                         onChange={handleProductoChange}
                                         min="0"
-                                        placeholder="Precio"
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="$0"
+                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
                                     />
                                 </div>
 
-                                <div>
+                                {/* Botón Agregar */}
+                                <div className="lg:col-span-2 lg:mt-6">
                                     <button
                                         type="button"
                                         onClick={handleAgregarProducto}
-                                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium"
                                     >
                                         <FaPlus /> Agregar
                                     </button>
                                 </div>
                             </div>
 
+                            {/* Especificaciones */}
                             {productoActual.id_producto && (
-                                <div className="mt-3">
+                                <div className="mt-4">
+                                    <label className="block text-xs font-medium text-stone-700 mb-1">Especificaciones (opcional)</label>
                                     <input
                                         type="text"
                                         name="especificaciones"
                                         value={productoActual.especificaciones}
                                         onChange={handleProductoChange}
-                                        placeholder="Especificaciones opcionales..."
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Ej: Color rojo, medidas especiales..."
+                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
                                     />
                                 </div>
                             )}
