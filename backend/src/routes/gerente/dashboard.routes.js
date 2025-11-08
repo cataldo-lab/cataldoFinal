@@ -1,12 +1,13 @@
 "use strict";
 import { Router } from "express";
-import { authenticationMiddleware } from "../../middlewares/authentication.middleware.js";
+import { authenticateJwt } from "../../middlewares/authentication.middleware.js";
+
 import * as dashboardController from "../../controllers/gerente/dashboard.controller.js";
 
 const router = Router();
 
 // Aplicar middleware de autenticación a todas las rutas del dashboard
-router.use(authenticationMiddleware);
+router.use(authenticateJwt);
 
 /**
  * @route   GET /api/dashboard/resumen

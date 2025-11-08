@@ -16,6 +16,7 @@ import OperacionesTrabajador from '@pages/trabajador-tienda/TrabajadorOperacione
 import ClientesStaff from '@pages/trabajador-tienda/Clientes';
 import ProveedoresStaff from '@pages/trabajador-tienda/Proveedores';
 import PapelesStaff from '@pages/trabajador-tienda/Papeles';
+import GerenteDashboard from '@pages/gerente/gerenteDashboard';
 
 // Importar los estilos principales (que incluyen Tailwind)
 import '@styles/main.css';
@@ -146,6 +147,14 @@ const router = createBrowserRouter([
             element:(
               <ProtectedRoute allowedRoles={['administrador', 'gerente', 'trabajador_tienda']}>
                 <PapelesStaff />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: '/gerente/dashboard',
+            element:(
+              <ProtectedRoute allowedRoles={['administrador', 'gerente']}>
+                <GerenteDashboard />
               </ProtectedRoute>
             )
           }
