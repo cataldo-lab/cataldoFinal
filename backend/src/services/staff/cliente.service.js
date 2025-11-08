@@ -342,13 +342,22 @@ export async function updatePerfilFull(userId, userData, clienteData) {
         delete userData.id_comuna;
       }
 
+      console.log('🔍 DEBUG - userData después de eliminar id_comuna:', userData);
+      console.log('🔍 DEBUG - id_comuna extraído:', id_comuna);
+
       // Actualizar datos básicos del usuario
-      await userRepo.update(
-        { id: userId },
-        Object.fromEntries(
-          Object.entries(userData).filter(([_, v]) => v !== undefined)
-        )
+      const userDataToUpdate = Object.fromEntries(
+        Object.entries(userData).filter(([_, v]) => v !== undefined)
       );
+
+      console.log('🔍 DEBUG - Datos a actualizar en User:', userDataToUpdate);
+
+      if (Object.keys(userDataToUpdate).length > 0) {
+        await userRepo.update(
+          { id: userId },
+          userDataToUpdate
+        );
+      }
 
       // Actualizar la relación de comuna si se proporcionó
       if (id_comuna !== null) {
