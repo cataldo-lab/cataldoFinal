@@ -3,7 +3,7 @@ import { FaTimes, FaPlus, FaTrash, FaShoppingCart, FaCalendarAlt, FaSearch, FaUs
 import { useCrearOperacion } from '@hooks/papeles/useCrearOperacion';
 import PopUpCrearCliente from '@components/popup/trabajadorTienda/cliente/popUpCrearCliente';
 
-const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], productos = [] }) => {
+const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], productos = [], onClienteCreado }) => {
     // Estados del formulario
     const [formData, setFormData] = useState({
         id_cliente: '',
@@ -167,9 +167,10 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
     // Handler para cerrar el popup de crear cliente
     const handleClienteCreado = () => {
         setMostrarPopupCrearCliente(false);
-        // Aquí se debería refrescar la lista de clientes, pero como viene de props,
-        // el componente padre debería manejar esto
-        // Por ahora solo cerramos el popup
+        // Llamar al callback para recargar la lista de clientes
+        if (onClienteCreado) {
+            onClienteCreado();
+        }
     };
 
     // Enviar formulario
