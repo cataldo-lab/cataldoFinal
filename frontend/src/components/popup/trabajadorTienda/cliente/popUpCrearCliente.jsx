@@ -86,6 +86,22 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
         id_provincia: value,
         id_comuna: ''
       }));
+    } else if (name === 'rut') {
+      // Generar contraseña automáticamente con los últimos 5 dígitos del RUT
+      const rutSinFormato = value.replace(/[.-]/g, ''); // Eliminar puntos y guiones
+      const soloDigitos = rutSinFormato.replace(/[^0-9]/g, ''); // Solo números (sin letra verificadora)
+      let password = '';
+
+      if (soloDigitos.length >= 5) {
+        // Tomar los últimos 5 dígitos antes del verificador
+        password = soloDigitos.slice(-5);
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        rut: value,
+        password: password
+      }));
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -307,18 +323,21 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                       CONTRASEÑA <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="password"
+                      type="text"
                       id="password"
                       name="password"
                       value={formData.password}
-                      onChange={handleChange}
+                      readOnly
                       autoComplete="new-password"
                       required
-                      minLength={6}
+                      minLength={5}
                       disabled={loading}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      placeholder=""
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+                      placeholder="Se genera automáticamente desde el RUT"
                     />
+                    <p className="text-xs text-blue-600 mt-1.5">
+                      ℹ️ La contraseña se genera automáticamente usando los últimos 5 dígitos del RUT
+                    </p>
                   </div>
                 </div>
               </div>
