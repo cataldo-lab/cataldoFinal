@@ -43,13 +43,15 @@ export async function getResumenGeneral() {
       .getRawOne();
 
     // 4. Clientes activos (con operaciones en el mes)
-    const clientesActivos = await userRepo
+    const clientesActivosResult = await userRepo
       .createQueryBuilder("user")
       .innerJoin("user.operaciones", "operacion")
+      .select("COUNT(DISTINCT user.id)", "count")
       .where("user.rol = :rol", { rol: "cliente" })
       .andWhere("operacion.fecha_creacion BETWEEN :inicio AND :fin", { inicio: inicioMes, fin: finMes })
-      .distinctOn(["user.id"])
-      .getCount();
+      .getRawOne();
+
+    const clientesActivos = parseInt(clientesActivosResult.count || 0);
 
     // 5. Total de clientes registrados
     const totalClientes = await userRepo
@@ -324,15 +326,17 @@ export async function getEstadisticasClientes() {
       .getCount();
 
     // 3. Clientes con operaciones pendientes/en proceso
-    const clientesConPendientes = await userRepo
+    const clientesConPendientesResult = await userRepo
       .createQueryBuilder("user")
       .innerJoin("user.operaciones", "operacion")
+      .select("COUNT(DISTINCT user.id)", "count")
       .where("user.rol = :rol", { rol: "cliente" })
       .andWhere("operacion.estado_operacion IN (:...estados)", {
         estados: ["cotizacion", "pendiente", "en_proceso", "orden_trabajo"]
       })
-      .distinctOn(["user.id"])
-      .getCount();
+      .getRawOne();
+
+    const clientesConPendientes = parseInt(clientesConPendientesResult.count || 0);
 
     // 4. Top 10 clientes (por monto total abonado)
     const topClientes = await userRepo
