@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
-import { FaTimes, FaPlus, FaTrash, FaShoppingCart, FaCalendarAlt } from 'react-icons/fa';
+import { useState, useEffect, useMemo } from 'react';
+import { FaTimes, FaPlus, FaTrash, FaShoppingCart, FaCalendarAlt, FaSearch, FaUserPlus } from 'react-icons/fa';
 import { useCrearOperacion } from '@hooks/papeles/useCrearOperacion';
+import PopUpCrearCliente from '@components/popup/trabajadorTienda/cliente/popUpCrearCliente';
 
-const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], productos = [] }) => {
+const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], productos = [], onClienteCreado }) => {
     // Estados del formulario
     const [formData, setFormData] = useState({
         id_cliente: '',
@@ -15,6 +16,11 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
     // Estados para días hábiles
     const [diasHabiles, setDiasHabiles] = useState(30);
 
+    // Estados para búsqueda y filtros
+    const [busquedaCliente, setBusquedaCliente] = useState('');
+    const [busquedaProducto, setBusquedaProducto] = useState('');
+    const [mostrarPopupCrearCliente, setMostrarPopupCrearCliente] = useState(false);
+
     const [productosSeleccionados, setProductosSeleccionados] = useState([]);
     const [productoActual, setProductoActual] = useState({
         id_producto: '',
@@ -24,6 +30,29 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
     });
 
     const { loading, error, success, crearOperacion, reset } = useCrearOperacion();
+
+    // Filtrar clientes según búsqueda
+    const clientesFiltrados = useMemo(() => {
+        if (!busquedaCliente.trim()) return clientes;
+
+        const termino = busquedaCliente.toLowerCase();
+        return clientes.filter(cliente =>
+            cliente.nombreCompleto?.toLowerCase().includes(termino) ||
+            cliente.email?.toLowerCase().includes(termino) ||
+            cliente.rut?.toLowerCase().includes(termino)
+        );
+    }, [clientes, busquedaCliente]);
+
+    // Filtrar productos según búsqueda
+    const productosFiltrados = useMemo(() => {
+        if (!busquedaProducto.trim()) return productos;
+
+        const termino = busquedaProducto.toLowerCase();
+        return productos.filter(producto =>
+            producto.nombre_producto?.toLowerCase().includes(termino) ||
+            producto.descripcion_producto?.toLowerCase().includes(termino)
+        );
+    }, [productos, busquedaProducto]);
 
     // Calcular costo total
     const costoTotal = productosSeleccionados.reduce((sum, prod) => {
@@ -135,6 +164,15 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
         }
     };
 
+    // Handler para cerrar el popup de crear cliente
+    const handleClienteCreado = () => {
+        setMostrarPopupCrearCliente(false);
+        // Llamar al callback para recargar la lista de clientes
+        if (onClienteCreado) {
+            onClienteCreado();
+        }
+    };
+
     // Enviar formulario
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -189,6 +227,8 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
             especificaciones: ''
         });
         setDiasHabiles(30);
+        setBusquedaCliente('');
+        setBusquedaProducto('');
         reset();
         onClose();
     };
@@ -224,11 +264,34 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                         <div className="bg-stone-50 rounded-lg p-5">
                             <h3 className="text-lg font-bold text-stone-800 mb-4">Datos de la Operación</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Cliente */}
-                                <div>
-                                    <label className="block text-sm font-medium text-stone-700 mb-1">
-                                        Cliente *
-                                    </label>
+                                {/* Cliente con búsqueda */}
+                                <div className="md:col-span-2">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="block text-sm font-medium text-stone-700">
+                                            Cliente *
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setMostrarPopupCrearCliente(true)}
+                                            className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1.5"
+                                        >
+                                            <FaUserPlus />
+                                            Nuevo Cliente
+                                        </button>
+                                    </div>
+
+                                    {/* Buscador de cliente */}
+                                    <div className="relative mb-2">
+                                        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 text-sm" />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar cliente por nombre, email o RUT..."
+                                            value={busquedaCliente}
+                                            onChange={(e) => setBusquedaCliente(e.target.value)}
+                                            className="w-full pl-10 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent text-sm"
+                                        />
+                                    </div>
+
                                     <select
                                         name="id_cliente"
                                         value={formData.id_cliente}
@@ -237,12 +300,22 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
                                     >
                                         <option value="">Seleccione un cliente</option>
-                                        {clientes.map(cliente => (
+                                        {clientesFiltrados.map(cliente => (
                                             <option key={cliente.id} value={cliente.id}>
                                                 {cliente.nombreCompleto} - {cliente.rut}
                                             </option>
                                         ))}
                                     </select>
+                                    {busquedaCliente && clientesFiltrados.length === 0 && (
+                                        <p className="text-xs text-red-600 mt-1">
+                                            No se encontraron clientes. Puede crear uno nuevo con el botón "+ Nuevo Cliente"
+                                        </p>
+                                    )}
+                                    {busquedaCliente && clientesFiltrados.length > 0 && (
+                                        <p className="text-xs text-stone-500 mt-1">
+                                            Mostrando {clientesFiltrados.length} de {clientes.length} clientes
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Estado */}
@@ -378,6 +451,24 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                         {/* Agregar Productos */}
                         <div className="bg-blue-50 rounded-lg p-5">
                             <h3 className="text-lg font-bold text-stone-800 mb-4">Agregar Productos</h3>
+
+                            {/* Buscador de productos */}
+                            <div className="relative mb-3">
+                                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400 text-sm" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar producto por nombre..."
+                                    value={busquedaProducto}
+                                    onChange={(e) => setBusquedaProducto(e.target.value)}
+                                    className="w-full pl-10 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                                />
+                            </div>
+                            {busquedaProducto && productosFiltrados.length > 0 && (
+                                <p className="text-xs text-stone-500 mb-3">
+                                    Mostrando {productosFiltrados.length} de {productos.length} productos
+                                </p>
+                            )}
+
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                                 <div className="md:col-span-2">
                                     <select
@@ -387,7 +478,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                     >
                                         <option value="">Seleccione producto</option>
-                                        {productos.map(prod => (
+                                        {productosFiltrados.map(prod => (
                                             <option key={prod.id_producto} value={prod.id_producto}>
                                                 {prod.nombre_producto} - ${prod.precio_venta?.toLocaleString()}
                                             </option>
@@ -533,6 +624,13 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                     </button>
                 </div>
             </div>
+
+            {/* PopUp: Crear Cliente */}
+            <PopUpCrearCliente
+                isOpen={mostrarPopupCrearCliente}
+                onClose={() => setMostrarPopupCrearCliente(false)}
+                onSuccess={handleClienteCreado}
+            />
         </div>
     );
 };

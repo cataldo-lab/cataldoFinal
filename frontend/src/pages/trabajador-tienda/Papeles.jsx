@@ -931,6 +931,7 @@ const Papeles = () => {
                     onSuccess={handleOperacionCreada}
                     clientes={clientes}
                     productos={productos}
+                    onClienteCreado={fetchClientes}
                 />
 
                {selectedClienteId && cliente && (
