@@ -7,9 +7,13 @@ const _filename = fileURLToPath(import.meta.url);
 
 const _dirname = path.dirname(_filename);
 
-const envFilePath = path.resolve(_dirname, "../../.env");
+const envFilePath = path.resolve(_dirname, ".env");
 
 dotenv.config({ path: envFilePath });
+
+// Debug: verificar que las variables se carguen correctamente
+console.log('📄 Archivo .env cargado desde:', envFilePath);
+console.log('🔑 ACCESS_TOKEN_SECRET:', process.env.ACCESS_TOKEN_SECRET ? '***configurado***' : 'NO CONFIGURADO');
 
 export const PORT = process.env.PORT;
 export const HOST = process.env.HOST;
