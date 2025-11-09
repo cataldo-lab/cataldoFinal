@@ -1,0 +1,172 @@
+// frontend/src/hooks/correos/useCorreo.jsx
+
+import { useState, useEffect, useCallback } from 'react';
+import { getAllClientes } from '@services/clienteData.service';
+import { enviarCorreo, getHistorialCorreos } from '@services/correo.service';
+
+/**
+ * Hook para manejar el servicio de correos
+ * Incluye obtención de clientes, envío de correos e historial
+ * @param {Object} options - Opciones de configuración
+ * @param {boolean} options.autoFetch - Si debe cargar automáticamente clientes e historial (default: true)
+ * @returns {Object} Estado y funciones para manejar correos
+ */
+export const useCorreo = ({ autoFetch = true } = {}) => {
+  // Estados para clientes
+  const [clientes, setClientes] = useState([]);
+  const [clientesLoading, setClientesLoading] = useState(autoFetch);
+  const [clientesError, setClientesError] = useState(null);
+
+  // Estados para historial
+  const [historial, setHistorial] = useState([]);
+  const [historialLoading, setHistorialLoading] = useState(false);
+  const [historialError, setHistorialError] = useState(null);
+
+  // Estados para envío
+  const [enviando, setEnviando] = useState(false);
+  const [envioError, setEnvioError] = useState(null);
+
+  /**
+   * Obtiene la lista de clientes desde el backend
+   */
+  const fetchClientes = useCallback(async () => {
+    try {
+      setClientesLoading(true);
+      setClientesError(null);
+
+      const response = await getAllClientes();
+
+      if (response.status === 'Success' && response.data) {
+        // Formatear los datos para el selector
+        const clientesFormateados = response.data.map(cliente => ({
+          id: cliente.id_usuario,
+          nombreCompleto: cliente.nombre_completo,
+          email: cliente.email,
+          telefono: cliente.telefono,
+          categoria: cliente.categoria
+        }));
+        setClientes(clientesFormateados);
+      } else {
+        setClientesError(response.message || 'Error al cargar clientes');
+      }
+    } catch (error) {
+      const errorMessage = error.message || 'Error al cargar clientes';
+      setClientesError(errorMessage);
+      console.error('Error en fetchClientes:', error);
+    } finally {
+      setClientesLoading(false);
+    }
+  }, []);
+
+  /**
+   * Obtiene el historial de correos enviados
+   */
+  const fetchHistorial = useCallback(async (filtros = {}) => {
+    try {
+      setHistorialLoading(true);
+      setHistorialError(null);
+
+      const response = await getHistorialCorreos(filtros);
+
+      if (response.status === 'Success' && response.data) {
+        // Formatear los datos del historial
+        const historialFormateado = response.data.map(correo => ({
+          id: correo.id_correo,
+          destinatario: correo.nombre_destinatario || 'Destinatario',
+          email: correo.email_destinatario,
+          asunto: correo.asunto,
+          fecha: new Date(correo.fecha_envio).toLocaleDateString('es-CL'),
+          estado: correo.estado || 'enviado'
+        }));
+        setHistorial(historialFormateado);
+      } else {
+        setHistorialError(response.message || 'Error al cargar historial');
+        setHistorial([]);
+      }
+    } catch (error) {
+      const errorMessage = error.message || 'Error al cargar historial';
+      setHistorialError(errorMessage);
+      console.error('Error en fetchHistorial:', error);
+      setHistorial([]);
+    } finally {
+      setHistorialLoading(false);
+    }
+  }, []);
+
+  /**
+   * Envía un correo electrónico
+   * @param {Object} correoData - Datos del correo
+   * @param {string} correoData.destinatario - Email del destinatario
+   * @param {string} correoData.asunto - Asunto del correo
+   * @param {string} correoData.mensaje - Contenido del mensaje
+   * @param {string} correoData.tipo - Tipo de plantilla (opcional)
+   * @returns {Promise<Object>} Resultado del envío
+   */
+  const enviar = useCallback(async (correoData) => {
+    try {
+      setEnviando(true);
+      setEnvioError(null);
+
+      const response = await enviarCorreo({
+        destinatario: correoData.destinatario,
+        asunto: correoData.asunto,
+        mensaje: correoData.mensaje,
+        tipo: correoData.tipo || 'personalizado'
+      });
+
+      if (response.status === 'Success') {
+        // Recargar historial después de enviar
+        await fetchHistorial();
+        return { success: true, message: 'Correo enviado exitosamente' };
+      } else {
+        const errorMessage = response.message || 'No se pudo enviar el correo';
+        setEnvioError(errorMessage);
+        return { success: false, message: errorMessage };
+      }
+    } catch (error) {
+      const errorMessage = error.message || 'No se pudo enviar el correo';
+      setEnvioError(errorMessage);
+      console.error('Error en enviar:', error);
+      return { success: false, message: errorMessage };
+    } finally {
+      setEnviando(false);
+    }
+  }, [fetchHistorial]);
+
+  /**
+   * Recarga todos los datos (clientes e historial)
+   */
+  const refetchAll = useCallback(async () => {
+    await Promise.all([fetchClientes(), fetchHistorial()]);
+  }, [fetchClientes, fetchHistorial]);
+
+  // Cargar datos iniciales si autoFetch está habilitado
+  useEffect(() => {
+    if (autoFetch) {
+      fetchClientes();
+      fetchHistorial();
+    }
+  }, [autoFetch, fetchClientes, fetchHistorial]);
+
+  return {
+    // Datos de clientes
+    clientes,
+    clientesLoading,
+    clientesError,
+
+    // Datos de historial
+    historial,
+    historialLoading,
+    historialError,
+
+    // Estados de envío
+    enviando,
+    envioError,
+
+    // Funciones
+    fetchClientes,
+    fetchHistorial,
+    enviar,
+    refetchAll
+  };
+};

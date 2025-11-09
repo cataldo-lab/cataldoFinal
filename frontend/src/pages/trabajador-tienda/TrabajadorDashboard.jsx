@@ -2,10 +2,10 @@
 import { useTrabajadorDashboard } from '../../hooks/Dashboard/useTrabajadorDashborad.jsx';
 
 import { FaExclamationTriangle,
-         FaCheckCircle, FaBox, 
-         FaDollarSign, FaWarehouse, 
-         FaClipboardList, FaUsers, 
-         FaHandshake, FaClock } from 'react-icons/fa';
+         FaCheckCircle, FaBox,
+         FaDollarSign, FaWarehouse,
+         FaClipboardList, FaUsers,
+         FaHandshake, FaClock, FaEnvelope } from 'react-icons/fa';
 
 import { MdSpaceDashboard } from "react-icons/md";
 
@@ -195,44 +195,53 @@ const TrabajadorDashboard = () => {
                         <span className="text-3xl"></span>
                         Accesos Rápidos
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                        <button 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <button
                             onClick={() => window.location.href = '/trabajador/papeles'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
-                            <FaClipboardList className="text-2xl" /> 
+                            <FaClipboardList className="text-2xl" />
                             <span>Papeles</span>
                         </button>
-                        
-                        <button 
+
+                        <button
                             onClick={() => window.location.href = '/trabajador/products'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
-                            <FaBox className="text-2xl" /> 
+                            <FaBox className="text-2xl" />
                             <span>Gestionar Productos</span>
                         </button>
-                        
-                        <button 
+
+                        <button
                             onClick={() => window.location.href = '/trabajador/materiales'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-orange-700 hover:to-orange-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
-                            <FaWarehouse className="text-2xl" /> 
+                            <FaWarehouse className="text-2xl" />
                             <span>Ver Materiales</span>
                         </button>
-                        
-                        <button 
+
+                        <button
                             onClick={() => window.location.href = '/trabajador/clientes'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
                             <FaUsers className="text-2xl" />
                             <span>Ver Clientes</span>
                         </button>
-                        <button 
+
+                        <button
                             onClick={() => window.location.href = '/trabajador/proveedores'}
                             className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                         >
                             <FaHandshake className="text-2xl" />
                             <span>Proveedores</span>
+                        </button>
+
+                        <button
+                            onClick={() => window.location.href = '/trabajador/correos'}
+                            className="bg-gradient-to-r from-stone-600 to-stone-500 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+                        >
+                            <FaEnvelope className="text-2xl" />
+                            <span>Servicio Correo</span>
                         </button>
                     </div>
                 </div>
