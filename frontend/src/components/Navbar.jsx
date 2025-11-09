@@ -80,7 +80,6 @@ const Navbar = () => {
         if (activeRole === "gerente" && rolesDisponibles.includes("gerente")) {
             routes.push(
                 { path: "/gerente/dashboard", label: "Dashboard" },
-                { path: "/gerente/metricas", label: "Metricas" },
             );
         }
 
