@@ -12,7 +12,8 @@ import {
   FaClock
 } from 'react-icons/fa';
 import { showSuccessAlert, showErrorAlert } from '@helpers/sweetAlert.js';
-import { getClients } from '@services/trabajadorTienda.service';
+import { getAllClientes } from '@services/clienteData.service';
+import { enviarCorreo, getHistorialCorreos } from '@services/correo.service';
 
 const ServicioCorreo = () => {
   const [activeTab, setActiveTab] = useState('enviar');
@@ -59,36 +60,44 @@ const ServicioCorreo = () => {
 
   const cargarClientes = async () => {
     try {
-      const response = await getClients();
-      if (response.status === 'Success') {
-        setClientes(response.data || []);
+      const response = await getAllClientes();
+      if (response.status === 'Success' && response.data) {
+        // Formatear los datos para el selector
+        const clientesFormateados = response.data.map(cliente => ({
+          id: cliente.id_usuario,
+          nombreCompleto: cliente.nombre_completo,
+          email: cliente.email,
+          telefono: cliente.telefono,
+          categoria: cliente.categoria
+        }));
+        setClientes(clientesFormateados);
       }
     } catch (error) {
       console.error('Error al cargar clientes:', error);
+      showErrorAlert('Error', 'No se pudieron cargar los clientes');
     }
   };
 
-  const cargarHistorial = () => {
-    // Datos de ejemplo para el historial
-    const historialEjemplo = [
-      {
-        id: 1,
-        destinatario: 'Juan Pérez',
-        email: 'juan@example.com',
-        asunto: 'Cotización de su pedido',
-        fecha: new Date().toLocaleDateString('es-CL'),
-        estado: 'enviado'
-      },
-      {
-        id: 2,
-        destinatario: 'María González',
-        email: 'maria@example.com',
-        asunto: 'Su pedido está listo',
-        fecha: new Date(Date.now() - 86400000).toLocaleDateString('es-CL'),
-        estado: 'enviado'
+  const cargarHistorial = async () => {
+    try {
+      const response = await getHistorialCorreos();
+      if (response.status === 'Success' && response.data) {
+        // Formatear los datos del historial
+        const historialFormateado = response.data.map(correo => ({
+          id: correo.id_correo,
+          destinatario: correo.nombre_destinatario || 'Destinatario',
+          email: correo.email_destinatario,
+          asunto: correo.asunto,
+          fecha: new Date(correo.fecha_envio).toLocaleDateString('es-CL'),
+          estado: correo.estado || 'enviado'
+        }));
+        setHistorialCorreos(historialFormateado);
       }
-    ];
-    setHistorialCorreos(historialEjemplo);
+    } catch (error) {
+      console.error('Error al cargar historial:', error);
+      // Si falla, mostrar array vacío en lugar de error
+      setHistorialCorreos([]);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -121,26 +130,33 @@ const ServicioCorreo = () => {
 
     setLoading(true);
     try {
-      // Aquí iría la llamada al servicio de envío de correos
-      // await enviarCorreo(formData);
-
-      // Simulación de envío exitoso
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      showSuccessAlert('Correo enviado', 'El correo ha sido enviado exitosamente');
-
-      // Limpiar formulario
-      setFormData({
-        destinatario: '',
-        asunto: '',
-        mensaje: '',
-        plantilla: ''
+      // Llamada al servicio de envío de correos
+      const response = await enviarCorreo({
+        destinatario: formData.destinatario,
+        asunto: formData.asunto,
+        mensaje: formData.mensaje,
+        tipo: formData.plantilla || 'personalizado'
       });
 
-      // Actualizar historial
-      cargarHistorial();
+      if (response.status === 'Success') {
+        showSuccessAlert('Correo enviado', 'El correo ha sido enviado exitosamente');
+
+        // Limpiar formulario
+        setFormData({
+          destinatario: '',
+          asunto: '',
+          mensaje: '',
+          plantilla: ''
+        });
+
+        // Actualizar historial
+        await cargarHistorial();
+      } else {
+        showErrorAlert('Error', response.message || 'No se pudo enviar el correo');
+      }
     } catch (error) {
-      showErrorAlert('Error', 'No se pudo enviar el correo');
+      console.error('Error al enviar correo:', error);
+      showErrorAlert('Error', error.message || 'No se pudo enviar el correo');
     } finally {
       setLoading(false);
     }
