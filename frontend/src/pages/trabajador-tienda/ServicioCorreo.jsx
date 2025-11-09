@@ -310,13 +310,14 @@ const ServicioCorreo = () => {
                     {modoEmail === 'manual' && (
                       <>
                         <input
-                          type="email"
+                          type="text"
                           name="destinatario"
                           value={formData.destinatario}
                           onChange={handleInputChange}
                           placeholder="ejemplo@correo.com"
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
                           required
+                          autoComplete="off"
                         />
                         <p className="text-xs text-gray-500 mt-1">
                           Ingrese el email del destinatario (puede ser cualquier email, no necesita estar registrado)
