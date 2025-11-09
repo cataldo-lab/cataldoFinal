@@ -16,6 +16,7 @@ import { useCorreo } from '@hooks/correos/useCorreo';
 
 const ServicioCorreo = () => {
   const [activeTab, setActiveTab] = useState('enviar');
+  const [modoEmail, setModoEmail] = useState('cliente'); // 'cliente' o 'manual'
 
   // Usar el hook personalizado
   const {
@@ -71,6 +72,20 @@ const ServicioCorreo = () => {
     }));
   };
 
+  const cambiarModoEmail = (modo) => {
+    setModoEmail(modo);
+    // Limpiar destinatario al cambiar de modo
+    setFormData(prev => ({
+      ...prev,
+      destinatario: ''
+    }));
+  };
+
+  const validarEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   const aplicarPlantilla = (plantillaKey) => {
     const plantilla = plantillas[plantillaKey];
     if (plantilla) {
@@ -88,6 +103,12 @@ const ServicioCorreo = () => {
 
     if (!formData.destinatario || !formData.asunto || !formData.mensaje) {
       showErrorAlert('Error', 'Por favor complete todos los campos');
+      return;
+    }
+
+    // Validar formato de email si es modo manual
+    if (modoEmail === 'manual' && !validarEmail(formData.destinatario)) {
+      showErrorAlert('Error', 'Por favor ingrese un email válido');
       return;
     }
 
@@ -109,6 +130,8 @@ const ServicioCorreo = () => {
         mensaje: '',
         plantilla: ''
       });
+      // Resetear al modo cliente
+      setModoEmail('cliente');
     } else {
       showErrorAlert('Error', resultado.message);
     }
@@ -163,46 +186,98 @@ const ServicioCorreo = () => {
                 <form onSubmit={handleEnviarCorreo} className="space-y-6">
                   {/* Destinatario */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      <FaUserFriends className="inline mr-2" />
-                      Destinatario
-                    </label>
-                    {error ? (
-                      <div className="w-full px-4 py-3 border border-red-300 bg-red-50 rounded-lg text-red-700 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <FaExclamationCircle />
-                          <span>Error al cargar clientes</span>
-                        </div>
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="block text-sm font-semibold text-gray-700">
+                        <FaUserFriends className="inline mr-2" />
+                        Destinatario
+                      </label>
+                      {/* Toggle modo de email */}
+                      <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
                         <button
-                          onClick={refetch}
-                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                          type="button"
+                          onClick={() => cambiarModoEmail('cliente')}
+                          className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                            modoEmail === 'cliente'
+                              ? 'bg-stone-600 text-white shadow-sm'
+                              : 'text-gray-600 hover:bg-gray-200'
+                          }`}
                         >
-                          Reintentar
+                          Cliente Registrado
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => cambiarModoEmail('manual')}
+                          className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                            modoEmail === 'manual'
+                              ? 'bg-stone-600 text-white shadow-sm'
+                              : 'text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          Email Manual
                         </button>
                       </div>
-                    ) : (
-                      <select
-                        name="destinatario"
-                        value={formData.destinatario}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
-                        required
-                        disabled={loading}
-                      >
-                        <option value="">
-                          {loading ? 'Cargando clientes...' : 'Seleccione un cliente...'}
-                        </option>
-                        {clientes.map((cliente) => (
-                          <option key={cliente.id} value={cliente.email}>
-                            {cliente.nombreCompleto} - {cliente.email}
-                          </option>
-                        ))}
-                      </select>
+                    </div>
+
+                    {/* Modo Cliente Registrado */}
+                    {modoEmail === 'cliente' && (
+                      <>
+                        {error ? (
+                          <div className="w-full px-4 py-3 border border-red-300 bg-red-50 rounded-lg text-red-700 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <FaExclamationCircle />
+                              <span>Error al cargar clientes</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={refetch}
+                              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                            >
+                              Reintentar
+                            </button>
+                          </div>
+                        ) : (
+                          <select
+                            name="destinatario"
+                            value={formData.destinatario}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
+                            required
+                            disabled={loading}
+                          >
+                            <option value="">
+                              {loading ? 'Cargando clientes...' : 'Seleccione un cliente...'}
+                            </option>
+                            {clientes.map((cliente) => (
+                              <option key={cliente.id} value={cliente.email}>
+                                {cliente.nombreCompleto} - {cliente.email}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        {total > 0 && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {total} cliente{total !== 1 ? 's' : ''} disponible{total !== 1 ? 's' : ''}
+                          </p>
+                        )}
+                      </>
                     )}
-                    {total > 0 && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {total} cliente{total !== 1 ? 's' : ''} disponible{total !== 1 ? 's' : ''}
-                      </p>
+
+                    {/* Modo Email Manual */}
+                    {modoEmail === 'manual' && (
+                      <>
+                        <input
+                          type="email"
+                          name="destinatario"
+                          value={formData.destinatario}
+                          onChange={handleInputChange}
+                          placeholder="ejemplo@correo.com"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
+                          required
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Ingrese el email del destinatario (puede ser cualquier email, no necesita estar registrado)
+                        </p>
+                      </>
                     )}
                   </div>
 
