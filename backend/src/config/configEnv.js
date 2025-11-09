@@ -11,6 +11,10 @@ const envFilePath = path.resolve(_dirname, "../../.env");
 
 dotenv.config({ path: envFilePath });
 
+// Debug: verificar que las variables se carguen correctamente
+console.log('📄 Archivo .env cargado desde:', envFilePath);
+console.log('🔑 ACCESS_TOKEN_SECRET:', process.env.ACCESS_TOKEN_SECRET ? '***configurado***' : 'NO CONFIGURADO');
+
 export const PORT = process.env.PORT;
 export const HOST = process.env.HOST;
 export const DB_USERNAME = process.env.DB_USERNAME;
