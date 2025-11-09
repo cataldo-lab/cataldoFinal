@@ -67,16 +67,16 @@ function generarMensajeCumpleanos(cliente) {
 
 ¡Feliz Cumpleaños! 🎂🎉
 
-En nombre de todo el equipo de Cataldo Imprenta, queremos desearte un día lleno de alegría y celebraciones.
+En nombre de la familia StiloMuebles, queremos desearte un día lleno de alegría y celebraciones.
 
 Hoy cumples ${edad} años y queremos agradecerte por ser parte de nuestra familia de clientes. Tu confianza en nosotros es nuestro mejor regalo.
 
-Como detalle especial, te ofrecemos un ${cliente.categoria_cliente === 'vip' || cliente.categoria_cliente === 'premium' ? '15%' : '10%'} de descuento en tu próximo pedido. Solo menciona este correo al realizar tu orden.
+Como detalle especial, te ofrecemos un ${cliente.categoria_cliente === 'vip' || cliente.categoria_cliente === 'premium' ? '10%' : '7%'} de descuento en tu próximo pedido. Solo menciona este correo al realizar tu orden.
 
 ¡Que tengas un excelente día!
 
 Con cariño,
-Equipo Cataldo Imprenta`;
+Equipo StiloMuebles`;
 
   return { asunto, mensaje };
 }

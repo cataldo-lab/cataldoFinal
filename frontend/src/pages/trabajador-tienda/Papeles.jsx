@@ -469,10 +469,7 @@ const Papeles = () => {
                     <label>Teléfono:</label>
                     <value>${cliente.telefono || 'N/A'}</value>
                 </div>
-                <div class="info-item" style="grid-column: 1 / -1;">
-                    <label>Dirección:</label>
-                    <value>${cliente.direccion || 'N/A'}</value>
-                </div>
+                
             </div>
         </div>
 
