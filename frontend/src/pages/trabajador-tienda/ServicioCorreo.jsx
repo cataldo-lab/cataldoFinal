@@ -11,7 +11,8 @@ import {
   FaExclamationCircle,
   FaClock,
   FaFilePdf,
-  FaTrash
+  FaTrash,
+  FaSearch
 } from 'react-icons/fa';
 import { showSuccessAlert, showErrorAlert } from '@helpers/sweetAlert.js';
 import { useCorreo } from '@hooks/correos/useCorreo';
@@ -19,6 +20,7 @@ import { useCorreo } from '@hooks/correos/useCorreo';
 const ServicioCorreo = () => {
   const [activeTab, setActiveTab] = useState('enviar');
   const [modoEmail, setModoEmail] = useState('cliente'); // 'cliente' o 'manual'
+  const [busquedaCliente, setBusquedaCliente] = useState('');
 
   // Usar el hook personalizado
   const {
@@ -41,6 +43,12 @@ const ServicioCorreo = () => {
     plantilla: '',
     archivo: null
   });
+
+  // Filtrar clientes basados en la búsqueda
+  const clientesFiltrados = clientes.filter(cliente =>
+    cliente.nombreCompleto.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
+    cliente.email.toLowerCase().includes(busquedaCliente.toLowerCase())
+  );
 
   // Plantillas predefinidas
   const plantillas = {
@@ -113,11 +121,12 @@ const ServicioCorreo = () => {
 
   const cambiarModoEmail = (modo) => {
     setModoEmail(modo);
-    // Limpiar destinatario al cambiar de modo
+    // Limpiar destinatario y búsqueda al cambiar de modo
     setFormData(prev => ({
       ...prev,
       destinatario: ''
     }));
+    setBusquedaCliente('');
   };
 
   const validarEmail = (email) => {
@@ -174,6 +183,8 @@ const ServicioCorreo = () => {
       // Limpiar el input file
       const fileInput = document.querySelector('input[type="file"]');
       if (fileInput) fileInput.value = '';
+      // Limpiar búsqueda
+      setBusquedaCliente('');
       // Resetear al modo cliente
       setModoEmail('cliente');
     } else {
@@ -280,27 +291,57 @@ const ServicioCorreo = () => {
                             </button>
                           </div>
                         ) : (
-                          <select
-                            name="destinatario"
-                            value={formData.destinatario}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
-                            required
-                            disabled={loading}
-                          >
-                            <option value="">
-                              {loading ? 'Cargando clientes...' : 'Seleccione un cliente...'}
-                            </option>
-                            {clientes.map((cliente) => (
-                              <option key={cliente.id} value={cliente.email}>
-                                {cliente.nombreCompleto} - {cliente.email}
+                          <>
+                            {/* Campo de búsqueda */}
+                            <div className="relative mb-2">
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <FaSearch className="text-gray-400" />
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="Buscar cliente por nombre o email..."
+                                value={busquedaCliente}
+                                onChange={(e) => setBusquedaCliente(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent text-sm"
+                                disabled={loading}
+                              />
+                              {busquedaCliente && (
+                                <button
+                                  type="button"
+                                  onClick={() => setBusquedaCliente('')}
+                                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                >
+                                  <FaTimes />
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Selector de clientes */}
+                            <select
+                              name="destinatario"
+                              value={formData.destinatario}
+                              onChange={handleInputChange}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
+                              required
+                              disabled={loading}
+                            >
+                              <option value="">
+                                {loading ? 'Cargando clientes...' : 'Seleccione un cliente...'}
                               </option>
-                            ))}
-                          </select>
+                              {clientesFiltrados.map((cliente) => (
+                                <option key={cliente.id} value={cliente.email}>
+                                  {cliente.nombreCompleto} - {cliente.email}
+                                </option>
+                              ))}
+                            </select>
+                          </>
                         )}
                         {total > 0 && (
                           <p className="text-xs text-gray-500 mt-1">
-                            {total} cliente{total !== 1 ? 's' : ''} disponible{total !== 1 ? 's' : ''}
+                            {busquedaCliente
+                              ? `${clientesFiltrados.length} de ${total} cliente${total !== 1 ? 's' : ''}`
+                              : `${total} cliente${total !== 1 ? 's' : ''} disponible${total !== 1 ? 's' : ''}`
+                            }
                           </p>
                         )}
                       </>
