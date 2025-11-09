@@ -9,12 +9,33 @@ import axios from './root.service.js';
  * @param {string} correoData.asunto - Asunto del correo
  * @param {string} correoData.mensaje - Contenido del mensaje
  * @param {string} correoData.tipo - Tipo de plantilla (opcional)
+ * @param {File} correoData.archivo - Archivo PDF adjunto (opcional)
  * @returns {Promise} Resultado del envío
  */
 export const enviarCorreo = async (correoData) => {
   try {
-    const response = await axios.post('/correos/enviar', correoData);
-    return response.data;
+    // Si hay archivo, usar FormData
+    if (correoData.archivo) {
+      const formData = new FormData();
+      formData.append('destinatario', correoData.destinatario);
+      formData.append('asunto', correoData.asunto);
+      formData.append('mensaje', correoData.mensaje);
+      if (correoData.tipo) {
+        formData.append('tipo', correoData.tipo);
+      }
+      formData.append('archivo', correoData.archivo);
+
+      const response = await axios.post('/correos/enviar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
+    } else {
+      // Sin archivo, enviar JSON normal
+      const response = await axios.post('/correos/enviar', correoData);
+      return response.data;
+    }
   } catch (error) {
     console.error('Error al enviar correo:', error);
     throw error.response?.data || error;

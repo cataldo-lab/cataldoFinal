@@ -1,5 +1,6 @@
 "use strict";
 import { Router } from "express";
+import multer from "multer";
 import {
   enviarCorreoController,
   getHistorialCorreosController,
@@ -11,11 +12,28 @@ import { isEmployee, isManager } from "../middlewares/authorization.middleware.j
 
 const router = Router();
 
+// Configurar multer para archivos en memoria
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    // Solo aceptar PDFs
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos PDF'), false);
+    }
+  }
+});
+
 // Aplicar autenticación a todas las rutas
 router.use(authenticateJwt);
 
-// Ruta para enviar correo (requiere ser empleado o gerente)
-router.post("/enviar", isEmployee, isManager, enviarCorreoController);
+// Ruta para enviar correo con archivo adjunto opcional (requiere ser empleado o gerente)
+router.post("/enviar", isEmployee, isManager, upload.single('archivo'), enviarCorreoController);
 
 // Ruta para obtener historial de correos (requiere ser empleado o gerente)
 router.get("/historial", isEmployee, isManager, getHistorialCorreosController);

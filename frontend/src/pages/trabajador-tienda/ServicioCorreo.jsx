@@ -9,7 +9,9 @@ import {
   FaTimes,
   FaCheck,
   FaExclamationCircle,
-  FaClock
+  FaClock,
+  FaFilePdf,
+  FaTrash
 } from 'react-icons/fa';
 import { showSuccessAlert, showErrorAlert } from '@helpers/sweetAlert.js';
 import { useCorreo } from '@hooks/correos/useCorreo';
@@ -36,7 +38,8 @@ const ServicioCorreo = () => {
     destinatario: '',
     asunto: '',
     mensaje: '',
-    plantilla: ''
+    plantilla: '',
+    archivo: null
   });
 
   // Plantillas predefinidas
@@ -70,6 +73,42 @@ const ServicioCorreo = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleArchivoChange = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      // Validar que sea PDF
+      if (file.type !== 'application/pdf') {
+        showErrorAlert('Error', 'Solo se permiten archivos PDF');
+        e.target.value = '';
+        return;
+      }
+
+      // Validar tamaño (máximo 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        showErrorAlert('Error', 'El archivo no debe superar los 5MB');
+        e.target.value = '';
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        archivo: file
+      }));
+    }
+  };
+
+  const eliminarArchivo = () => {
+    setFormData(prev => ({
+      ...prev,
+      archivo: null
+    }));
+    // Limpiar el input file
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) fileInput.value = '';
   };
 
   const cambiarModoEmail = (modo) => {
@@ -117,7 +156,8 @@ const ServicioCorreo = () => {
       destinatario: formData.destinatario,
       asunto: formData.asunto,
       mensaje: formData.mensaje,
-      tipo: formData.plantilla
+      tipo: formData.plantilla,
+      archivo: formData.archivo
     });
 
     if (resultado.success) {
@@ -128,8 +168,12 @@ const ServicioCorreo = () => {
         destinatario: '',
         asunto: '',
         mensaje: '',
-        plantilla: ''
+        plantilla: '',
+        archivo: null
       });
+      // Limpiar el input file
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = '';
       // Resetear al modo cliente
       setModoEmail('cliente');
     } else {
@@ -313,6 +357,50 @@ const ServicioCorreo = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent resize-none"
                       required
                     />
+                  </div>
+
+                  {/* Archivo adjunto */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <FaFilePdf className="inline mr-2" />
+                      Archivo Adjunto (opcional)
+                    </label>
+
+                    {!formData.archivo ? (
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".pdf,application/pdf"
+                          onChange={handleArchivoChange}
+                          className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-stone-50 file:text-stone-700 hover:file:bg-stone-100"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Solo archivos PDF, máximo 5MB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between px-4 py-3 border-2 border-green-300 bg-green-50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <FaFilePdf className="text-red-600 text-xl" />
+                          <div>
+                            <p className="text-sm font-semibold text-green-800">
+                              {formData.archivo.name}
+                            </p>
+                            <p className="text-xs text-green-600">
+                              {(formData.archivo.size / 1024).toFixed(2)} KB
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={eliminarArchivo}
+                          className="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-all flex items-center gap-1 text-sm font-semibold"
+                        >
+                          <FaTrash />
+                          Eliminar
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Botón enviar */}
