@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getAllClientes } from '@services/clienteData.service';
+import { enviarCorreo as enviarCorreoAPI, getHistorialCorreos as getHistorialCorreosAPI } from '@services/correo.service';
 
 /**
  * Hook para manejar el servicio de correos
@@ -61,19 +62,40 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
 
   /**
    * Obtiene el historial de correos enviados
-   * TODO: Implementar cuando el backend esté listo
    */
   const fetchHistorial = useCallback(async (filtros = {}) => {
     try {
       setHistorialLoading(true);
       setHistorialError(null);
 
-      // TODO: Descomentar cuando el backend esté implementado
-      // const response = await getHistorialCorreos(filtros);
-      // ... procesamiento de response
+      const response = await getHistorialCorreosAPI(filtros);
 
-      // Por ahora, retornar array vacío
-      setHistorial([]);
+      if (response.success) {
+        const correosData = response.data?.correos || [];
+
+        // Formatear los datos para el componente
+        const correosFormateados = correosData.map(correo => ({
+          id: correo.id,
+          destinatario: correo.usuario_emisor?.nombreCompleto || 'Destinatario',
+          email: correo.destinatario,
+          asunto: correo.asunto,
+          mensaje: correo.mensaje,
+          tipo: correo.tipo,
+          estado: correo.estado,
+          fecha: new Date(correo.fecha_envio).toLocaleString('es-CL', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        }));
+
+        setHistorial(correosFormateados);
+      } else {
+        setHistorialError(response.message || 'Error al cargar historial');
+        setHistorial([]);
+      }
     } catch (error) {
       const errorMessage = error.message || 'Error al cargar historial';
       setHistorialError(errorMessage);
@@ -86,7 +108,6 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
 
   /**
    * Envía un correo electrónico
-   * TODO: Implementar cuando el backend esté listo
    * @param {Object} correoData - Datos del correo
    * @param {string} correoData.destinatario - Email del destinatario
    * @param {string} correoData.asunto - Asunto del correo
@@ -99,22 +120,28 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
       setEnviando(true);
       setEnvioError(null);
 
-      // TODO: Descomentar cuando el backend esté implementado
-      // const response = await enviarCorreo({
-      //   destinatario: correoData.destinatario,
-      //   asunto: correoData.asunto,
-      //   mensaje: correoData.mensaje,
-      //   tipo: correoData.tipo || 'personalizado'
-      // });
+      const response = await enviarCorreoAPI({
+        destinatario: correoData.destinatario,
+        asunto: correoData.asunto,
+        mensaje: correoData.mensaje,
+        tipo: correoData.tipo || 'personalizado'
+      });
 
-      // Por ahora, simular éxito
-      console.log('Simulando envío de correo:', correoData);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (response.success) {
+        // Recargar historial después de enviar exitosamente
+        await fetchHistorial();
 
-      // Recargar historial después de enviar (cuando esté implementado)
-      // await fetchHistorial();
-
-      return { success: true, message: 'Correo enviado exitosamente (simulado - pendiente implementación backend)' };
+        return {
+          success: true,
+          message: 'Correo enviado exitosamente'
+        };
+      } else {
+        setEnvioError(response.message);
+        return {
+          success: false,
+          message: response.message || 'No se pudo enviar el correo'
+        };
+      }
     } catch (error) {
       const errorMessage = error.message || 'No se pudo enviar el correo';
       setEnvioError(errorMessage);
@@ -123,7 +150,7 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
     } finally {
       setEnviando(false);
     }
-  }, []);
+  }, [fetchHistorial]);
 
   /**
    * Recarga todos los datos (clientes e historial)
