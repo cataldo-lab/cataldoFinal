@@ -12,6 +12,7 @@ export const TipoCorreo = {
     CONFIRMACION: "confirmacion",
     ENTREGA: "entrega",
     SEGUIMIENTO: "seguimiento",
+    CUMPLEANOS: "cumpleanos",
     PERSONALIZADO: "personalizado"
 };
 

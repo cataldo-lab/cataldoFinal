@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { AppDataSource } from "../config/configDb.js";
 import Correo from "../entity/correo.entity.js";
 import User from "../entity/personas/user.entity.js";
+import Cliente from "../entity/personas/cliente.entity.js";
 import { EstadoEnvio, TipoCorreo } from "../entity/correo.entity.js";
 
 // Configurar el transportador de nodemailer
@@ -266,6 +267,87 @@ export async function enviarCorreoMasivoService(data) {
 }
 
 /**
+ * Envía correos de cumpleaños a clientes que cumplen años hoy
+ * @param {number} idRemitente - ID del usuario que envía (sistema)
+ * @returns {Promise<Array>} [resultado, error]
+ */
+export async function enviarCorreosCumpleanosService(idRemitente) {
+  try {
+    const clienteRepository = AppDataSource.getRepository(Cliente);
+    const userRepository = AppDataSource.getRepository(User);
+
+    // Obtener fecha actual en formato MM-DD
+    const hoy = new Date();
+    const mesHoy = String(hoy.getMonth() + 1).padStart(2, '0');
+    const diaHoy = String(hoy.getDate()).padStart(2, '0');
+
+    // Buscar clientes que cumplen años hoy
+    const clientesConCumpleanos = await clienteRepository
+      .createQueryBuilder("cliente")
+      .leftJoinAndSelect("cliente.user", "user")
+      .where("EXTRACT(MONTH FROM cliente.cumpleanos_cliente) = :mes", { mes: parseInt(mesHoy) })
+      .andWhere("EXTRACT(DAY FROM cliente.cumpleanos_cliente) = :dia", { dia: parseInt(diaHoy) })
+      .andWhere("cliente.Acepta_uso_datos = :acepta", { acepta: true })
+      .andWhere("user.email IS NOT NULL")
+      .getMany();
+
+    if (clientesConCumpleanos.length === 0) {
+      return [{
+        enviados: 0,
+        clientes: [],
+        mensaje: 'No hay clientes con cumpleaños hoy'
+      }, null];
+    }
+
+    // Obtener plantilla de cumpleaños
+    const plantillas = obtenerPlantillasCorreo();
+    const plantillaCumpleanos = plantillas.cumpleanos;
+
+    const resultados = {
+      exitosos: [],
+      fallidos: [],
+      total: clientesConCumpleanos.length
+    };
+
+    // Enviar correo a cada cliente
+    for (const cliente of clientesConCumpleanos) {
+      const user = cliente.user;
+
+      // Personalizar mensaje con nombre
+      const mensajePersonalizado = plantillaCumpleanos.mensaje.replace('{nombre}', user.nombreCompleto);
+
+      const [correo, error] = await enviarCorreoService({
+        destinatario: user.email,
+        asunto: plantillaCumpleanos.asunto,
+        mensaje: mensajePersonalizado,
+        tipo: TipoCorreo.CUMPLEANOS,
+        idRemitente: idRemitente,
+        idCliente: user.id
+      });
+
+      if (error) {
+        resultados.fallidos.push({
+          cliente: user.nombreCompleto,
+          email: user.email,
+          error
+        });
+      } else {
+        resultados.exitosos.push({
+          cliente: user.nombreCompleto,
+          email: user.email,
+          correoId: correo.id_correo
+        });
+      }
+    }
+
+    return [resultados, null];
+  } catch (error) {
+    console.error("Error en enviarCorreosCumpleanosService:", error);
+    return [null, "Error al enviar correos de cumpleaños"];
+  }
+}
+
+/**
  * Obtiene plantillas de correos predefinidas
  * @returns {Object} Plantillas disponibles
  */
@@ -290,6 +372,11 @@ export function obtenerPlantillasCorreo() {
       nombre: 'Seguimiento de Pedido',
       asunto: 'Estado de su pedido',
       mensaje: 'Estimado/a cliente,\n\nLe informamos sobre el estado actual de su pedido.\n\nSaludos cordiales,\nEquipo de Atención al Cliente'
+    },
+    cumpleanos: {
+      nombre: 'Felicitación de Cumpleaños',
+      asunto: '¡Feliz Cumpleaños! 🎉',
+      mensaje: 'Estimado/a {nombre},\n\n¡Feliz cumpleaños! 🎂🎉\n\nEn Cataldo Lab queremos desearte un día maravilloso lleno de alegría y momentos especiales.\n\nComo regalo, te ofrecemos un descuento especial en tu próximo pedido.\n\n¡Que tengas un excelente día!\n\nCon cariño,\nEquipo Cataldo Lab'
     }
   };
 }

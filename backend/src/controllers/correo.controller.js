@@ -4,8 +4,10 @@ import {
   obtenerHistorialCorreosService,
   obtenerCorreoPorIdService,
   enviarCorreoMasivoService,
-  obtenerPlantillasCorreo
+  obtenerPlantillasCorreo,
+  enviarCorreosCumpleanosService
 } from "../services/correo.service.js";
+import { ejecutarEnvioCumpleanosManual } from "../services/cumpleanos.cron.js";
 import {
   enviarCorreoValidation,
   enviarCorreoMasivoValidation,
@@ -193,6 +195,58 @@ export async function obtenerPlantillas(req, res) {
     handleSuccess(res, 200, "Plantillas obtenidas exitosamente", plantillas);
   } catch (error) {
     console.error("Error en obtenerPlantillas:", error);
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+/**
+ * Envía correos de cumpleaños manualmente
+ * Busca clientes que cumplen años hoy y les envía correo automático
+ */
+export async function enviarCorreosCumpleanos(req, res) {
+  try {
+    const idRemitente = req.user?.id;
+    const email = req.user?.email;
+    const ip = req.ip || req.connection.remoteAddress;
+
+    console.log('🎂 Ejecutando envío manual de correos de cumpleaños...');
+
+    // Enviar correos de cumpleaños
+    const [resultado, errorResultado] = await enviarCorreosCumpleanosService(idRemitente);
+
+    if (errorResultado) {
+      await logAuditEvent({
+        tipo: TipoEvento.EMAIL_SENT,
+        email: email,
+        ip: ip,
+        descripcion: `Error al enviar correos de cumpleaños: ${errorResultado}`,
+        entidad: "Correo",
+        nivel: NivelSeveridad.ERROR,
+        exito: false
+      });
+
+      return handleErrorClient(res, 400, "Error al enviar correos de cumpleaños", errorResultado);
+    }
+
+    // Registrar auditoría
+    await logAuditEvent({
+      tipo: TipoEvento.EMAIL_SENT,
+      email: email,
+      ip: ip,
+      descripcion: `Envío de correos de cumpleaños: ${resultado.exitosos.length}/${resultado.total} exitosos`,
+      entidad: "Correo",
+      datosDespues: {
+        total: resultado.total,
+        exitosos: resultado.exitosos.length,
+        fallidos: resultado.fallidos.length
+      },
+      nivel: resultado.fallidos.length > 0 ? NivelSeveridad.WARNING : NivelSeveridad.INFO,
+      exito: true
+    });
+
+    handleSuccess(res, 200, "Correos de cumpleaños procesados", resultado);
+  } catch (error) {
+    console.error("Error en enviarCorreosCumpleanos:", error);
     handleErrorServer(res, 500, error.message);
   }
 }

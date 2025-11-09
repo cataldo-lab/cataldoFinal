@@ -5,7 +5,8 @@ import {
   obtenerHistorial,
   obtenerCorreoPorId,
   enviarCorreoMasivo,
-  obtenerPlantillas
+  obtenerPlantillas,
+  enviarCorreosCumpleanos
 } from "../controllers/correo.controller.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isAdmin, isGerente, isTrabajadorTienda } from "../middlewares/authorization.middleware.js";
@@ -19,6 +20,7 @@ router.use(authenticateJwt);
 router
   .post("/enviar", isTrabajadorTienda, enviarCorreo)
   .post("/enviar-masivo", isGerente, enviarCorreoMasivo)
+  .post("/enviar-cumpleanos", isGerente, enviarCorreosCumpleanos)
   .get("/historial", isTrabajadorTienda, obtenerHistorial)
   .get("/plantillas", isTrabajadorTienda, obtenerPlantillas)
   .get("/:id", isTrabajadorTienda, obtenerCorreoPorId);
