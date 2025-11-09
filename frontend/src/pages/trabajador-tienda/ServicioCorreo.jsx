@@ -59,6 +59,11 @@ const ServicioCorreo = () => {
       nombre: 'Seguimiento de Pedido',
       asunto: 'Estado de su pedido',
       mensaje: 'Estimado/a cliente,\n\nLe informamos sobre el estado actual de su pedido.\n\nSaludos cordiales,\nEquipo de Atención al Cliente'
+    },
+    cumpleanos: {
+      nombre: 'Felicitación de Cumpleaños',
+      asunto: '¡Feliz Cumpleaños! 🎉',
+      mensaje: 'Estimado/a cliente,\n\n¡Feliz cumpleaños! 🎂🎉\n\nEn Cataldo Lab queremos desearte un día maravilloso lleno de alegría y momentos especiales.\n\nComo regalo, te ofrecemos un descuento especial en tu próximo pedido.\n\n¡Que tengas un excelente día!\n\nCon cariño,\nEquipo Cataldo Lab'
     }
   };
 

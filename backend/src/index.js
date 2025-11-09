@@ -10,6 +10,7 @@ import { cookieKey, HOST, PORT } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
 import { runInitialSetup } from "./config/initialSetup.js";
 import { passportJwtSetup } from "./auth/passport.auth.js";
+import { iniciarCronCumpleanos } from "./services/cumpleanos.cron.js";
 
 async function setupServer() {
   try {
@@ -73,19 +74,23 @@ async function setupServer() {
 async function setupAPI() {
   try {
     console.log("🔄 Iniciando API...");
-    
+
     // 1. Conectar a la base de datos
     console.log("📊 Conectando a la base de datos...");
     await connectDB();
-    
+
     // 2. Ejecutar setup inicial (crear datos básicos)
     console.log("⚙️ Ejecutando configuración inicial...");
     await runInitialSetup();
-    
-    // 3. Iniciar servidor
+
+    // 3. Iniciar cron jobs
+    console.log("⏰ Iniciando tareas programadas...");
+    iniciarCronCumpleanos();
+
+    // 4. Iniciar servidor
     console.log("🌐 Iniciando servidor...");
     await setupServer();
-    
+
   } catch (error) {
     console.log("❌ Error en index.js -> setupAPI(), el error es: ", error);
     process.exit(1);
