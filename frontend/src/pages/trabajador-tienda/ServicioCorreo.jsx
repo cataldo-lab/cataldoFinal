@@ -20,12 +20,14 @@ const ServicioCorreo = () => {
   // Usar el hook personalizado
   const {
     clientes,
-    clientesLoading,
-    clientesError,
+    total,
+    loading,
+    error,
     historial,
     historialLoading,
     enviando,
-    enviar
+    enviar,
+    refetch
   } = useCorreo();
 
   // Estado del formulario
@@ -165,20 +167,43 @@ const ServicioCorreo = () => {
                       <FaUserFriends className="inline mr-2" />
                       Destinatario
                     </label>
-                    <select
-                      name="destinatario"
-                      value={formData.destinatario}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
-                      required
-                    >
-                      <option value="">Seleccione un cliente...</option>
-                      {clientes.map((cliente) => (
-                        <option key={cliente.id} value={cliente.email}>
-                          {cliente.nombreCompleto} - {cliente.email}
+                    {error ? (
+                      <div className="w-full px-4 py-3 border border-red-300 bg-red-50 rounded-lg text-red-700 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FaExclamationCircle />
+                          <span>Error al cargar clientes</span>
+                        </div>
+                        <button
+                          onClick={refetch}
+                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                        >
+                          Reintentar
+                        </button>
+                      </div>
+                    ) : (
+                      <select
+                        name="destinatario"
+                        value={formData.destinatario}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
+                        required
+                        disabled={loading}
+                      >
+                        <option value="">
+                          {loading ? 'Cargando clientes...' : 'Seleccione un cliente...'}
                         </option>
-                      ))}
-                    </select>
+                        {clientes.map((cliente) => (
+                          <option key={cliente.id} value={cliente.email}>
+                            {cliente.nombreCompleto} - {cliente.email}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    {total > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {total} cliente{total !== 1 ? 's' : ''} disponible{total !== 1 ? 's' : ''}
+                      </p>
+                    )}
                   </div>
 
                   {/* Asunto */}

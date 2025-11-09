@@ -13,8 +13,9 @@ import { getAllClientes } from '@services/clienteData.service';
 export const useCorreo = ({ autoFetch = true } = {}) => {
   // Estados para clientes
   const [clientes, setClientes] = useState([]);
-  const [clientesLoading, setClientesLoading] = useState(autoFetch);
-  const [clientesError, setClientesError] = useState(null);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(autoFetch);
+  const [error, setError] = useState(null);
 
   // Estados para historial
   const [historial, setHistorial] = useState([]);
@@ -30,14 +31,15 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
    */
   const fetchClientes = useCallback(async () => {
     try {
-      setClientesLoading(true);
-      setClientesError(null);
+      setLoading(true);
+      setError(null);
 
-      const response = await getAllClientes();
+      const resultado = await getAllClientes();
 
-      if (response.status === 'Success' && response.data) {
+      if (resultado.success) {
+        const clientesData = resultado.data?.clientes || resultado.data || [];
         // Formatear los datos para el selector
-        const clientesFormateados = response.data.map(cliente => ({
+        const clientesFormateados = clientesData.map(cliente => ({
           id: cliente.id_usuario,
           nombreCompleto: cliente.nombre_completo,
           email: cliente.email,
@@ -45,15 +47,15 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
           categoria: cliente.categoria
         }));
         setClientes(clientesFormateados);
+        setTotal(resultado.data?.total || clientesFormateados.length);
       } else {
-        setClientesError(response.message || 'Error al cargar clientes');
+        setError(resultado.message || 'Error al cargar clientes');
       }
-    } catch (error) {
-      const errorMessage = error.message || 'Error al cargar clientes';
-      setClientesError(errorMessage);
-      console.error('Error en fetchClientes:', error);
+    } catch (err) {
+      setError(err.message || 'Error al cargar clientes');
+      console.error('Error en fetchClientes:', err);
     } finally {
-      setClientesLoading(false);
+      setLoading(false);
     }
   }, []);
 
@@ -141,8 +143,9 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
   return {
     // Datos de clientes
     clientes,
-    clientesLoading,
-    clientesError,
+    total,
+    loading,
+    error,
 
     // Datos de historial
     historial,
@@ -154,7 +157,7 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
     envioError,
 
     // Funciones
-    fetchClientes,
+    refetch: fetchClientes,
     fetchHistorial,
     enviar,
     refetchAll
