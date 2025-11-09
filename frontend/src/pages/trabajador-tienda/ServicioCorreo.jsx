@@ -1,5 +1,5 @@
 // frontend/src/pages/trabajador-tienda/ServicioCorreo.jsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   FaEnvelope,
   FaPaperPlane,
@@ -12,14 +12,21 @@ import {
   FaClock
 } from 'react-icons/fa';
 import { showSuccessAlert, showErrorAlert } from '@helpers/sweetAlert.js';
-import { getAllClientes } from '@services/clienteData.service';
-import { enviarCorreo, getHistorialCorreos } from '@services/correo.service';
+import { useCorreo } from '@hooks/correos/useCorreo';
 
 const ServicioCorreo = () => {
   const [activeTab, setActiveTab] = useState('enviar');
-  const [clientes, setClientes] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [historialCorreos, setHistorialCorreos] = useState([]);
+
+  // Usar el hook personalizado
+  const {
+    clientes,
+    clientesLoading,
+    clientesError,
+    historial,
+    historialLoading,
+    enviando,
+    enviar
+  } = useCorreo();
 
   // Estado del formulario
   const [formData, setFormData] = useState({
@@ -53,52 +60,6 @@ const ServicioCorreo = () => {
     }
   };
 
-  useEffect(() => {
-    cargarClientes();
-    cargarHistorial();
-  }, []);
-
-  const cargarClientes = async () => {
-    try {
-      const response = await getAllClientes();
-      if (response.status === 'Success' && response.data) {
-        // Formatear los datos para el selector
-        const clientesFormateados = response.data.map(cliente => ({
-          id: cliente.id_usuario,
-          nombreCompleto: cliente.nombre_completo,
-          email: cliente.email,
-          telefono: cliente.telefono,
-          categoria: cliente.categoria
-        }));
-        setClientes(clientesFormateados);
-      }
-    } catch (error) {
-      console.error('Error al cargar clientes:', error);
-      showErrorAlert('Error', 'No se pudieron cargar los clientes');
-    }
-  };
-
-  const cargarHistorial = async () => {
-    try {
-      const response = await getHistorialCorreos();
-      if (response.status === 'Success' && response.data) {
-        // Formatear los datos del historial
-        const historialFormateado = response.data.map(correo => ({
-          id: correo.id_correo,
-          destinatario: correo.nombre_destinatario || 'Destinatario',
-          email: correo.email_destinatario,
-          asunto: correo.asunto,
-          fecha: new Date(correo.fecha_envio).toLocaleDateString('es-CL'),
-          estado: correo.estado || 'enviado'
-        }));
-        setHistorialCorreos(historialFormateado);
-      }
-    } catch (error) {
-      console.error('Error al cargar historial:', error);
-      // Si falla, mostrar array vacío en lugar de error
-      setHistorialCorreos([]);
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -128,37 +89,26 @@ const ServicioCorreo = () => {
       return;
     }
 
-    setLoading(true);
-    try {
-      // Llamada al servicio de envío de correos
-      const response = await enviarCorreo({
-        destinatario: formData.destinatario,
-        asunto: formData.asunto,
-        mensaje: formData.mensaje,
-        tipo: formData.plantilla || 'personalizado'
+    // Usar la función enviar del hook
+    const resultado = await enviar({
+      destinatario: formData.destinatario,
+      asunto: formData.asunto,
+      mensaje: formData.mensaje,
+      tipo: formData.plantilla
+    });
+
+    if (resultado.success) {
+      showSuccessAlert('Correo enviado', resultado.message);
+
+      // Limpiar formulario
+      setFormData({
+        destinatario: '',
+        asunto: '',
+        mensaje: '',
+        plantilla: ''
       });
-
-      if (response.status === 'Success') {
-        showSuccessAlert('Correo enviado', 'El correo ha sido enviado exitosamente');
-
-        // Limpiar formulario
-        setFormData({
-          destinatario: '',
-          asunto: '',
-          mensaje: '',
-          plantilla: ''
-        });
-
-        // Actualizar historial
-        await cargarHistorial();
-      } else {
-        showErrorAlert('Error', response.message || 'No se pudo enviar el correo');
-      }
-    } catch (error) {
-      console.error('Error al enviar correo:', error);
-      showErrorAlert('Error', error.message || 'No se pudo enviar el correo');
-    } finally {
-      setLoading(false);
+    } else {
+      showErrorAlert('Error', resultado.message);
     }
   };
 
@@ -268,14 +218,14 @@ const ServicioCorreo = () => {
                   {/* Botón enviar */}
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={enviando}
                     className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all duration-300 transform hover:scale-105 ${
-                      loading
+                      enviando
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-gradient-to-r from-stone-600 to-stone-500 hover:from-stone-700 hover:to-stone-600 shadow-lg hover:shadow-xl'
                     }`}
                   >
-                    {loading ? (
+                    {enviando ? (
                       <>
                         <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                         Enviando...
@@ -338,18 +288,23 @@ const ServicioCorreo = () => {
                   Historial de Correos Enviados
                 </h3>
                 <span className="bg-stone-100 px-4 py-2 rounded-full text-sm font-semibold text-stone-700">
-                  Total: {historialCorreos.length}
+                  Total: {historial.length}
                 </span>
               </div>
 
-              {historialCorreos.length === 0 ? (
+              {historialLoading ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-stone-600 mb-4"></div>
+                  <p className="text-xl text-gray-500">Cargando historial...</p>
+                </div>
+              ) : historial.length === 0 ? (
                 <div className="text-center py-12">
                   <FaEnvelope className="text-6xl text-gray-300 mx-auto mb-4" />
                   <p className="text-xl text-gray-500">No hay correos enviados aún</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {historialCorreos.map((correo) => (
+                  {historial.map((correo) => (
                     <div
                       key={correo.id}
                       className="bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all"
