@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getAllClientes } from '@services/clienteData.service';
-import { enviarCorreo, getHistorialCorreos } from '@services/correo.service';
 
 /**
  * Hook para manejar el servicio de correos
@@ -60,29 +59,19 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
 
   /**
    * Obtiene el historial de correos enviados
+   * TODO: Implementar cuando el backend esté listo
    */
   const fetchHistorial = useCallback(async (filtros = {}) => {
     try {
       setHistorialLoading(true);
       setHistorialError(null);
 
-      const response = await getHistorialCorreos(filtros);
+      // TODO: Descomentar cuando el backend esté implementado
+      // const response = await getHistorialCorreos(filtros);
+      // ... procesamiento de response
 
-      if (response.status === 'Success' && response.data) {
-        // Formatear los datos del historial
-        const historialFormateado = response.data.map(correo => ({
-          id: correo.id_correo,
-          destinatario: correo.nombre_destinatario || 'Destinatario',
-          email: correo.email_destinatario,
-          asunto: correo.asunto,
-          fecha: new Date(correo.fecha_envio).toLocaleDateString('es-CL'),
-          estado: correo.estado || 'enviado'
-        }));
-        setHistorial(historialFormateado);
-      } else {
-        setHistorialError(response.message || 'Error al cargar historial');
-        setHistorial([]);
-      }
+      // Por ahora, retornar array vacío
+      setHistorial([]);
     } catch (error) {
       const errorMessage = error.message || 'Error al cargar historial';
       setHistorialError(errorMessage);
@@ -95,6 +84,7 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
 
   /**
    * Envía un correo electrónico
+   * TODO: Implementar cuando el backend esté listo
    * @param {Object} correoData - Datos del correo
    * @param {string} correoData.destinatario - Email del destinatario
    * @param {string} correoData.asunto - Asunto del correo
@@ -107,22 +97,22 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
       setEnviando(true);
       setEnvioError(null);
 
-      const response = await enviarCorreo({
-        destinatario: correoData.destinatario,
-        asunto: correoData.asunto,
-        mensaje: correoData.mensaje,
-        tipo: correoData.tipo || 'personalizado'
-      });
+      // TODO: Descomentar cuando el backend esté implementado
+      // const response = await enviarCorreo({
+      //   destinatario: correoData.destinatario,
+      //   asunto: correoData.asunto,
+      //   mensaje: correoData.mensaje,
+      //   tipo: correoData.tipo || 'personalizado'
+      // });
 
-      if (response.status === 'Success') {
-        // Recargar historial después de enviar
-        await fetchHistorial();
-        return { success: true, message: 'Correo enviado exitosamente' };
-      } else {
-        const errorMessage = response.message || 'No se pudo enviar el correo';
-        setEnvioError(errorMessage);
-        return { success: false, message: errorMessage };
-      }
+      // Por ahora, simular éxito
+      console.log('Simulando envío de correo:', correoData);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Recargar historial después de enviar (cuando esté implementado)
+      // await fetchHistorial();
+
+      return { success: true, message: 'Correo enviado exitosamente (simulado - pendiente implementación backend)' };
     } catch (error) {
       const errorMessage = error.message || 'No se pudo enviar el correo';
       setEnvioError(errorMessage);
@@ -131,7 +121,7 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
     } finally {
       setEnviando(false);
     }
-  }, [fetchHistorial]);
+  }, []);
 
   /**
    * Recarga todos los datos (clientes e historial)
