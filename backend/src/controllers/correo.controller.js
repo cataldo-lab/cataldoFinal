@@ -21,6 +21,26 @@ export async function enviarCorreoController(req, res) {
       });
     }
 
+    // Validar archivo adjunto si existe (solo PDF)
+    if (req.file) {
+      const allowedMimeTypes = ['application/pdf'];
+      if (!allowedMimeTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({
+          success: false,
+          message: "Solo se permiten archivos PDF como adjuntos"
+        });
+      }
+
+      // Validar tamaño (máximo 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (req.file.size > maxSize) {
+        return res.status(400).json({
+          success: false,
+          message: "El archivo adjunto no debe superar los 5MB"
+        });
+      }
+    }
+
     // Obtener ID del usuario autenticado (si existe)
     const id_usuario_emisor = req.user?.id || null;
 
@@ -30,7 +50,8 @@ export async function enviarCorreoController(req, res) {
       asunto,
       mensaje,
       tipo: tipo || "personalizado",
-      id_usuario_emisor
+      id_usuario_emisor,
+      archivo: req.file || null
     });
 
     return res.status(resultado.success ? 200 : 500).json(resultado);

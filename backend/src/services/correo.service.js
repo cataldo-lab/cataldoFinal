@@ -35,11 +35,12 @@ function crearTransportador() {
  * @param {string} correoData.mensaje - Contenido del mensaje
  * @param {string} correoData.tipo - Tipo de plantilla (opcional)
  * @param {number} correoData.id_usuario_emisor - ID del usuario que envía (opcional)
+ * @param {Object} correoData.archivo - Archivo adjunto (opcional)
  * @returns {Promise<Object>} Resultado del envío
  */
 export async function enviarCorreo(correoData) {
   try {
-    const { destinatario, asunto, mensaje, tipo = "personalizado", id_usuario_emisor = null } = correoData;
+    const { destinatario, asunto, mensaje, tipo = "personalizado", id_usuario_emisor = null, archivo = null } = correoData;
 
     // Validar datos requeridos
     if (!destinatario || !asunto || !mensaje) {
@@ -69,6 +70,17 @@ export async function enviarCorreo(correoData) {
       text: mensaje,
       html: `<p>${mensaje.replace(/\n/g, '<br>')}</p>`, // Convertir saltos de línea a HTML
     };
+
+    // Agregar adjunto si existe
+    if (archivo) {
+      mailOptions.attachments = [
+        {
+          filename: archivo.originalname,
+          content: archivo.buffer,
+          contentType: archivo.mimetype
+        }
+      ];
+    }
 
     // Intentar enviar el correo
     let estado = "enviado";
