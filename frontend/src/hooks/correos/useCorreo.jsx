@@ -113,6 +113,7 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
    * @param {string} correoData.asunto - Asunto del correo
    * @param {string} correoData.mensaje - Contenido del mensaje
    * @param {string} correoData.tipo - Tipo de plantilla (opcional)
+   * @param {File} correoData.archivo - Archivo PDF adjunto (opcional)
    * @returns {Promise<Object>} Resultado del envío
    */
   const enviar = useCallback(async (correoData) => {
@@ -124,7 +125,8 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
         destinatario: correoData.destinatario,
         asunto: correoData.asunto,
         mensaje: correoData.mensaje,
-        tipo: correoData.tipo || 'personalizado'
+        tipo: correoData.tipo || 'personalizado',
+        archivo: correoData.archivo
       });
 
       if (response.success) {
