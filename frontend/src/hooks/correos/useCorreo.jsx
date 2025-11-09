@@ -2,10 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getAllClientes } from '@services/clienteData.service';
-import {
-  enviarCorreo as enviarCorreoService,
-  obtenerHistorialCorreos
-} from '@services/correos.service';
 
 /**
  * Hook para manejar el servicio de correos
@@ -65,40 +61,19 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
 
   /**
    * Obtiene el historial de correos enviados
+   * TODO: Implementar cuando el backend esté listo
    */
   const fetchHistorial = useCallback(async (filtros = {}) => {
     try {
       setHistorialLoading(true);
       setHistorialError(null);
 
-      const resultado = await obtenerHistorialCorreos(filtros);
+      // TODO: Descomentar cuando el backend esté implementado
+      // const response = await getHistorialCorreos(filtros);
+      // ... procesamiento de response
 
-      if (resultado.success) {
-        const correosData = resultado.data?.correos || [];
-
-        // Formatear los datos para la UI
-        const correosFormateados = correosData.map(correo => ({
-          id: correo.id_postventa,
-          destinatario: correo.destinatario_nombre || correo.destinatario_email,
-          email: correo.destinatario_email,
-          asunto: correo.asunto,
-          tipo: correo.tipo_correo,
-          estado: correo.estado_envio,
-          fecha: new Date(correo.fecha_envio || correo.fecha_creacion).toLocaleString('es-CL', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
-          mensaje: correo.mensaje
-        }));
-
-        setHistorial(correosFormateados);
-      } else {
-        setHistorialError(resultado.message || 'Error al cargar historial');
-        setHistorial([]);
-      }
+      // Por ahora, retornar array vacío
+      setHistorial([]);
     } catch (error) {
       const errorMessage = error.message || 'Error al cargar historial';
       setHistorialError(errorMessage);
@@ -111,6 +86,7 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
 
   /**
    * Envía un correo electrónico
+   * TODO: Implementar cuando el backend esté listo
    * @param {Object} correoData - Datos del correo
    * @param {string} correoData.destinatario - Email del destinatario
    * @param {string} correoData.asunto - Asunto del correo
@@ -123,22 +99,22 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
       setEnviando(true);
       setEnvioError(null);
 
-      const response = await enviarCorreoService({
-        destinatario: correoData.destinatario,
-        asunto: correoData.asunto,
-        mensaje: correoData.mensaje,
-        tipo: correoData.tipo || 'personalizado'
-      });
+      // TODO: Descomentar cuando el backend esté implementado
+      // const response = await enviarCorreo({
+      //   destinatario: correoData.destinatario,
+      //   asunto: correoData.asunto,
+      //   mensaje: correoData.mensaje,
+      //   tipo: correoData.tipo || 'personalizado'
+      // });
 
-      // Recargar historial después de enviar exitosamente
-      if (response.success) {
-        await fetchHistorial();
-      }
+      // Por ahora, simular éxito
+      console.log('Simulando envío de correo:', correoData);
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      return {
-        success: response.success || true,
-        message: response.message || 'Correo enviado exitosamente'
-      };
+      // Recargar historial después de enviar (cuando esté implementado)
+      // await fetchHistorial();
+
+      return { success: true, message: 'Correo enviado exitosamente (simulado - pendiente implementación backend)' };
     } catch (error) {
       const errorMessage = error.message || 'No se pudo enviar el correo';
       setEnvioError(errorMessage);
@@ -147,7 +123,7 @@ export const useCorreo = ({ autoFetch = true } = {}) => {
     } finally {
       setEnviando(false);
     }
-  }, [fetchHistorial]);
+  }, []);
 
   /**
    * Recarga todos los datos (clientes e historial)
