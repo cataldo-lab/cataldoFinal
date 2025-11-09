@@ -16,6 +16,18 @@ const correoRepository = AppDataSource.getRepository(CorreoSchema);
  * Crea el transportador de nodemailer
  */
 function crearTransportador() {
+  // Debug: Verificar variables de entorno
+  console.log('🔍 Configuración de email:');
+  console.log('  HOST:', EMAIL_HOST);
+  console.log('  PORT:', EMAIL_PORT);
+  console.log('  USER:', EMAIL_USER);
+  console.log('  PASS:', EMAIL_PASS ? '***configurado***' : 'NO CONFIGURADO');
+  console.log('  FROM:', EMAIL_FROM);
+
+  if (!EMAIL_USER || !EMAIL_PASS) {
+    throw new Error('Las credenciales de email (EMAIL_USER y EMAIL_PASS) no están configuradas en el archivo .env');
+  }
+
   return nodemailer.createTransport({
     host: EMAIL_HOST,
     port: EMAIL_PORT,
