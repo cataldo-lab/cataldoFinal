@@ -38,9 +38,6 @@ const ServicioCorreo = () => {
     plantilla: ''
   });
 
-  // Estado para tipo de destinatario
-  const [tipoDestinatario, setTipoDestinatario] = useState('registrado'); // 'registrado' o 'manual'
-
   // Plantillas predefinidas
   const plantillas = {
     cotizacion: {
@@ -94,15 +91,6 @@ const ServicioCorreo = () => {
       return;
     }
 
-    // Validar formato de email si es manual
-    if (tipoDestinatario === 'manual') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.destinatario)) {
-        showErrorAlert('Error', 'Por favor ingrese un email válido');
-        return;
-      }
-    }
-
     // Usar la función enviar del hook
     const resultado = await enviar({
       destinatario: formData.destinatario,
@@ -121,7 +109,6 @@ const ServicioCorreo = () => {
         mensaje: '',
         plantilla: ''
       });
-      setTipoDestinatario('registrado');
     } else {
       showErrorAlert('Error', resultado.message);
     }
@@ -180,99 +167,42 @@ const ServicioCorreo = () => {
                       <FaUserFriends className="inline mr-2" />
                       Destinatario
                     </label>
-
-                    {/* Toggle para tipo de destinatario */}
-                    <div className="flex gap-2 mb-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTipoDestinatario('registrado');
-                          setFormData(prev => ({ ...prev, destinatario: '' }));
-                        }}
-                        className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all ${
-                          tipoDestinatario === 'registrado'
-                            ? 'bg-stone-600 text-white shadow-md'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
+                    {error ? (
+                      <div className="w-full px-4 py-3 border border-red-300 bg-red-50 rounded-lg text-red-700 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FaExclamationCircle />
+                          <span>Error al cargar clientes</span>
+                        </div>
+                        <button
+                          onClick={refetch}
+                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                        >
+                          Reintentar
+                        </button>
+                      </div>
+                    ) : (
+                      <select
+                        name="destinatario"
+                        value={formData.destinatario}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
+                        required
+                        disabled={loading}
                       >
-                        Cliente Registrado
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTipoDestinatario('manual');
-                          setFormData(prev => ({ ...prev, destinatario: '' }));
-                        }}
-                        className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all ${
-                          tipoDestinatario === 'manual'
-                            ? 'bg-stone-600 text-white shadow-md'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
-                      >
-                        Email Manual
-                      </button>
-                    </div>
-
-                    {/* Select para clientes registrados */}
-                    {tipoDestinatario === 'registrado' && (
-                      <>
-                        {error ? (
-                          <div className="w-full px-4 py-3 border border-red-300 bg-red-50 rounded-lg text-red-700 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <FaExclamationCircle />
-                              <span>Error al cargar clientes</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={refetch}
-                              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                            >
-                              Reintentar
-                            </button>
-                          </div>
-                        ) : (
-                          <select
-                            name="destinatario"
-                            value={formData.destinatario}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
-                            required
-                            disabled={loading}
-                          >
-                            <option value="">
-                              {loading ? 'Cargando clientes...' : 'Seleccione un cliente...'}
-                            </option>
-                            {clientes.map((cliente) => (
-                              <option key={cliente.id} value={cliente.email}>
-                                {cliente.nombreCompleto} - {cliente.email}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                        {total > 0 && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            {total} cliente{total !== 1 ? 's' : ''} disponible{total !== 1 ? 's' : ''}
-                          </p>
-                        )}
-                      </>
+                        <option value="">
+                          {loading ? 'Cargando clientes...' : 'Seleccione un cliente...'}
+                        </option>
+                        {clientes.map((cliente) => (
+                          <option key={cliente.id} value={cliente.email}>
+                            {cliente.nombreCompleto} - {cliente.email}
+                          </option>
+                        ))}
+                      </select>
                     )}
-
-                    {/* Input para email manual */}
-                    {tipoDestinatario === 'manual' && (
-                      <>
-                        <input
-                          type="email"
-                          name="destinatario"
-                          value={formData.destinatario}
-                          onChange={handleInputChange}
-                          placeholder="ejemplo@correo.com"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent"
-                          required
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          Ingrese el email del destinatario (no necesita estar registrado)
-                        </p>
-                      </>
+                    {total > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {total} cliente{total !== 1 ? 's' : ''} disponible{total !== 1 ? 's' : ''}
+                      </p>
                     )}
                   </div>
 

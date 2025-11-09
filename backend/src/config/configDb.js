@@ -19,9 +19,8 @@ import { representanteSchema } from "../entity/representante.entity.js";
 import { historialSchema } from "../entity/historial.entity.js";
 import { EncuestaSchema } from "../entity/encuesta.entity.js";
 import { CostoTercerosSchema } from "../entity/costoTerceros.entity.js";
-import { AuditLogSchema } from "../entity/audit_log.entity.js";
+import { AuditLogSchema } from "../entity/audit_log.entity.js"; 
 import { CompraMaterialSchema } from "../entity/compraMaterial.entity.js";
-import { PostventaSchema } from "../entity/postventa.entity.js";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -52,8 +51,7 @@ export const AppDataSource = new DataSource({
     EncuestaSchema,
     CostoTercerosSchema,
     AuditLogSchema,
-    CompraMaterialSchema,
-    PostventaSchema
+    CompraMaterialSchema
   ]
 });
 
