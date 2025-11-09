@@ -1,5 +1,6 @@
 // frontend/src/pages/gerente/gerenteDashboard.jsx
 
+import { useState } from 'react';
 import { useDashboard } from '@hooks/dashboard/useDashboard';
 import {
   FaChartLine,
@@ -15,7 +16,8 @@ import {
   FaSync,
   FaChartBar,
   FaStar,
-  FaArrowUp
+  FaArrowUp,
+  FaTimes
 } from 'react-icons/fa';
 
 const GerenteDashboard = () => {
@@ -31,12 +33,261 @@ const GerenteDashboard = () => {
     cargarDashboard
   } = useDashboard();
 
+  const [modalAbierto, setModalAbierto] = useState(null);
+  const [datosModal, setDatosModal] = useState(null);
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
       currency: 'CLP',
       minimumFractionDigits: 0
     }).format(value || 0);
+  };
+
+  const abrirModal = (tipo, datos) => {
+    setModalAbierto(tipo);
+    setDatosModal(datos);
+  };
+
+  const cerrarModal = () => {
+    setModalAbierto(null);
+    setDatosModal(null);
+  };
+
+  const Modal = ({ tipo, datos, onClose }) => {
+    if (!tipo || !datos) return null;
+
+    const renderContenidoModal = () => {
+      switch (tipo) {
+        case 'ingresos':
+          return (
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-stone-800 mb-4">Detalles de Ingresos del Mes</h3>
+              <div className="space-y-3">
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-700 mb-1">Total Abonado</p>
+                  <p className="text-3xl font-bold text-green-800">{formatCurrency(datos.total_abonado)}</p>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-700 mb-1">Total de Operaciones</p>
+                  <p className="text-3xl font-bold text-blue-800">{formatCurrency(datos.total_operaciones)}</p>
+                </div>
+                <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <p className="text-sm text-orange-700 mb-1">Pendiente de Cobro</p>
+                  <p className="text-3xl font-bold text-orange-800">{formatCurrency(datos.pendiente_cobro)}</p>
+                </div>
+                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <p className="text-sm text-purple-700 mb-1">Porcentaje Abonado</p>
+                  <p className="text-3xl font-bold text-purple-800">{datos.porcentaje_abonado}%</p>
+                  <div className="w-full bg-purple-200 rounded-full h-3 mt-2">
+                    <div
+                      className="bg-purple-600 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${datos.porcentaje_abonado}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+
+        case 'pendiente':
+          return (
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-stone-800 mb-4">Detalle de Cuentas por Cobrar</h3>
+              <div className="p-4 bg-orange-50 rounded-lg border-2 border-orange-300">
+                <p className="text-sm text-orange-700 mb-1">Monto Pendiente</p>
+                <p className="text-4xl font-bold text-orange-800">{formatCurrency(datos.pendiente_cobro)}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
+                  <p className="text-xs text-stone-600">Total Operaciones</p>
+                  <p className="text-xl font-bold text-stone-800">{formatCurrency(datos.total_operaciones)}</p>
+                </div>
+                <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
+                  <p className="text-xs text-stone-600">Ya Abonado</p>
+                  <p className="text-xl font-bold text-stone-800">{formatCurrency(datos.total_abonado)}</p>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-700">Para alcanzar el 100% faltan cobrar:</p>
+                <p className="text-2xl font-bold text-blue-800 mt-1">{formatCurrency(datos.pendiente_cobro)}</p>
+              </div>
+            </div>
+          );
+
+        case 'operaciones':
+          return (
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-stone-800 mb-4">Detalles de Operaciones del Mes</h3>
+              <div className="p-4 bg-blue-50 rounded-lg border-2 border-blue-300">
+                <p className="text-sm text-blue-700 mb-1">Total de Operaciones</p>
+                <p className="text-4xl font-bold text-blue-800">{datos.total_mes}</p>
+              </div>
+              {datos.por_estado && (
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-stone-700">Distribución por Estado:</p>
+                  {Object.entries(datos.por_estado).map(([estado, data]) => {
+                    const estadoConfig = {
+                      cotizacion: { color: 'stone', label: 'Cotización' },
+                      orden_trabajo: { color: 'blue', label: 'Orden de Trabajo' },
+                      pendiente: { color: 'orange', label: 'Pendientes' },
+                      en_proceso: { color: 'blue', label: 'En Proceso' },
+                      terminada: { color: 'purple', label: 'Terminadas' },
+                      completada: { color: 'green', label: 'Completadas' }
+                    };
+                    const config = estadoConfig[estado] || { color: 'stone', label: estado };
+                    return (
+                      <div key={estado} className={`p-3 bg-${config.color}-50 rounded-lg border border-${config.color}-200`}>
+                        <div className="flex justify-between items-center">
+                          <span className={`text-sm font-medium text-${config.color}-700 capitalize`}>{config.label}</span>
+                          <div className="text-right">
+                            <p className={`text-xl font-bold text-${config.color}-800`}>{data.cantidad}</p>
+                            <p className="text-xs text-stone-600">{formatCurrency(data.monto_total)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+
+        case 'clientes':
+          return (
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-stone-800 mb-4">Detalles de Clientes del Mes</h3>
+              <div className="p-4 bg-purple-50 rounded-lg border-2 border-purple-300">
+                <p className="text-sm text-purple-700 mb-1">Clientes Activos este Mes</p>
+                <p className="text-4xl font-bold text-purple-800">{datos.activos_mes}</p>
+              </div>
+              <div className="p-4 bg-stone-50 rounded-lg border border-stone-200">
+                <p className="text-sm text-stone-700 mb-1">Total Registrados</p>
+                <p className="text-3xl font-bold text-stone-800">{datos.total_registrados}</p>
+              </div>
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <p className="text-sm text-green-700 mb-1">Nuevos este Mes</p>
+                <p className="text-3xl font-bold text-green-800">{clientes?.nuevos_mes || 0}</p>
+              </div>
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-700">Tasa de Activación:</p>
+                <p className="text-2xl font-bold text-blue-800 mt-1">
+                  {((datos.activos_mes / datos.total_registrados) * 100).toFixed(1)}%
+                </p>
+              </div>
+            </div>
+          );
+
+        case 'estado_operacion':
+          return (
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-stone-800 mb-4">Operaciones: {datos.label}</h3>
+              <div className={`p-6 bg-${datos.color}-50 rounded-lg border-2 border-${datos.color}-300`}>
+                <p className="text-sm text-stone-700 mb-1">Cantidad</p>
+                <p className="text-4xl font-bold text-stone-800">{datos.cantidad}</p>
+              </div>
+              <div className="p-4 bg-stone-50 rounded-lg border border-stone-200">
+                <p className="text-sm text-stone-700 mb-1">Monto Total</p>
+                <p className="text-3xl font-bold text-stone-800">{formatCurrency(datos.monto_total)}</p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-700">Monto Promedio por Operación:</p>
+                <p className="text-xl font-bold text-blue-800 mt-1">
+                  {formatCurrency(datos.monto_total / datos.cantidad)}
+                </p>
+              </div>
+            </div>
+          );
+
+        case 'categoria_cliente':
+          return (
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-stone-800 mb-4 capitalize">Clientes {datos.categoria}</h3>
+              <div className={`p-6 bg-${datos.color}-50 rounded-lg border-2 border-${datos.color}-300`}>
+                <p className="text-sm text-stone-700 mb-1">Cantidad</p>
+                <p className="text-4xl font-bold text-stone-800">{datos.cantidad}</p>
+              </div>
+              <div className="p-4 bg-stone-50 rounded-lg border border-stone-200">
+                <p className="text-sm text-stone-700 mb-1">Descuento Promedio</p>
+                <p className="text-3xl font-bold text-stone-800">{datos.descuento_promedio}%</p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-700">Representa:</p>
+                <p className="text-xl font-bold text-blue-800 mt-1">
+                  {((datos.cantidad / resumen?.clientes?.total_registrados) * 100).toFixed(1)}% del total
+                </p>
+              </div>
+            </div>
+          );
+
+        case 'inventario':
+          return (
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-stone-800 mb-4">Detalle de Inventario</h3>
+              <div className="p-6 bg-stone-50 rounded-lg border-2 border-stone-300">
+                <p className="text-sm text-stone-700 mb-1">Valor Total del Inventario</p>
+                <p className="text-4xl font-bold text-stone-800">
+                  {formatCurrency(datos.inventario_total?.valor_total)}
+                </p>
+              </div>
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-700 mb-1">Total de Materiales</p>
+                <p className="text-3xl font-bold text-blue-800">{datos.inventario_total?.total_materiales}</p>
+              </div>
+              {datos.alertas && (
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-stone-700">Alertas de Stock:</p>
+                  {datos.alertas.criticos?.cantidad > 0 && (
+                    <div className="p-4 bg-red-50 rounded-lg border-2 border-red-300">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FaExclamationTriangle className="text-red-600" />
+                        <p className="text-sm font-bold text-red-700">Stock Crítico</p>
+                      </div>
+                      <p className="text-3xl font-bold text-red-800">{datos.alertas.criticos.cantidad}</p>
+                      <p className="text-xs text-red-600 mt-1">Materiales requieren reposición urgente</p>
+                    </div>
+                  )}
+                  {datos.alertas.bajo_stock?.cantidad > 0 && (
+                    <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FaExclamationTriangle className="text-orange-600" />
+                        <p className="text-sm font-bold text-orange-700">Stock Bajo</p>
+                      </div>
+                      <p className="text-3xl font-bold text-orange-800">{datos.alertas.bajo_stock.cantidad}</p>
+                      <p className="text-xs text-orange-600 mt-1">Materiales próximos a agotarse</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+
+        default:
+          return <p>No hay información disponible</p>;
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div
+          className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="sticky top-0 bg-white border-b border-stone-200 p-6 flex justify-between items-center rounded-t-2xl">
+            <h2 className="text-2xl font-bold text-stone-800">Información Detallada</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-stone-100 rounded-full transition-colors"
+            >
+              <FaTimes className="text-xl text-stone-600" />
+            </button>
+          </div>
+          <div className="p-6">
+            {renderContenidoModal()}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -115,7 +366,10 @@ const GerenteDashboard = () => {
         {/* Tarjetas Principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Ingresos Totales */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-stone-200 hover:shadow-xl transition-shadow">
+          <div
+            onClick={() => abrirModal('ingresos', resumen?.ingresos)}
+            className="bg-white rounded-xl shadow-lg p-6 border border-stone-200 hover:shadow-xl hover:scale-105 transition-all cursor-pointer"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-green-100 rounded-lg">
                 <FaDollarSign className="text-2xl text-green-600" />
@@ -134,7 +388,10 @@ const GerenteDashboard = () => {
           </div>
 
           {/* Pendiente de Cobro */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-stone-200 hover:shadow-xl transition-shadow">
+          <div
+            onClick={() => abrirModal('pendiente', resumen?.ingresos)}
+            className="bg-white rounded-xl shadow-lg p-6 border border-stone-200 hover:shadow-xl hover:scale-105 transition-all cursor-pointer"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-orange-100 rounded-lg">
                 <FaChartLine className="text-2xl text-orange-600" />
@@ -151,7 +408,10 @@ const GerenteDashboard = () => {
           </div>
 
           {/* Operaciones del Mes */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-stone-200 hover:shadow-xl transition-shadow">
+          <div
+            onClick={() => abrirModal('operaciones', resumen?.operaciones)}
+            className="bg-white rounded-xl shadow-lg p-6 border border-stone-200 hover:shadow-xl hover:scale-105 transition-all cursor-pointer"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-blue-100 rounded-lg">
                 <FaShoppingCart className="text-2xl text-blue-600" />
@@ -168,7 +428,10 @@ const GerenteDashboard = () => {
           </div>
 
           {/* Clientes Activos */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-stone-200 hover:shadow-xl transition-shadow">
+          <div
+            onClick={() => abrirModal('clientes', resumen?.clientes)}
+            className="bg-white rounded-xl shadow-lg p-6 border border-stone-200 hover:shadow-xl hover:scale-105 transition-all cursor-pointer"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-purple-100 rounded-lg">
                 <FaUsers className="text-2xl text-purple-600" />
@@ -218,7 +481,8 @@ const GerenteDashboard = () => {
                 return (
                   <div
                     key={estado}
-                    className="flex items-center justify-between p-3 bg-stone-50 rounded-lg border border-stone-200 hover:border-stone-300 transition-colors"
+                    onClick={() => abrirModal('estado_operacion', { ...data, label: config.label, color: config.color })}
+                    className="flex items-center justify-between p-3 bg-stone-50 rounded-lg border border-stone-200 hover:border-stone-400 hover:shadow-md transition-all cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
                       <Icon className="text-stone-600" />
@@ -255,13 +519,15 @@ const GerenteDashboard = () => {
             <div className="space-y-3">
               {clientes?.por_categoria?.map((categoria) => {
                 const categoriaConfig = {
-                  regular: { color: 'bg-stone-50 border-stone-200 text-stone', icon: FaUsers },
-                  vip: { color: 'bg-yellow-50 border-yellow-200 text-yellow', icon: FaTrophy },
-                  premium: { color: 'bg-purple-50 border-purple-200 text-purple', icon: FaTrophy }
+                  regular: { color: 'stone', bgClass: 'bg-stone-50', borderClass: 'border-stone-200', icon: FaUsers },
+                  vip: { color: 'yellow', bgClass: 'bg-yellow-50', borderClass: 'border-yellow-200', icon: FaTrophy },
+                  premium: { color: 'purple', bgClass: 'bg-purple-50', borderClass: 'border-purple-200', icon: FaTrophy }
                 };
 
                 const config = categoriaConfig[categoria.categoria] || {
-                  color: 'bg-stone-50 border-stone-200 text-stone',
+                  color: 'stone',
+                  bgClass: 'bg-stone-50',
+                  borderClass: 'border-stone-200',
                   icon: FaUsers
                 };
                 const Icon = config.icon;
@@ -269,20 +535,21 @@ const GerenteDashboard = () => {
                 return (
                   <div
                     key={categoria.categoria}
-                    className={`p-3 ${config.color.split(' ')[0]} rounded-lg border ${config.color.split(' ')[1]}`}
+                    onClick={() => abrirModal('categoria_cliente', { ...categoria, color: config.color })}
+                    className={`p-3 ${config.bgClass} rounded-lg border ${config.borderClass} hover:shadow-md hover:border-${config.color}-400 transition-all cursor-pointer`}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
-                        <Icon className={`${config.color.split(' ')[2]}-600`} />
-                        <span className={`text-sm font-medium ${config.color.split(' ')[2]}-700 capitalize`}>
+                        <Icon className={`text-${config.color}-600`} />
+                        <span className={`text-sm font-medium text-${config.color}-700 capitalize`}>
                           {categoria.categoria}
                         </span>
                       </div>
-                      <span className={`text-xl font-bold ${config.color.split(' ')[2]}-700`}>
+                      <span className={`text-xl font-bold text-${config.color}-700`}>
                         {categoria.cantidad}
                       </span>
                     </div>
-                    <p className={`text-xs ${config.color.split(' ')[2]}-600`}>
+                    <p className={`text-xs text-${config.color}-600`}>
                       Descuento: {categoria.descuento_promedio}%
                     </p>
                   </div>
@@ -299,7 +566,10 @@ const GerenteDashboard = () => {
           </div>
 
           {/* Inventario */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-stone-200">
+          <div
+            onClick={() => abrirModal('inventario', inventario)}
+            className="bg-white rounded-xl shadow-lg p-6 border border-stone-200 hover:shadow-xl hover:border-stone-400 transition-all cursor-pointer"
+          >
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-stone-100 rounded-lg">
                 <FaBox className="text-2xl text-stone-600" />
@@ -435,6 +705,9 @@ const GerenteDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Modal */}
+      {modalAbierto && <Modal tipo={modalAbierto} datos={datosModal} onClose={cerrarModal} />}
     </div>
   );
 };
