@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fa';
 import { showSuccessAlert, showErrorAlert } from '@helpers/sweetAlert.js';
 import { useCorreo } from '@hooks/correos/useCorreo';
+import { validarEmail } from '@validaciones';
 
 const ServicioCorreo = () => {
   const [activeTab, setActiveTab] = useState('enviar');
@@ -118,11 +119,6 @@ const ServicioCorreo = () => {
       ...prev,
       destinatario: ''
     }));
-  };
-
-  const validarEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
   };
 
   const aplicarPlantilla = (plantillaKey) => {

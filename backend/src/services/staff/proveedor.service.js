@@ -10,13 +10,13 @@ import { MaterialesSchema } from "../../entity/materiales.entity.js";
  * VALIDACIONES
  * ========================================
  */
-/*function validarTelefono(telefono) {
+function validarTelefono(telefono) {
     if (!telefono || typeof telefono !== 'string') return false;
     // Validar formato chileno: +56912345678 o 912345678
     const telefonoLimpio = telefono.replace(/\s/g, '').replace(/\+/g, '');
     const regex = /^(56)?[2-9]\d{8}$/;
     return regex.test(telefonoLimpio);
-}*/
+}
 
 function validarRUT(rut) {
     if (!rut || typeof rut !== 'string') return false;
