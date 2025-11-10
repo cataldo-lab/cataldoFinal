@@ -199,16 +199,16 @@ const handleUpdateMaterial = async (id, materialData) => {
         const [success, error] = await deleteMaterialAction(id, false);
         
         if (success) {
-          showSuccessAlert('Éxito', 'Material desactivado correctamente');
+          showSuccessAlert('Éxito', 'Material eliminado correctamente');
           setSelectedItems(selectedItems.filter(item => item !== id));
           await fetchMaterialesConRepresentantes();
         } else {
-          showErrorAlert('Error', error || 'No se pudo desactivar el material');
+          showErrorAlert('Error', error || 'No se pudo eliminar el material');
         }
       }
     } catch (error) {
       console.error('Error al eliminar material:', error);
-      showErrorAlert('Error', 'Error inesperado al desactivar el material');
+      showErrorAlert('Error', 'Error inesperado al eliminar el material');
     }
   };
 
@@ -407,18 +407,7 @@ const handleUpdateMaterial = async (id, materialData) => {
           </div>
 
           <div className="flex gap-3 flex-wrap">
-            {selectedItems.length > 0 && (
-              <button
-                onClick={handleBulkDelete}
-                disabled={loadingDelete}
-                className="bg-red-600 hover:bg-red-700 text-white font-semibold
-                px-4 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
-                flex items-center gap-2 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FaTrash className="w-5 h-5" />
-                {loadingDelete ? 'Desactivando...' : `Desactivar (${selectedItems.length})`}
-              </button>
-            )}
+            
             <button
               onClick={() => setShowCreatePopup(true)}
               disabled={loadingCreate}
@@ -542,14 +531,7 @@ const handleUpdateMaterial = async (id, materialData) => {
             <table className="w-full">
               <thead className="bg-gradient-to-r from-stone-600 to-stone-700 text-white">
                 <tr>
-                  <th className="px-4 py-4 text-left">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedItems.length === materialesParaMostrar.length && materialesParaMostrar.length > 0}
-                      onChange={toggleSelectAll}
-                      className="w-4 h-4 accent-stone-400 cursor-pointer"
-                    />
-                  </th>
+                  
                   <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">Material</th>
                   <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">Stock</th>
                   <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">Unidad</th>
@@ -571,14 +553,7 @@ const handleUpdateMaterial = async (id, materialData) => {
                         index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                       }`}
                     >
-                      <td className="px-4 py-4">
-                        <input 
-                          type="checkbox" 
-                          checked={selectedItems.includes(material.id_material)}
-                          onChange={() => toggleSelectItem(material.id_material)}
-                          className="w-4 h-4 accent-stone-600 cursor-pointer"
-                        />
-                      </td>
+                     
                       
                       <td className="px-4 py-4">
                         <div className="flex flex-col gap-1">
@@ -671,7 +646,7 @@ const handleUpdateMaterial = async (id, materialData) => {
                             className="p-2.5 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-50"
                             title="Desactivar"
                           >
-                            <FaBan className="w-5 h-5 text-red-600" />
+                            <FaTrash className="w-5 h-5 text-red-600" />
                           </button>
                         </div>
                       </td>

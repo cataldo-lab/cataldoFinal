@@ -392,17 +392,8 @@ export default function Proveedores() {
               </p>
             )}
           </div>
-          <div className="flex gap-3">
-            {selectedItems.length > 0 && (
-              <button
-                onClick={handleBulkDelete}
-                disabled={loadingDelete}
-                className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-semibold px-4 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2"
-              >
-                <FaTrash />
-                Eliminar ({selectedItems.length})
-              </button>
-            )}
+          <div className="flex gap-2">
+            
             <button
               onClick={openModal}
               disabled={loadingCreate}
@@ -505,16 +496,7 @@ export default function Proveedores() {
             <table className="w-full">
               <thead className="bg-stone-600 text-white">
                 <tr>
-                  <th className="px-3 py-4 text-left">
-                    <div className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedItems.length === sortedProveedores.length && sortedProveedores.length > 0}
-                        onChange={toggleSelectAll}
-                        className="w-4 h-4 accent-stone-400 cursor-pointer"
-                      />
-                    </div>
-                  </th>
+                  
                   <th 
                     className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider cursor-pointer hover:bg-stone-700 transition-colors"
                     onClick={() => handleSort('rol_proveedor')}
@@ -578,14 +560,7 @@ export default function Proveedores() {
                 ) : (
                   sortedProveedores.map((proveedor) => (
                     <tr key={proveedor.id_proveedor} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-3 py-4 whitespace-nowrap">
-                        <input 
-                          type="checkbox" 
-                          checked={selectedItems.includes(proveedor.id_proveedor)}
-                          onChange={() => toggleSelectItem(proveedor.id_proveedor)}
-                          className="w-4 h-4 accent-stone-400 cursor-pointer"
-                        />
-                      </td>
+                      
                       
                       <td className="px-3 py-4">
                         <div className="flex flex-col">

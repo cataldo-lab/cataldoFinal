@@ -11,9 +11,12 @@ import { FaBox } from 'react-icons/fa';
 import AddIcon from '@assets/AddIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
 import DeleteIcon from '@assets/deleteIcon.svg';
-import UpdateIconDisable from '@assets/updateIconDisabled.svg';
-import DeleteIconDisable from '@assets/deleteIconDisabled.svg';
 import SearchIcon from '@assets/SearchIcon.svg';
+
+import {
+  FaTrash,
+  FaEdit
+} from 'react-icons/fa';
 
 export default function Productos() {
   const {
@@ -48,7 +51,7 @@ export default function Productos() {
         setSelectedItems([]);
       }
     } catch (error) {
-      showErrorAlert('Error', 'No se pudo desactivar el producto');
+      showErrorAlert('Error', 'No se pudo eliminar el producto');
     }
   };
 
@@ -197,16 +200,7 @@ export default function Productos() {
             <table className="w-full">
               <thead className="bg-stone-600 text-white">
                 <tr>
-                  <th className="px-3 py-4 text-left">
-                    <div className="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedItems.length === productos.length && productos.length > 0}
-                        onChange={toggleSelectAll}
-                        className="w-4 h-4 accent-stone-400 cursor-pointer"
-                      />
-                    </div>
-                  </th>
+                  
                  
                   <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Nombre</th>
                   <th className="px-3 py-4 text-left text-xs font-semibold uppercase tracking-wider">Categoría</th>
@@ -230,14 +224,7 @@ export default function Productos() {
                 ) : (
                   productos.map((producto) => (
                     <tr key={producto.id_producto} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-3 py-4 whitespace-nowrap">
-                        <input 
-                          type="checkbox" 
-                          checked={selectedItems.includes(producto.id_producto)}
-                          onChange={() => toggleSelectItem(producto.id_producto)}
-                          className="w-4 h-4 accent-stone-400 cursor-pointer"
-                        />
-                      </td>
+                      
                       
                       <td className="px-3 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
@@ -282,14 +269,14 @@ export default function Productos() {
                             className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
                             title="Editar"
                           >
-                            <img src={UpdateIcon} alt="Editar" className="w-5 h-5" />
+                            <FaEdit className="w-5 h-5 text-stone-600" />
                           </button>
                           <button
                             onClick={() => handleDelete(producto.id_producto)}
                             className="p-2 hover:bg-red-50 rounded-lg transition-colors"
                             title={producto.activo ? "Desactivar" : "Activar"}
                           >
-                            <img src={DeleteIcon} alt="Eliminar/Activar" className="w-5 h-5" />
+                            <FaTrash className="w-5 h-5 text-red-600" />
                           </button>
                         </div>
                       </td>

@@ -92,6 +92,7 @@ const TrabajadorDashboard = () => {
                 </div>
 
                 {/* Grid de Estadísticas */}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     {/* Operaciones Pendientes */}
                     <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 
@@ -123,7 +124,10 @@ const TrabajadorDashboard = () => {
                     </div>
 
                     {/* Total Productos */}
-                    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 
+                    
+                    <div 
+                    onClick={() => window.location.href = '/trabajador/products'}
+                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 
                     border-l-4 border-stone-500 transform hover:-translate-y-1">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
@@ -136,9 +140,13 @@ const TrabajadorDashboard = () => {
                         </p>
                         <p className="text-sm text-gray-500">Productos activos</p>
                     </div>
+                   
+
 
                     {/* Materiales Bajo Stock */}
-                    <div className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 ${
+                    <div
+                    onClick={() => window.location.href = '/trabajador/materiales'} 
+                    className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 ${
                         stats.materialesBajoStock > 0 ? 'border-red-500 bg-red-50' : 'border-stone-500'
                     } transform hover:-translate-y-1`}>
                         <div className="flex items-center justify-between mb-4">
