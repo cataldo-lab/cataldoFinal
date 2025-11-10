@@ -23,6 +23,19 @@ export async function getDashboardStats() {
         });
         console.log("📊 Operaciones en proceso:", operacionesEnProceso);
 
+        // Contar operaciones atrasadas (fecha_entrega_estimada < hoy y no completadas)
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        const operacionesAtrasadas = await operacionRepository
+            .createQueryBuilder("operacion")
+            .where("operacion.fecha_entrega_estimada < :hoy", { hoy })
+            .andWhere("operacion.estado_operacion NOT IN (:...estadosFinales)", {
+                estadosFinales: ["completada", "pagada", "entregada", "anulada"]
+            })
+            .getCount();
+        console.log("⏰ Operaciones atrasadas:", operacionesAtrasadas);
+
         // Contar productos totales
         const productoCount = await productoRepository.count({
             where: { activo: true }
@@ -62,6 +75,7 @@ export async function getDashboardStats() {
         const resultado = {
             operacionesPendientes,
             operacionesEnProceso,
+            operacionesAtrasadas,
             productoCount,
             materialesBajoStock,
             ingresosMesActual: parseFloat(ingresosMesActual.toFixed(2)),

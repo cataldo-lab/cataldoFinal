@@ -20,7 +20,8 @@ import {
     FaSync,
     FaChartLine,
     FaTimesCircle,
-    FaMoneyBillWave
+    FaMoneyBillWave,
+    FaCalendarTimes
 } from 'react-icons/fa';
 
 import { MdSpaceDashboard } from "react-icons/md";
@@ -41,9 +42,33 @@ const OperacionesModal = ({ isOpen, onClose, estadoFiltro, titulo }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await getOperaciones({ estado_operacion: estadoFiltro });
+            let response;
+            let operacionesFiltradas = [];
+
+            if (estadoFiltro === 'atrasadas') {
+                // Para operaciones atrasadas, obtenemos todas y filtramos en el frontend
+                response = await getOperaciones({});
+                if (response.status === 'Success') {
+                    const hoy = new Date();
+                    hoy.setHours(0, 0, 0, 0);
+
+                    // Filtrar operaciones atrasadas
+                    operacionesFiltradas = (response.data || []).filter(op => {
+                        const fechaEntrega = new Date(op.fecha_entrega_estimada);
+                        const estadosFinales = ['completada', 'pagada', 'entregada', 'anulada'];
+                        return fechaEntrega < hoy && !estadosFinales.includes(op.estado_operacion);
+                    });
+                }
+            } else {
+                // Para otros filtros, usar el filtro normal
+                response = await getOperaciones({ estado_operacion: estadoFiltro });
+                if (response.status === 'Success') {
+                    operacionesFiltradas = response.data || [];
+                }
+            }
+
             if (response.status === 'Success') {
-                setOperaciones(response.data || []);
+                setOperaciones(operacionesFiltradas);
             } else {
                 setError(response.message || 'Error al cargar operaciones');
             }
@@ -77,6 +102,7 @@ const OperacionesModal = ({ isOpen, onClose, estadoFiltro, titulo }) => {
                     <h2 className="text-2xl font-bold flex items-center gap-3">
                         {estadoFiltro === 'pendiente' && <FaHourglassHalf className="text-3xl" />}
                         {estadoFiltro === 'en_proceso' && <FaCog className="text-3xl animate-spin-slow" />}
+                        {estadoFiltro === 'atrasadas' && <FaCalendarTimes className="text-3xl" />}
                         {titulo}
                     </h2>
                     <button
@@ -128,6 +154,7 @@ const OperacionesModal = ({ isOpen, onClose, estadoFiltro, titulo }) => {
                                         <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
                                             estadoFiltro === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
                                             estadoFiltro === 'en_proceso' ? 'bg-blue-100 text-blue-800' :
+                                            estadoFiltro === 'atrasadas' ? 'bg-red-100 text-red-800' :
                                             'bg-gray-100 text-gray-800'
                                         }`}>
                                             {getEstadoLabel(op.estado_operacion)}
@@ -162,6 +189,16 @@ const OperacionesModal = ({ isOpen, onClose, estadoFiltro, titulo }) => {
                                         <div className="mt-3 pt-3 border-t border-gray-200">
                                             <p className="text-sm text-gray-600">
                                                 <strong>Descripción:</strong> {op.descripcion_operacion}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Indicador de días de retraso para operaciones atrasadas */}
+                                    {estadoFiltro === 'atrasadas' && op.fecha_entrega_estimada && (
+                                        <div className="mt-3 pt-3 border-t border-red-200 bg-red-50 p-3 rounded-lg">
+                                            <p className="text-sm text-red-700 font-semibold flex items-center gap-2">
+                                                <FaCalendarTimes />
+                                                Atrasada {Math.floor((new Date() - new Date(op.fecha_entrega_estimada)) / (1000 * 60 * 60 * 24))} días
                                             </p>
                                         </div>
                                     )}
@@ -331,8 +368,8 @@ const TrabajadorDashboard = () => {
                         </button>
                     </div>
 
-                    {/* Grid de Estadísticas */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    {/* Grid de Estadísticas - 5 columnas responsive */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
                         {/* Operaciones Pendientes - Clickeable */}
                         <StatCard
                             title="Pendientes"
@@ -353,29 +390,42 @@ const TrabajadorDashboard = () => {
                             onClick={() => abrirModalOperaciones('en_proceso', 'Operaciones en Proceso')}
                         />
 
-                    {/* Total Productos - Clickeable */}
-                    <StatCard
-                        title="Productos"
-                        value={stats.productoCount || 0}
-                        subtitle="Productos activos"
-                        icon={FaBox}
-                        isClickable={true}
-                        onClick={() => navigate('/trabajador/products')}
-                    />
+                        {/* Operaciones Atrasadas - Clickeable */}
+                        <StatCard
+                            title="Atrasados"
+                            value={stats.operacionesAtrasadas || 0}
+                            subtitle={stats.operacionesAtrasadas > 0 ? 'Requiere atención urgente' : 'Sin atrasos'}
+                            icon={FaCalendarTimes}
+                            borderColor={stats.operacionesAtrasadas > 0 ? 'border-red-500' : 'border-stone-500'}
+                            textColor={stats.operacionesAtrasadas > 0 ? 'text-red-600' : 'text-green-600'}
+                            bgColor={stats.operacionesAtrasadas > 0 ? 'bg-red-50' : 'bg-white'}
+                            isClickable={true}
+                            onClick={() => abrirModalOperaciones('atrasadas', 'Operaciones Atrasadas')}
+                        />
 
-                    {/* Materiales Bajo Stock - Clickeable con estado condicional */}
-                    <StatCard
-                        title="Stock Bajo"
-                        value={stats.materialesBajoStock || 0}
-                        subtitle={stats.materialesBajoStock > 0 ? 'Requiere atención' : 'Stock adecuado'}
-                        icon={stats.materialesBajoStock > 0 ? FaExclamationTriangle : FaCheckCircle}
-                        borderColor={stats.materialesBajoStock > 0 ? 'border-red-500' : 'border-stone-500'}
-                        textColor={stats.materialesBajoStock > 0 ? 'text-red-600' : 'text-green-600'}
-                        bgColor={stats.materialesBajoStock > 0 ? 'bg-red-50' : 'bg-white'}
-                        isClickable={true}
-                        onClick={() => navigate('/trabajador/materiales')}
-                    />
-                </div>
+                        {/* Total Productos - Clickeable */}
+                        <StatCard
+                            title="Productos"
+                            value={stats.productoCount || 0}
+                            subtitle="Productos activos"
+                            icon={FaBox}
+                            isClickable={true}
+                            onClick={() => navigate('/trabajador/products')}
+                        />
+
+                        {/* Materiales Bajo Stock - Clickeable con estado condicional */}
+                        <StatCard
+                            title="Stock Bajo"
+                            value={stats.materialesBajoStock || 0}
+                            subtitle={stats.materialesBajoStock > 0 ? 'Requiere atención' : 'Stock adecuado'}
+                            icon={stats.materialesBajoStock > 0 ? FaExclamationTriangle : FaCheckCircle}
+                            borderColor={stats.materialesBajoStock > 0 ? 'border-red-500' : 'border-stone-500'}
+                            textColor={stats.materialesBajoStock > 0 ? 'text-red-600' : 'text-green-600'}
+                            bgColor={stats.materialesBajoStock > 0 ? 'bg-red-50' : 'bg-white'}
+                            isClickable={true}
+                            onClick={() => navigate('/trabajador/materiales')}
+                        />
+                    </div>
 
                 {/* Ingresos del Mes */}
                 {stats.ingresosMesActual !== undefined && (
