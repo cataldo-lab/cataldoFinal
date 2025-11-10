@@ -2,41 +2,7 @@
 import { useState } from 'react';
 import { createProveedor } from '@services/proveedor.service.js';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
-
-/**
- * Validar RUT chileno
- */
-const validarRUT = (rut) => {
-  if (!rut || typeof rut !== 'string') return false;
-  
-  const rutLimpio = rut.replace(/\./g, '').replace(/-/g, '');
-  if (!/^[0-9]+[0-9kK]$/.test(rutLimpio)) return false;
-  
-  const cuerpo = rutLimpio.slice(0, -1);
-  const dv = rutLimpio.slice(-1).toUpperCase();
-  
-  let suma = 0;
-  let multiplicador = 2;
-  
-  for (let i = cuerpo.length - 1; i >= 0; i--) {
-    suma += parseInt(cuerpo.charAt(i)) * multiplicador;
-    multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
-  }
-  
-  const dvEsperado = 11 - (suma % 11);
-  const dvCalculado = dvEsperado === 11 ? '0' : dvEsperado === 10 ? 'K' : dvEsperado.toString();
-  
-  return dv === dvCalculado;
-};
-
-/**
- * Validar email
- */
-const validarEmail = (email) => {
-  if (!email) return false;
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
-};
+import { validarRUT, validarEmail, validarTelefono } from '@validaciones';
 
 /**
  * Hook para crear proveedores
@@ -70,6 +36,8 @@ export const useCreateProveedor = () => {
     // Validar teléfono
     if (!proveedorData.fono_proveedor || proveedorData.fono_proveedor.trim() === '') {
       errors.fono_proveedor = 'El teléfono es obligatorio';
+    } else if (!validarTelefono(proveedorData.fono_proveedor)) {
+      errors.fono_proveedor = 'El teléfono no es válido';
     }
 
     // Validar correo
