@@ -8,6 +8,7 @@ import XIcon from '@assets/XIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
 import PersonIcon from '@assets/PersonIcon.svg';
 import IdentityCardIcon from '@assets/IdentityCardIcon.svg';
+import { FaTimes, FaEdit, FaUser, FaIdCard, FaMapMarkerAlt, FaSave } from 'react-icons/fa';
 
 const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
   const { usuario, clienteDetalle, loading: loadingData } = useClienteDetalle(clienteId);
@@ -201,37 +202,34 @@ const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
       onClick={(e) => e.stopPropagation()} >
         
         {/* Header */}
-        <div className="relative px-6 pt-6 pb-4 border-b border-stone-200">
+        <div className="relative px-6 pt-6 pb-4 border-b border-stone-200 bg-gradient-to-r from-stone-50 to-stone-100">
           <div className="flex items-center space-x-2">
-            <img src={UpdateIcon} alt="" className="w-6 h-6" />
+            <FaEdit className="w-6 h-6 text-stone-700" />
             <h2 className="text-xl font-semibold text-stone-800">
               Editar Cliente
             </h2>
           </div>
-          <button 
-            className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-lg transition-colors"
+          <button
+            className="absolute top-4 right-4 p-2 hover:bg-stone-200 rounded-lg transition-colors"
             onClick={onClose}
           >
-            <img src={XIcon} alt="Cerrar" className="w-5 h-5" />
+            <FaTimes className="w-5 h-5 text-stone-600" />
           </button>
         </div>
 
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
           {loadingData ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-stone-200 rounded-full"></div>
-                <div className="w-16 h-16 border-4 border-stone-600 rounded-full animate-spin absolute top-0 border-t-transparent"></div>
-              </div>
-              <p className="mt-4 text-stone-600">Cargando datos del cliente...</p>
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <div className="w-12 h-12 border-4 border-stone-200 border-t-stone-600 rounded-full animate-spin"></div>
+              <p className="text-stone-600 font-medium">Cargando datos del cliente...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {/* Sección Datos de Usuario */}
               <div className="bg-stone-50 rounded-lg p-5">
                 <div className="flex items-center space-x-2 mb-4">
-                  <img src={PersonIcon} alt="" className="w-5 h-5" />
+                  <FaUser className="w-5 h-5 text-stone-600" />
                   <h3 className="font-semibold text-stone-800">Datos de Usuario</h3>
                 </div>
 
@@ -303,7 +301,10 @@ const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
 
                   {/* Dirección */}
                   <div className="space-y-4 pt-4">
-                    <h4 className="text-sm font-semibold text-stone-700 border-b pb-2">Dirección</h4>
+                    <div className="flex items-center gap-2 border-b pb-2">
+                      <FaMapMarkerAlt className="text-sm text-stone-600" />
+                      <h4 className="text-sm font-semibold text-stone-700">Dirección</h4>
+                    </div>
 
                     {/* Calle */}
                     <div>
@@ -422,7 +423,7 @@ const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
               {/* Sección Datos de Cliente */}
               <div className="bg-stone-50 rounded-lg p-5">
                 <div className="flex items-center space-x-2 mb-4">
-                  <img src={IdentityCardIcon} alt="" className="w-5 h-5" />
+                  <FaIdCard className="w-5 h-5 text-stone-600" />
                   <h3 className="font-semibold text-stone-800">Datos de Cliente</h3>
                 </div>
 
@@ -582,7 +583,7 @@ const PopUpEditarCliente = ({ isOpen, onClose, onSuccess, clienteId }) => {
                     </>
                   ) : (
                     <>
-                      <img src={UpdateIcon} alt="" className="w-4 h-4 filter brightness-0 invert" />
+                      <FaSave className="w-4 h-4" />
                       <span>Guardar Cambios</span>
                     </>
                   )}

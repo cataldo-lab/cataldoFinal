@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useCreateCliente } from '@hooks/clientes/useCreateCliente';
 import { getPaises } from '@services/direccion.service';
+import { FaTimes, FaUserPlus, FaUser, FaIdCard, FaMapMarkerAlt, FaSave } from 'react-icons/fa';
 
 const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
   const { createFull, loading, error, resetState } = useCreateCliente();
@@ -188,16 +189,19 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="relative px-6 py-5 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-gray-800 text-center">
-              Crear Cliente
-            </h1>
-            <button 
+          <div className="relative px-6 py-5 border-b border-stone-200 bg-gradient-to-r from-stone-50 to-stone-100">
+            <div className="flex items-center justify-center gap-3">
+              <FaUserPlus className="text-stone-700 text-2xl" />
+              <h1 className="text-2xl font-bold text-stone-800">
+                Crear Cliente
+              </h1>
+            </div>
+            <button
               onClick={handleCancel}
               disabled={loading}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              className="absolute top-4 right-4 p-2 hover:bg-stone-200 rounded-lg transition-colors disabled:opacity-50"
             >
-              <span className="text-2xl text-gray-500">✖</span>
+              <FaTimes className="text-xl text-stone-600" />
             </button>
           </div>
 
@@ -206,47 +210,42 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
             <form onSubmit={handleSubmit} className="space-y-6">
 
               {/* Sección: Datos de Usuario */}
-              <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+              <div className="bg-stone-50 rounded-xl p-5 border border-stone-200">
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl"></span>
-                  <h3 className="text-base font-semibold text-gray-700">Datos de Usuario</h3>
+                  <FaUser className="text-lg text-stone-600" />
+                  <h3 className="text-base font-semibold text-stone-700">Datos de Usuario</h3>
                 </div>
 
                 <div className="space-y-4">
                   {/* Nombre Completo */}
                   <div>
-                    <label htmlFor="nombreCompleto" className="block text-sm font-medium text-gray-700 mb-1.5">
-                      NOMBRE COMPLETO <span className="text-red-500">*</span>
+                    <label htmlFor="nombreCompleto" className="block text-sm font-medium text-stone-700 mb-1.5">
+                      Nombre Completo <span className="text-red-500">*</span>
                     </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        id="nombreCompleto"
-                        name="nombreCompleto"
-                        value={formData.nombreCompleto}
-                        onChange={handleChange}
-                        autoComplete="off"
-                        required
-                        disabled={loading}
-                        style={{
-                        backgroundImage: 'none',
-                        backgroundRepeat: 'no-repeat',
-                        WebkitAppearance: 'none',
-                        MozAppearance: 'none'
-                      }}
-                        className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        placeholder=""
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        
-                      </span>
-                    </div>
+                    <input
+                      type="text"
+                      id="nombreCompleto"
+                      name="nombreCompleto"
+                      value={formData.nombreCompleto}
+                      onChange={handleChange}
+                      autoComplete="off"
+                      required
+                      disabled={loading}
+                      style={{
+                      backgroundImage: 'none',
+                      backgroundRepeat: 'no-repeat',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none'
+                    }}
+                      className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
+                      placeholder=""
+                    />
                   </div>
 
                   {/* Email */}
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                      EMAIL <span className="text-red-500">*</span>
+                    <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1.5">
+                      Email <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="email"
@@ -263,7 +262,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                         WebkitAppearance: 'none',
                         MozAppearance: 'none'
                       }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
                       placeholder=""
                     />
                   </div>
@@ -271,7 +270,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                   {/* RUT y Teléfono */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="rut" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label htmlFor="rut" className="block text-sm font-medium text-stone-700 mb-1.5">
                         RUT <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
@@ -290,7 +289,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                           WebkitAppearance: 'none',
                           MozAppearance: 'none'
                         }}
-                          className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                          className="w-full px-4 py-3 pr-10 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
                           placeholder=""
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -300,7 +299,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
 
                     <div>
-                      <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label htmlFor="telefono" className="block text-sm font-medium text-stone-700 mb-1.5">
                         TELÉFONO
                       </label>
                       <input
@@ -311,7 +310,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                         onChange={handleChange}
                         autoComplete="off"
                         disabled={loading}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
                         placeholder=""
                       />
                     </div>
@@ -319,7 +318,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
 
                   {/* Contraseña */}
                   <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label htmlFor="password" className="block text-sm font-medium text-stone-700 mb-1.5">
                       CONTRASEÑA <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -332,10 +331,10 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                       required
                       minLength={5}
                       disabled={loading}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+                      className="w-full px-4 py-3 border border-stone-300 rounded-lg bg-stone-50 text-stone-700 cursor-not-allowed"
                       placeholder="Se genera automáticamente desde el RUT"
                     />
-                    <p className="text-xs text-blue-600 mt-1.5">
+                    <p className="text-xs text-stone-600 mt-1.5">
                       ℹ️ La contraseña se genera automáticamente usando los últimos 5 dígitos del RUT
                     </p>
                   </div>
@@ -343,17 +342,17 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
               </div>
 
               {/* Sección: Datos del Cliente */}
-              <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+              <div className="bg-stone-50 rounded-xl p-5 border border-stone-200">
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl"></span>
-                  <h3 className="text-base font-semibold text-gray-700">Datos del Cliente</h3>
+                  <FaIdCard className="text-lg text-stone-600" />
+                  <h3 className="text-base font-semibold text-stone-700">Datos del Cliente</h3>
                 </div>
 
                 <div className="space-y-4">
                   {/* WhatsApp y Email Alterno */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="whatsapp_cliente" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label htmlFor="whatsapp_cliente" className="block text-sm font-medium text-stone-700 mb-1.5">
                         WhatsApp
                       </label>
                       <input
@@ -364,13 +363,13 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                         onChange={handleChange}
                         autoComplete="off"
                         disabled={loading}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
                         placeholder=""
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="correo_alterno_cliente" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label htmlFor="correo_alterno_cliente" className="block text-sm font-medium text-stone-700 mb-1.5">
                         Email Alterno
                       </label>
                       <input
@@ -387,7 +386,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                         WebkitAppearance: 'none',
                         MozAppearance: 'none'
                       }}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
                         placeholder=""
                       />
                     </div>
@@ -396,7 +395,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                   {/* Categoría y Descuento */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="categoria_cliente" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label htmlFor="categoria_cliente" className="block text-sm font-medium text-stone-700 mb-1.5">
                         Categoría
                       </label>
                       <select
@@ -405,7 +404,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                         value={formData.categoria_cliente}
                         onChange={handleChange}
                         disabled={loading}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
+                        className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all bg-white disabled:bg-stone-100 disabled:cursor-not-allowed cursor-pointer"
                       >
                         <option value="regular">Regular</option>
                         <option value="vip">VIP</option>
@@ -414,7 +413,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
 
                     <div>
-                      <label htmlFor="descuento_cliente" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label htmlFor="descuento_cliente" className="block text-sm font-medium text-stone-700 mb-1.5">
                         Descuento (%)
                       </label>
                       <input
@@ -427,7 +426,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                         value={formData.descuento_cliente}
                         onChange={handleChange}
                         disabled={loading}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
                         placeholder=""
                       />
                     </div>
@@ -435,7 +434,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
 
                   {/* Cumpleaños */}
                   <div>
-                    <label htmlFor="cumpleanos_cliente" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label htmlFor="cumpleanos_cliente" className="block text-sm font-medium text-stone-700 mb-1.5">
                       Cumpleaños
                     </label>
                     <input
@@ -445,17 +444,20 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                       value={formData.cumpleanos_cliente}
                       onChange={handleChange}
                       disabled={loading}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
                     />
                   </div>
 
                   {/* Dirección */}
                   <div className="space-y-4 pt-2">
-                    <h4 className="text-sm font-semibold text-gray-700 border-b pb-2">Dirección</h4>
+                    <div className="flex items-center gap-2 border-b pb-2">
+                      <FaMapMarkerAlt className="text-sm text-stone-600" />
+                      <h4 className="text-sm font-semibold text-stone-700">Dirección</h4>
+                    </div>
 
                     {/* Calle */}
                     <div>
-                      <label htmlFor="calle" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label htmlFor="calle" className="block text-sm font-medium text-stone-700 mb-1.5">
                         Calle
                       </label>
                       <input
@@ -465,14 +467,14 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                         value={formData.calle}
                         onChange={handleChange}
                         disabled={loading}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all disabled:bg-stone-100 disabled:cursor-not-allowed"
                         placeholder="Ej: Av. Libertador 1234, Depto 101"
                       />
                     </div>
 
                     {/* País */}
                     <div>
-                      <label htmlFor="id_pais" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      <label htmlFor="id_pais" className="block text-sm font-medium text-stone-700 mb-1.5">
                         País
                       </label>
                       <select
@@ -481,7 +483,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                         value={formData.id_pais}
                         onChange={handleChange}
                         disabled={loading || loadingDirecciones}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
+                        className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all bg-white disabled:bg-stone-100 disabled:cursor-not-allowed cursor-pointer"
                       >
                         <option value="">Seleccione un país</option>
                         {paises.map(pais => (
@@ -495,7 +497,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                     {/* Región */}
                     {formData.id_pais && (
                       <div>
-                        <label htmlFor="id_region" className="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label htmlFor="id_region" className="block text-sm font-medium text-stone-700 mb-1.5">
                           Región
                         </label>
                         <select
@@ -504,7 +506,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                           value={formData.id_region}
                           onChange={handleChange}
                           disabled={loading || regiones.length === 0}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
+                          className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all bg-white disabled:bg-stone-100 disabled:cursor-not-allowed cursor-pointer"
                         >
                           <option value="">Seleccione una región</option>
                           {regiones.map(region => (
@@ -519,7 +521,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                     {/* Provincia */}
                     {formData.id_region && (
                       <div>
-                        <label htmlFor="id_provincia" className="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label htmlFor="id_provincia" className="block text-sm font-medium text-stone-700 mb-1.5">
                           Provincia
                         </label>
                         <select
@@ -528,7 +530,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                           value={formData.id_provincia}
                           onChange={handleChange}
                           disabled={loading || provincias.length === 0}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
+                          className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all bg-white disabled:bg-stone-100 disabled:cursor-not-allowed cursor-pointer"
                         >
                           <option value="">Seleccione una provincia</option>
                           {provincias.map(provincia => (
@@ -543,7 +545,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                     {/* Comuna */}
                     {formData.id_provincia && (
                       <div>
-                        <label htmlFor="id_comuna" className="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label htmlFor="id_comuna" className="block text-sm font-medium text-stone-700 mb-1.5">
                           Comuna
                         </label>
                         <select
@@ -552,7 +554,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                           value={formData.id_comuna}
                           onChange={handleChange}
                           disabled={loading || comunas.length === 0}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
+                          className="w-full px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all bg-white disabled:bg-stone-100 disabled:cursor-not-allowed cursor-pointer"
                         >
                           <option value="">Seleccione una comuna</option>
                           {comunas.map(comuna => (
@@ -574,9 +576,9 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                       checked={formData.Acepta_uso_datos}
                       onChange={handleChange}
                       disabled={loading}
-                      className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
+                      className="w-5 h-5 rounded border-stone-300 text-stone-600 focus:ring-2 focus:ring-stone-500 cursor-pointer disabled:cursor-not-allowed"
                     />
-                    <label htmlFor="Acepta_uso_datos" className="text-sm text-gray-700 cursor-pointer select-none">
+                    <label htmlFor="Acepta_uso_datos" className="text-sm text-stone-700 cursor-pointer select-none">
                       Acepta uso de datos personales
                     </label>
                   </div>
@@ -594,13 +596,13 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           {/* Footer con botones */}
-          <div className="border-t border-gray-200 px-6 py-4 bg-gray-50">
+          <div className="border-t border-stone-200 px-6 py-4 bg-stone-50">
             <div className="flex justify-end gap-3">
               <button
                 type="button"
                 onClick={handleCancel}
                 disabled={loading}
-                className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2.5 bg-white border border-stone-300 text-stone-700 font-medium rounded-lg hover:bg-stone-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
@@ -608,7 +610,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                 type="submit"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="px-6 py-2.5 bg-stone-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-6 py-2.5 bg-stone-600 text-white font-medium rounded-lg hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading ? (
                   <>
@@ -620,6 +622,7 @@ const CrearClienteModal = ({ isOpen, onClose, onSuccess }) => {
                   </>
                 ) : (
                   <>
+                    <FaSave />
                     <span>Crear Cliente</span>
                   </>
                 )}
