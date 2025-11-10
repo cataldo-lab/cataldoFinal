@@ -649,7 +649,7 @@ const TrabajadorDashboard = () => {
                                     {formatCurrency(stats.ingresosMesActual)}
                                 </p>
                                 <p className="text-sm opacity-80 mt-2">
-                                    Operaciones completadas este mes
+                                    Desde primer abono (orden de trabajo)
                                 </p>
                             </div>
                             <div>

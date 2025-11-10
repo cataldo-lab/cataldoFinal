@@ -291,6 +291,13 @@ export async function updateEstadoOperacionService(id, nuevoEstado, usuarioEmail
 
         // Actualizar estado
         operacion.estado_operacion = nuevoEstado;
+
+        // Si cambia a "orden_trabajo" y no tiene fecha_primer_abono, registrarla
+        if (nuevoEstado === "orden_trabajo" && !operacion.fecha_primer_abono) {
+            operacion.fecha_primer_abono = new Date();
+            console.log(`📅 Registrando fecha de primer abono para operación #${id}:`, operacion.fecha_primer_abono);
+        }
+
         await operacionRepository.save(operacion);
 
         // Registrar en historial

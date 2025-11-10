@@ -55,23 +55,30 @@ export async function getDashboardStats() {
         console.log("⚠️ Materiales bajo stock:", materialesBajoStock);
         
         // Calcular ingresos del mes actual
+        // Contamos operaciones completadas cuyo primer abono fue este mes (usando fecha_primer_abono)
         const inicioMes = new Date();
         inicioMes.setDate(1);
         inicioMes.setHours(0, 0, 0, 0);
         console.log("📅 Inicio del mes:", inicioMes);
-        
+
+        // Buscar operaciones donde fecha_primer_abono >= inicioMes y estado = completada
         const operacionesCompletadas = await operacionRepository
             .createQueryBuilder("operacion")
-            .where("operacion.estado_operacion = :estado", { estado: "completada" })
-            .andWhere("operacion.fecha_creacion >= :fecha", { fecha: inicioMes })
+            .where("operacion.fecha_primer_abono IS NOT NULL")
+            .andWhere("operacion.fecha_primer_abono >= :fecha", { fecha: inicioMes })
+            .andWhere("operacion.estado_operacion = :estado", { estado: "completada" })
             .getMany();
-        console.log("💰 Operaciones completadas este mes:", operacionesCompletadas.length);
-        
+
+        console.log("💰 Operaciones con primer abono este mes y completadas:", operacionesCompletadas.length);
+
         const ingresosMesActual = operacionesCompletadas.reduce(
-            (total, op) => total + parseFloat(op.costo_operacion || 0), 
+            (total, op) => {
+                const costo = parseFloat(op.costo_operacion || 0);
+                return total + costo;
+            },
             0
         );
-        console.log("💵 Ingresos mes actual:", ingresosMesActual);
+        console.log("💵 Ingresos mes actual (desde primer abono):", ingresosMesActual);
         
         const resultado = {
             operacionesPendientes,
