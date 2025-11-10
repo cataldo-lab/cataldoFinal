@@ -65,12 +65,8 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                     <h3 className="text-lg font-semibold text-gray-800">Información de Usuario</h3>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* ID */}
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <p className="text-xs font-medium text-gray-500 uppercase mb-1">ID</p>
-                      <p className="text-base font-semibold text-gray-800">{usuario?.id}</p>
-                    </div>
+                  <div className="grid grid-cols-2 md:grid-cols-[1fr_2fr] gap-2">
+                    
 
                     {/* Nombre Completo */}
                     <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -172,12 +168,8 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                       <h3 className="text-lg font-semibold text-gray-800">Información de Cliente</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* ID Cliente */}
-                      <div className="bg-white rounded-lg p-4 shadow-sm">
-                        <p className="text-xs font-medium text-gray-500 uppercase mb-1">ID Cliente</p>
-                        <p className="text-base font-semibold text-gray-800">{clienteDetalle.id_cliente}</p>
-                      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      
 
                       {/* Categoría */}
                       <div className="bg-white rounded-lg p-4 shadow-sm">
