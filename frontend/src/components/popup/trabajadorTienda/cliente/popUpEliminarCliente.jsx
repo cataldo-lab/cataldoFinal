@@ -5,6 +5,7 @@ import { useDeleteCliente } from '@hooks/clientes/useDeleteCliente';
 import DeleteIcon from '@assets/deleteIcon.svg';
 import PasskeyIcon from '@assets/PasskeyIcon.svg';
 import XIcon from '@assets/XIcon.svg';
+import { FaTimes, FaTrash, FaLock, FaExclamationTriangle } from 'react-icons/fa';
 
 const PopUpEliminarCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
   const { deleteCliente, loading, error } = useDeleteCliente();
@@ -46,15 +47,18 @@ const PopUpEliminarCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden">
         
         {/* Header */}
-        <div className="relative px-6 pt-6 pb-4 border-b border-stone-200">
-          <h2 className="text-xl font-semibold text-stone-800">
-            Eliminar Cliente
-          </h2>
-          <button 
-            className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-lg transition-colors"
+        <div className="relative px-6 pt-6 pb-4 border-b border-stone-200 bg-gradient-to-r from-stone-50 to-stone-100">
+          <div className="flex items-center space-x-2">
+            <FaTrash className="w-5 h-5 text-stone-700" />
+            <h2 className="text-xl font-semibold text-stone-800">
+              Eliminar Cliente
+            </h2>
+          </div>
+          <button
+            className="absolute top-4 right-4 p-2 hover:bg-stone-200 rounded-lg transition-colors"
             onClick={onClose}
           >
-            <img src={XIcon} alt="Cerrar" className="w-5 h-5" />
+            <FaTimes className="w-5 h-5 text-stone-600" />
           </button>
         </div>
 
@@ -96,7 +100,7 @@ const PopUpEliminarCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
                   <div className={`p-2 rounded-lg ${
                     tipoEliminacion === 'soft' ? 'bg-amber-100' : 'bg-stone-100'
                   }`}>
-                    <img src={PasskeyIcon} alt="Bloquear" className="w-5 h-5" />
+                    <FaLock className={`w-5 h-5 ${tipoEliminacion === 'soft' ? 'text-amber-700' : 'text-stone-600'}`} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
@@ -135,7 +139,7 @@ const PopUpEliminarCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
                   <div className={`p-2 rounded-lg ${
                     tipoEliminacion === 'hard' ? 'bg-red-100' : 'bg-stone-100'
                   }`}>
-                    <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5" />
+                    <FaTrash className={`w-5 h-5 ${tipoEliminacion === 'hard' ? 'text-red-700' : 'text-stone-600'}`} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
@@ -169,13 +173,13 @@ const PopUpEliminarCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
             {tipoEliminacion === 'hard' && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
                 <div className="flex items-start space-x-2">
-                  <span className="text-amber-600 mt-0.5">⚠️</span>
+                  <FaExclamationTriangle className="text-amber-600 mt-0.5" />
                   <div>
                     <p className="text-sm font-semibold text-amber-800">
                       Advertencia
                     </p>
                     <p className="text-sm text-amber-700 mt-1">
-                      La eliminación permanente puede afectar registros relacionados 
+                      La eliminación permanente puede afectar registros relacionados
                       como operaciones, pagos e historial.
                     </p>
                   </div>
@@ -212,11 +216,11 @@ const PopUpEliminarCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
                   </>
                 ) : (
                   <>
-                    <img 
-                      src={tipoEliminacion === 'soft' ? PasskeyIcon : DeleteIcon} 
-                      alt="" 
-                      className="w-4 h-4 filter brightness-0 invert"
-                    />
+                    {tipoEliminacion === 'soft' ? (
+                      <FaLock className="w-4 h-4" />
+                    ) : (
+                      <FaTrash className="w-4 h-4" />
+                    )}
                     <span>
                       {tipoEliminacion === 'soft' ? 'Bloquear' : 'Eliminar Permanentemente'}
                     </span>

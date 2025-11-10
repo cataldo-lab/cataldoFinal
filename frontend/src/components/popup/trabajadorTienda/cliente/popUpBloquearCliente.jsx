@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useDeleteCliente } from '@hooks/clientes/useDeleteCliente';
 import XIcon from '@assets/XIcon.svg';
 import PasskeyIcon from '@assets/PasskeyIcon.svg';
+import { FaTimes, FaLock, FaExclamationTriangle } from 'react-icons/fa';
 
 const PopUpBloquearCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
   const { blockCliente, loading, error } = useDeleteCliente();
@@ -49,19 +50,19 @@ const PopUpBloquearCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="relative px-6 pt-6 pb-4 border-b border-stone-200">
+          <div className="relative px-6 pt-6 pb-4 border-b border-stone-200 bg-gradient-to-r from-stone-50 to-stone-100">
             <div className="flex items-center space-x-2">
-              <img src={PasskeyIcon} alt="" className="w-6 h-6" />
+              <FaLock className="w-6 h-6 text-stone-700" />
               <h2 className="text-xl font-semibold text-stone-800">
                 Bloquear Cliente
               </h2>
             </div>
-            <button 
-              className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-lg transition-colors"
+            <button
+              className="absolute top-4 right-4 p-2 hover:bg-stone-200 rounded-lg transition-colors"
               onClick={handleCancel}
               disabled={loading}
             >
-              <img src={XIcon} alt="Cerrar" className="w-5 h-5" />
+              <FaTimes className="w-5 h-5 text-stone-600" />
             </button>
           </div>
 
@@ -70,7 +71,7 @@ const PopUpBloquearCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
             {/* Warning Box */}
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
               <div className="flex items-start space-x-3">
-                <span className="text-2xl flex-shrink-0">⚠️</span>
+                <FaExclamationTriangle className="text-2xl text-amber-600 flex-shrink-0 mt-1" />
                 <div className="flex-1">
                   <p className="text-sm text-amber-900 mb-2">
                     ¿Está seguro que desea bloquear al cliente?
@@ -146,7 +147,7 @@ const PopUpBloquearCliente = ({ isOpen, onClose, onSuccess, cliente }) => {
                     </>
                   ) : (
                     <>
-                      <img src={PasskeyIcon} alt="" className="w-4 h-4 filter brightness-0 invert" />
+                      <FaLock className="w-4 h-4" />
                       <span>Bloquear Cliente</span>
                     </>
                   )}
