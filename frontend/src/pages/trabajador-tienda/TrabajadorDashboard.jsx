@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrabajadorDashboard } from '../../hooks/Dashboard/useTrabajadorDashboard.jsx';
 import { getOperaciones, getEstadoLabel, getEstadoColor } from '../../services/operacion.service.js';
+import { getMateriales } from '../../services/materiales.service.js';
 
 import {
     FaExclamationTriangle,
@@ -212,6 +213,191 @@ const OperacionesModal = ({ isOpen, onClose, estadoFiltro, titulo }) => {
     );
 };
 
+// Modal para mostrar materiales con stock bajo
+const MaterialesBajoStockModal = ({ isOpen, onClose }) => {
+    const [materiales, setMateriales] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchMaterialesBajoStock();
+        }
+    }, [isOpen]);
+
+    const fetchMaterialesBajoStock = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await getMateriales(false); // Solo materiales activos
+
+            if (response.status === 'Success' || response.success) {
+                const materialesData = response.data || [];
+                // Filtrar materiales con stock bajo
+                const materialesBajo = materialesData.filter(m =>
+                    m.existencia_material <= m.stock_minimo
+                );
+                setMateriales(materialesBajo);
+            } else {
+                setError(response.message || 'Error al cargar materiales');
+            }
+        } catch (err) {
+            setError('Error de conexión');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    const getStockStatus = (existencia, minimo) => {
+        if (existencia === 0) return { text: 'Sin stock', color: 'text-red-700 bg-red-100' };
+        if (existencia <= minimo * 0.5) return { text: 'Crítico', color: 'text-red-700 bg-red-100' };
+        if (existencia <= minimo) return { text: 'Bajo', color: 'text-orange-700 bg-orange-100' };
+        return { text: 'Normal', color: 'text-green-700 bg-green-100' };
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                {/* Header */}
+                <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white p-6 flex justify-between items-center">
+                    <h2 className="text-2xl font-bold flex items-center gap-3">
+                        <FaExclamationTriangle className="text-3xl" />
+                        Materiales con Stock Bajo
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all"
+                    >
+                        <FaTimesCircle className="text-3xl" />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                    {loading && (
+                        <div className="text-center py-12">
+                            <FaSync className="inline-block animate-spin h-12 w-12 text-blue-900 mb-4" />
+                            <p className="text-gray-600">Cargando materiales...</p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                            <p className="text-red-700">{error}</p>
+                        </div>
+                    )}
+
+                    {!loading && !error && materiales.length === 0 && (
+                        <div className="text-center py-12">
+                            <FaCheckCircle className="text-6xl text-green-500 mx-auto mb-4" />
+                            <p className="text-xl text-gray-600 font-semibold">¡Excelente!</p>
+                            <p className="text-gray-500 mt-2">Todos los materiales tienen stock adecuado</p>
+                        </div>
+                    )}
+
+                    {!loading && !error && materiales.length > 0 && (
+                        <div className="grid grid-cols-1 gap-4">
+                            {materiales.map((material) => {
+                                const status = getStockStatus(material.existencia_material, material.stock_minimo);
+                                const porcentaje = (material.existencia_material / material.stock_minimo) * 100;
+
+                                return (
+                                    <div
+                                        key={material.id_material}
+                                        className="bg-white border-2 border-orange-200 rounded-xl p-5 hover:shadow-lg transition-all"
+                                    >
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-bold text-stone-800 mb-1">
+                                                    {material.nombre_material}
+                                                </h3>
+                                                {material.descripcion_material && (
+                                                    <p className="text-sm text-gray-600">
+                                                        {material.descripcion_material}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <span className={`px-4 py-2 rounded-full text-sm font-semibold ${status.color}`}>
+                                                {status.text}
+                                            </span>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="flex items-center gap-2">
+                                                <FaWarehouse className="text-blue-600 text-xl" />
+                                                <div>
+                                                    <p className="text-xs text-gray-500">Stock Actual</p>
+                                                    <p className={`font-bold text-lg ${
+                                                        material.existencia_material === 0 ? 'text-red-600' :
+                                                        material.existencia_material <= material.stock_minimo * 0.5 ? 'text-orange-600' :
+                                                        'text-gray-800'
+                                                    }`}>
+                                                        {material.existencia_material} {material.unidad_medida}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <FaExclamationTriangle className="text-orange-600 text-xl" />
+                                                <div>
+                                                    <p className="text-xs text-gray-500">Stock Mínimo</p>
+                                                    <p className="font-bold text-lg text-gray-800">
+                                                        {material.stock_minimo} {material.unidad_medida}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <FaChartLine className="text-purple-600 text-xl" />
+                                                <div>
+                                                    <p className="text-xs text-gray-500">Nivel de Stock</p>
+                                                    <p className={`font-bold text-lg ${
+                                                        porcentaje === 0 ? 'text-red-600' :
+                                                        porcentaje <= 50 ? 'text-orange-600' :
+                                                        'text-yellow-600'
+                                                    }`}>
+                                                        {Math.round(porcentaje)}%
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Barra de progreso visual */}
+                                        <div className="mt-4">
+                                            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                                <div
+                                                    className={`h-full transition-all duration-300 ${
+                                                        porcentaje === 0 ? 'bg-red-600' :
+                                                        porcentaje <= 50 ? 'bg-orange-500' :
+                                                        'bg-yellow-500'
+                                                    }`}
+                                                    style={{ width: `${Math.min(porcentaje, 100)}%` }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Alerta de reposición */}
+                                        {material.existencia_material === 0 && (
+                                            <div className="mt-3 p-3 bg-red-50 border-l-4 border-red-500 rounded">
+                                                <p className="text-sm text-red-700 font-semibold flex items-center gap-2">
+                                                    <FaExclamationTriangle />
+                                                    ¡Material agotado! Requiere reposición urgente
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // Componente reutilizable para tarjetas de estadísticas
 const StatCard = ({ title, value, subtitle, icon: Icon, borderColor = 'border-stone-500', textColor = 'text-blue-900', bgColor = 'bg-white', onClick, isClickable = false }) => {
     const baseClasses = `${bgColor} rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 ${borderColor} transform hover:-translate-y-1`;
@@ -267,6 +453,9 @@ const TrabajadorDashboard = () => {
         titulo: ''
     });
 
+    // Estado para el modal de materiales
+    const [modalMaterialesOpen, setModalMaterialesOpen] = useState(false);
+
     const abrirModalOperaciones = (estado, titulo) => {
         setModalState({
             isOpen: true,
@@ -281,6 +470,14 @@ const TrabajadorDashboard = () => {
             estadoFiltro: null,
             titulo: ''
         });
+    };
+
+    const abrirModalMateriales = () => {
+        setModalMaterialesOpen(true);
+    };
+
+    const cerrarModalMateriales = () => {
+        setModalMaterialesOpen(false);
     };
 
     // Estado de carga
@@ -346,6 +543,12 @@ const TrabajadorDashboard = () => {
                 onClose={cerrarModal}
                 estadoFiltro={modalState.estadoFiltro}
                 titulo={modalState.titulo}
+            />
+
+            {/* Modal de Materiales con Stock Bajo */}
+            <MaterialesBajoStockModal
+                isOpen={modalMaterialesOpen}
+                onClose={cerrarModalMateriales}
             />
 
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -423,7 +626,7 @@ const TrabajadorDashboard = () => {
                             textColor={stats.materialesBajoStock > 0 ? 'text-red-600' : 'text-green-600'}
                             bgColor={stats.materialesBajoStock > 0 ? 'bg-red-50' : 'bg-white'}
                             isClickable={true}
-                            onClick={() => navigate('/trabajador/materiales')}
+                            onClick={abrirModalMateriales}
                         />
                     </div>
 
