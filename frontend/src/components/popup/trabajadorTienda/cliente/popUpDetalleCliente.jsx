@@ -39,7 +39,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
       }}>
         {/* Header con gradiente */}
         <div style={{
-          background: 'linear-gradient(135deg, stone-600 0%, stone-700 100%)',
+          background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
           padding: '20px 30px',
           borderRadius: '16px 16px 0 0',
           position: 'relative',
@@ -124,13 +124,13 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
               <div style={{
                 width: '64px',
                 height: '64px',
-                border: '4px solid stone-200',
+                border: '4px solid #e5e7eb',
                 borderRadius: '50%'
               }}></div>
               <div style={{
                 width: '64px',
                 height: '64px',
-                border: '4px solid stone-600',
+                border: '4px solid #6b7280',
                 borderTop: '4px solid transparent',
                 borderRadius: '50%',
                 position: 'absolute',
@@ -138,7 +138,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                 animation: 'spin 1s linear infinite'
               }}></div>
             </div>
-            <p style={{ color: 'stone-600', fontWeight: '600' }}>Cargando detalles...</p>
+            <p style={{ color: '#6b7280', fontWeight: '600' }}>Cargando detalles...</p>
           </div>
         ) : (
           <div style={{ padding: '25px 30px' }}>
@@ -149,7 +149,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
               padding: '20px',
               borderRadius: '12px',
               marginBottom: '20px',
-              border: '1px solid stone-200',
+              border: '1px solid #e5e7eb',
               boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.05)',
               transition: 'all 0.3s ease'
             }}>
@@ -159,10 +159,10 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                 gap: '10px',
                 marginBottom: '15px',
                 paddingBottom: '12px',
-                borderBottom: '2px solid stone-100'
+                borderBottom: '2px solid #f3f4f6'
               }}>
                 <div style={{
-                  background: 'linear-gradient(135deg, stone-600 0%, stone-700 100%)',
+                  background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
                   padding: '8px',
                   borderRadius: '8px',
                   display: 'flex',
@@ -175,7 +175,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                 <h3 style={{
                   fontSize: '16px',
                   fontWeight: '700',
-                  color: 'stone-800',
+                  color: '#1f2937',
                   margin: 0
                 }}>
                   Información de Usuario
@@ -185,10 +185,10 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                 {/* Nombre Completo */}
                 <div style={{
-                  background: 'linear-gradient(135deg, stone-100 0%, stone-200 100%)',
+                  background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
                   padding: '15px',
                   borderRadius: '10px',
-                  border: '1px solid stone-300',
+                  border: '1px solid #d1d5db',
                   gridColumn: 'span 2'
                 }}>
                   <div style={{
@@ -197,11 +197,11 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                     gap: '8px',
                     marginBottom: '8px'
                   }}>
-                    <FaUser style={{ fontSize: '14px', color: 'stone-700' }} />
+                    <FaUser style={{ fontSize: '14px', color: '#4b5563' }} />
                     <h4 style={{
                       fontSize: '11px',
                       fontWeight: '700',
-                      color: 'stone-600',
+                      color: '#374151',
                       margin: 0,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px'
@@ -250,7 +250,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
 
                 {/* RUT */}
                 <div style={{
-                  background: 'linear-gradient(135deg, stone-50 0%, stone-100 100%)',
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
                   padding: '15px',
                   borderRadius: '10px',
                   border: '1px solid #e2e8f0'
@@ -362,7 +362,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                 <div style={{
                   marginTop: '20px',
                   paddingTop: '20px',
-                  borderTop: '2px solid stone-100'
+                  borderTop: '2px solid #f3f4f6'
                 }}>
                   <div style={{
                     display: 'flex',
@@ -828,7 +828,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                 onClick={onClose}
                 style={{
                   padding: '10px 24px',
-                  background: 'linear-gradient(135deg, stone-600 0%, stone-700 100%)',
+                  background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
@@ -857,7 +857,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                 onClick={onEditar}
                 style={{
                   padding: '10px 24px',
-                  background: 'linear-gradient(135deg, stone-600 0%, stone-700 100%)',
+                  background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
