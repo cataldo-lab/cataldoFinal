@@ -28,11 +28,11 @@ export default function PopupUpdateProducto({
     if (producto) {
       setEsServicio(producto.servicio || false);
       const nuevosCostos = {
-        costo_fabricacion: parseFloat(producto.costo_fabricacion) || 0,
-        costo_barnizador: parseFloat(producto.costo_barnizador) || 0,
-        costo_vidrio: parseFloat(producto.costo_vidrio) || 0,
-        costo_tela: parseFloat(producto.costo_tela) || 0,
-        costo_materiales_otros: parseFloat(producto.costo_materiales_otros) || 0
+        costo_fabricacion: parseInt(producto.costo_fabricacion) || 0,
+        costo_barnizador: parseInt(producto.costo_barnizador) || 0,
+        costo_vidrio: parseInt(producto.costo_vidrio) || 0,
+        costo_tela: parseInt(producto.costo_tela) || 0,
+        costo_materiales_otros: parseInt(producto.costo_materiales_otros) || 0
       };
       setCostos(nuevosCostos);
       setMargenGanancia(parseFloat(producto.margen_ganancia) || 30);
@@ -49,7 +49,7 @@ export default function PopupUpdateProducto({
   const handleCostoChange = (nombre, valor) => {
     setCostos(prev => ({
       ...prev,
-      [nombre]: parseFloat(valor) || 0
+      [nombre]: parseInt(valor) || 0
     }));
   };
 
@@ -60,12 +60,12 @@ export default function PopupUpdateProducto({
   const handleSubmit = async (formData) => {
     const productoData = {
       ...formData,
-      costo_fabricacion: costos.costo_fabricacion,
-      costo_barnizador: costos.costo_barnizador,
-      costo_vidrio: costos.costo_vidrio,
-      costo_tela: costos.costo_tela,
-      costo_materiales_otros: costos.costo_materiales_otros,
-      precio_venta: precioVentaCalculado,
+      costo_fabricacion: parseInt(costos.costo_fabricacion),
+      costo_barnizador: parseInt(costos.costo_barnizador),
+      costo_vidrio: parseInt(costos.costo_vidrio),
+      costo_tela: parseInt(costos.costo_tela),
+      costo_materiales_otros: parseInt(costos.costo_materiales_otros),
+      precio_venta: Math.round(precioVentaCalculado),
       margen_ganancia: margenGanancia,
       servicio: esServicio,
       oferta: formData.oferta === 'true',
@@ -193,7 +193,7 @@ export default function PopupUpdateProducto({
             {
               label: (
                 <div style={{ marginBottom: '10px' }}>
-                  <strong>Costo Total: ${costoTotal.toFixed(2)}</strong>
+                  <strong>Costo Total: ${costoTotal.toLocaleString('es-CL')}</strong>
                 </div>
               ),
               name: "costo_total_display",
@@ -223,7 +223,7 @@ export default function PopupUpdateProducto({
             {
               label: (
                 <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e8f5e9', borderRadius: '5px' }}>
-                  <strong>Precio de Venta Calculado: ${precioVentaCalculado.toFixed(2)}</strong>
+                  <strong>Precio de Venta Calculado: ${Math.round(precioVentaCalculado).toLocaleString('es-CL')}</strong>
                 </div>
               ),
               name: "precio_venta_display",
