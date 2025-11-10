@@ -109,7 +109,7 @@
     padding: 1rem 1.25rem;
     background-color: #ffffff;
     background-repeat: no-repeat;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0;
     font-weight: 400;
     font-size: 0.95rem;
     color: #1c1917;
@@ -277,7 +277,7 @@
 /* Error messages with enhanced styling */
 .form .error-message {
     visibility: hidden;
-    height: 1.25rem;
+    height: 0.75rem;
     color: #d32f2f;
     font-size: 0.8rem;
     font-weight: 500;
