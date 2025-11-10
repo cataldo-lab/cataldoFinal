@@ -55,28 +55,25 @@ export async function getDashboardStats() {
         console.log("⚠️ Materiales bajo stock:", materialesBajoStock);
         
         // Calcular ingresos del mes actual
-        // Contamos operaciones completadas cuyo primer abono (orden_trabajo) fue este mes
+        // Contamos operaciones completadas cuyo primer abono fue este mes (usando fecha_primer_abono)
         const inicioMes = new Date();
         inicioMes.setDate(1);
         inicioMes.setHours(0, 0, 0, 0);
         console.log("📅 Inicio del mes:", inicioMes);
 
-        const historialRepository = AppDataSource.getRepository("Historial");
-
-        // Buscar historial donde orden_trabajo = true y fecha_cambio >= inicioMes
-        const historialesOrdenTrabajo = await historialRepository
-            .createQueryBuilder("historial")
-            .leftJoinAndSelect("historial.operacion", "operacion")
-            .where("historial.orden_trabajo = :ordenTrabajo", { ordenTrabajo: true })
-            .andWhere("historial.fecha_cambio >= :fecha", { fecha: inicioMes })
+        // Buscar operaciones donde fecha_primer_abono >= inicioMes y estado = completada
+        const operacionesCompletadas = await operacionRepository
+            .createQueryBuilder("operacion")
+            .where("operacion.fecha_primer_abono IS NOT NULL")
+            .andWhere("operacion.fecha_primer_abono >= :fecha", { fecha: inicioMes })
             .andWhere("operacion.estado_operacion = :estado", { estado: "completada" })
             .getMany();
 
-        console.log("💰 Operaciones con orden de trabajo este mes y completadas:", historialesOrdenTrabajo.length);
+        console.log("💰 Operaciones con primer abono este mes y completadas:", operacionesCompletadas.length);
 
-        const ingresosMesActual = historialesOrdenTrabajo.reduce(
-            (total, historial) => {
-                const costo = parseFloat(historial.operacion?.costo_operacion || 0);
+        const ingresosMesActual = operacionesCompletadas.reduce(
+            (total, op) => {
+                const costo = parseFloat(op.costo_operacion || 0);
                 return total + costo;
             },
             0

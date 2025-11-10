@@ -49,6 +49,10 @@ export const OperacionSchema = new EntitySchema({
             nullable: false,
             default: () => "CURRENT_TIMESTAMP"
         },
+        fecha_primer_abono: {
+            type: "timestamp",
+            nullable: true
+        },
         fecha_entrega_estimada: {
             type: "date",
             nullable: true

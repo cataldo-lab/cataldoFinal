@@ -989,6 +989,7 @@ async function createOperaciones() {
         cantidad_abono: 90000,
         descripcion_operacion: "Mesa de comedor para 6 personas, madera MDF con vidrio temperado",
         fecha_entrega_estimada: new Date('2024-12-01'),
+        fecha_primer_abono: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 días atrás
         cliente: clientes[0]
       },
       {
@@ -997,6 +998,7 @@ async function createOperaciones() {
         cantidad_abono: 170000,
         descripcion_operacion: "Set de 4 sillas tapizadas + mesa auxiliar",
         fecha_entrega_estimada: new Date('2024-12-15'),
+        fecha_primer_abono: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 días atrás
         cliente: clientes[1]
       },
       {
@@ -1005,6 +1007,7 @@ async function createOperaciones() {
         cantidad_abono: 0,
         descripcion_operacion: "Restauración completa de mesa antigua familiar",
         fecha_entrega_estimada: new Date('2024-12-20'),
+        // Sin fecha_primer_abono porque no hay abono aún
         cliente: clientes[2]
       },
       {
@@ -1013,6 +1016,7 @@ async function createOperaciones() {
         cantidad_abono: 280000,
         descripcion_operacion: "Ropero 3 puertas con espejo central",
         fecha_entrega_estimada: new Date('2024-11-25'),
+        fecha_primer_abono: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), // 20 días atrás
         cliente: clientes[3] || clientes[0]
       },
       {
@@ -1021,6 +1025,7 @@ async function createOperaciones() {
         cantidad_abono: 125000,
         descripcion_operacion: "Mueble a medida - Estantería esquinera para sala",
         fecha_entrega_estimada: new Date('2024-12-30'),
+        fecha_primer_abono: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 días atrás
         cliente: clientes[0]
       }
     ];

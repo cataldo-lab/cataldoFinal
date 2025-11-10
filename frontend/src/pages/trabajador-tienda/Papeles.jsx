@@ -346,33 +346,47 @@ const Papeles = () => {
         const diasHabiles = parseInt(diasHabilesSeleccionados[operacion.id_operacion] || 30);
         const fechaEntrega = calcularFechaEntrega(diasHabiles);
 
-        // Actualizar la operación con la fecha de entrega estimada
+        // Actualizar la operación con la fecha de entrega estimada Y cambiar estado a orden_trabajo
         try {
+            // 1. Actualizar fecha de entrega
             await updateOperacion(operacion.id_operacion, {
                 fecha_entrega_estimada: fechaEntrega.toISOString()
             });
 
-            // Refrescar datos
+            // 2. Cambiar estado a "orden_trabajo" (esto registrará fecha_primer_abono en backend)
+            await updateEstadoOperacion(operacion.id_operacion, EstadosOperacion.ORDEN_TRABAJO);
+
+            // 3. Refrescar datos
             if (selectedClienteId) {
                 await fetchCliente(selectedClienteId);
             }
+            await fetchClientes();
 
-            // Crear objeto operacion actualizado con la nueva fecha
+            // 4. Crear objeto operacion actualizado con la nueva fecha y estado
             const operacionActualizada = {
                 ...operacion,
-                fecha_entrega_estimada: fechaEntrega.toISOString()
+                fecha_entrega_estimada: fechaEntrega.toISOString(),
+                estado_operacion: EstadosOperacion.ORDEN_TRABAJO
             };
 
-            // Generar el documento con la fecha actualizada
+            // 5. Generar el documento con la fecha actualizada
             generarDocumento(operacionActualizada, cliente, 'orden_trabajo');
 
-            // Cerrar modal
+            // 6. Cerrar modal
             handleCancelarModalFechaEntrega(operacion.id_operacion);
+
+            // 7. Mostrar mensaje de éxito
+            setMensajeEstado({
+                tipo: 'success',
+                texto: 'Orden de trabajo generada exitosamente. Primer abono registrado.'
+            });
+            setTimeout(() => setMensajeEstado({ tipo: null, texto: null }), 3000);
+
         } catch (error) {
-            console.error('Error al actualizar fecha de entrega:', error);
+            console.error('Error al generar orden de trabajo:', error);
             setMensajeEstado({
                 tipo: 'error',
-                texto: 'Error al actualizar la fecha de entrega'
+                texto: 'Error al generar la orden de trabajo'
             });
         }
     };
