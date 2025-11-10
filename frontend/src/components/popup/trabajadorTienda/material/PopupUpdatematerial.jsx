@@ -99,7 +99,7 @@ export default function PopupUpdateMaterial({
 
   return (
     <div className="bg">
-      <div className="popup" style={{ height: 'auto', maxHeight: '90vh', maxWidth: '600px', overflowY: 'auto' }}>
+      <div className="popup" style={{ height: 'auto', maxHeight: '80vh', maxWidth: '600px', overflowY: 'auto' }}>
         <button 
           className='close' 
           onClick={handleClose}

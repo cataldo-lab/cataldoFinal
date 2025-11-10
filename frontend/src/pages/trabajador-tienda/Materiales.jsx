@@ -525,6 +525,14 @@ const handleUpdateMaterial = async (id, materialData) => {
             >
               <FaSync /> {loadingMateriales ? 'Actualizando...' : 'Actualizar'}
             </button>
+
+            {materialesParaMostrar.some(m => m.existencia_material <= m.stock_minimo) && (
+            <div className="bg-orange-100 border border-orange-300 text-orange-800
+            px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+              <FaExclamationTriangle />
+              {materialesParaMostrar.filter(m => m.existencia_material <= m.stock_minimo).length} materiales requieren atención
+            </div>
+          )}
           </div>
         </div>
 

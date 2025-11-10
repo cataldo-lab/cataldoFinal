@@ -630,17 +630,8 @@ const GerenteDashboard = () => {
             Indicadores Operacionales
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-gradient-to-br from-stone-50 to-stone-100 rounded-lg border border-stone-200">
-              <p className="text-sm font-medium text-stone-700 mb-2">Tasa de Conversión</p>
-              <p className="text-4xl font-bold text-stone-800">
-                {indicadores?.conversion?.porcentaje_conversion || 0}%
-              </p>
-              <p className="text-xs text-stone-600 mt-2 flex items-center gap-1">
-                <FaArrowUp className="text-green-600" />
-                {indicadores?.conversion?.ventas} ventas
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
 
             <div className="p-6 bg-gradient-to-br from-stone-50 to-stone-100 rounded-lg border border-stone-200">
               <p className="text-sm font-medium text-stone-700 mb-2">Satisfacción Cliente</p>
