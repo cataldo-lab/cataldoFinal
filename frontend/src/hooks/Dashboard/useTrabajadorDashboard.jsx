@@ -1,4 +1,4 @@
-// frontend/src/hooks/trabajadorTienda/useTrabajadorDashborad.jsx
+// frontend/src/hooks/Dashboard/useTrabajadorDashboard.jsx
 import { useState, useEffect } from 'react';
 import { getDashboardStats } from '@services/trabajadorTienda.service.js';
 
