@@ -55,7 +55,14 @@ const OperacionesModal = ({ isOpen, onClose, estadoFiltro, titulo }) => {
 
                     // Filtrar operaciones atrasadas
                     operacionesFiltradas = (response.data || []).filter(op => {
+                        // Si no tiene fecha de entrega, no se considera atrasada
+                        if (!op.fecha_entrega_estimada) return false;
+
                         const fechaEntrega = new Date(op.fecha_entrega_estimada);
+
+                        // Validar que la fecha sea válida
+                        if (isNaN(fechaEntrega.getTime())) return false;
+
                         const estadosFinales = ['completada', 'pagada', 'entregada', 'anulada'];
                         return fechaEntrega < hoy && !estadosFinales.includes(op.estado_operacion);
                     });

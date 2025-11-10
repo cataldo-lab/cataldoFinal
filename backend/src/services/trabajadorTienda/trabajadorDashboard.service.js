@@ -29,7 +29,8 @@ export async function getDashboardStats() {
 
         const operacionesAtrasadas = await operacionRepository
             .createQueryBuilder("operacion")
-            .where("operacion.fecha_entrega_estimada < :hoy", { hoy })
+            .where("operacion.fecha_entrega_estimada IS NOT NULL")
+            .andWhere("operacion.fecha_entrega_estimada < :hoy", { hoy })
             .andWhere("operacion.estado_operacion NOT IN (:...estadosFinales)", {
                 estadosFinales: ["completada", "pagada", "entregada", "anulada"]
             })
