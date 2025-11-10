@@ -33,7 +33,7 @@ export default function PopupViewProveedorDetails({
 
   if (!show || !proveedor) return null;
 
-  const tieneRepresentantes = proveedor.representantes && proveedor.representantes.length > 0;
+  const tieneRepresentantes = proveedor.representante !== null && proveedor.representante !== undefined;
 
   return (
     <div className="bg">
@@ -564,7 +564,7 @@ export default function PopupViewProveedorDetails({
               ) : (
                 <button
                   onClick={() => {
-                    const representante = proveedor.representantes[0];
+                    const representante = proveedor.representante;
                     onEditRepresentante && onEditRepresentante(representante, proveedor);
                   }}
                   style={{
@@ -602,8 +602,7 @@ export default function PopupViewProveedorDetails({
 
             {tieneRepresentantes ? (
               <div>
-                {proveedor.representantes.map((representante, index) => (
-                  <div key={representante.id_representante || index} style={{
+                <div style={{
                     background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
                     padding: '15px',
                     borderRadius: '10px',
@@ -622,7 +621,7 @@ export default function PopupViewProveedorDetails({
                           color: '#064e3b',
                           margin: '0 0 4px 0'
                         }}>
-                          {representante.nombre_representante} {representante.apellido_representante}
+                          {proveedor.representante.nombre_representante} {proveedor.representante.apellido_representante}
                         </h4>
                         <div style={{
                           background: 'rgba(255, 255, 255, 0.7)',
@@ -635,13 +634,13 @@ export default function PopupViewProveedorDetails({
                             color: '#059669',
                             fontWeight: '600'
                           }}>
-                            {representante.cargo_representante}
+                            {proveedor.representante.cargo_representante}
                           </span>
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button
-                          onClick={() => onEditRepresentante && onEditRepresentante(representante, proveedor)}
+                          onClick={() => onEditRepresentante && onEditRepresentante(proveedor.representante, proveedor)}
                           style={{
                             padding: '6px',
                             background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
@@ -668,7 +667,7 @@ export default function PopupViewProveedorDetails({
                           <FaEdit style={{ width: '12px', height: '12px' }} />
                         </button>
                         <button
-                          onClick={() => onDeleteRepresentante && onDeleteRepresentante(representante.id_representante)}
+                          onClick={() => onDeleteRepresentante && onDeleteRepresentante(proveedor.representante.id_representante)}
                           style={{
                             padding: '6px',
                             background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
@@ -726,7 +725,7 @@ export default function PopupViewProveedorDetails({
                           fontWeight: '700',
                           color: '#064e3b'
                         }}>
-                          {representante.rut_representante}
+                          {proveedor.representante.rut_representante}
                         </div>
                       </div>
 
@@ -749,13 +748,13 @@ export default function PopupViewProveedorDetails({
                         }}>
                           <FaPhone style={{ fontSize: '9px' }} /> Teléfono
                         </div>
-                        <a href={`tel:${representante.fono_representante}`} style={{
+                        <a href={`tel:${proveedor.representante.fono_representante}`} style={{
                           color: '#059669',
                           textDecoration: 'none',
                           fontWeight: '700',
                           fontSize: '12px'
                         }}>
-                          {representante.fono_representante}
+                          {proveedor.representante.fono_representante}
                         </a>
                       </div>
 
@@ -779,19 +778,18 @@ export default function PopupViewProveedorDetails({
                         }}>
                           <FaEnvelope style={{ fontSize: '9px' }} /> Correo
                         </div>
-                        <a href={`mailto:${representante.correo_representante}`} style={{
+                        <a href={`mailto:${proveedor.representante.correo_representante}`} style={{
                           color: '#0284c7',
                           textDecoration: 'none',
                           fontWeight: '600',
                           fontSize: '12px',
                           wordBreak: 'break-all'
                         }}>
-                          {representante.correo_representante}
+                          {proveedor.representante.correo_representante}
                         </a>
                       </div>
                     </div>
                   </div>
-                ))}
               </div>
             ) : (
               <div style={{
