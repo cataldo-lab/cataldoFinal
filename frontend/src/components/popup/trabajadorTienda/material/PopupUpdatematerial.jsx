@@ -120,6 +120,7 @@ export default function PopupUpdateMaterial({
         </button>
 
         {/* Información del material */}
+       {/*
         <div style={{
           margin: '10px 20px',
           padding: '12px 16px',
@@ -127,7 +128,7 @@ export default function PopupUpdateMaterial({
           borderRadius: '8px',
           border: '1px solid #e5e7eb'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>
               ID Material: #{material.id_material}
             </span>
@@ -142,13 +143,16 @@ export default function PopupUpdateMaterial({
               {stockStatus === 'bajo' ? '⚠️ Stock Bajo' : '✓ Stock Normal'}
             </span>
           </div>
+         
+
+
           {material.proveedor && (
             <div style={{ fontSize: '13px', color: '#6b7280' }}>
               Proveedor: <span style={{ fontWeight: '500', color: '#374151' }}>{material.proveedor.rol_proveedor}</span>
             </div>
           )}
         </div>
-
+          */}
         {error && (
           <div className="error-message visible" style={{
             margin: '10px 20px',
