@@ -826,7 +826,7 @@ const Papeles = () => {
                                         RUT
                                     </th>
                                     <th scope="col" className="px-6 py-4 text-center text-xs font-bold text-stone-700 uppercase tracking-wider">
-                                        Operaciones
+                                        N° Operaciones por Cliente
                                     </th>
                                     <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-stone-700 uppercase tracking-wider">
                                         Total Gastado
