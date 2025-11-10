@@ -1,18 +1,10 @@
-// frontend/src/components/popup/PopUpEditarRepresentante.jsx
+// frontend/src/components/popup/trabajadorTienda/proveedor/PopupUpdateRepresentante.jsx
 import { useState, useEffect } from 'react';
-import { useRepresentantes } from '@hooks/prooveedores/useRepresentantes';
-import { FaTimes, FaEdit, FaUserTie, FaSpinner } from 'react-icons/fa';
+import { FaTimes, FaEdit, FaUserTie, FaSpinner, FaIdCard, FaPhone, FaEnvelope, FaBriefcase } from 'react-icons/fa';
+import { showSuccessAlert, showErrorAlert } from '@helpers/sweetAlert.js';
 
-const PopUpEditarRepresentante = ({ isOpen, onClose, onSuccess, proveedorId }) => {
-  const { 
-    representantes, 
-    loading: loadingReps, 
-    fetchRepresentantes,
-    updateRepresentante,
-    loading: updating
-  } = useRepresentantes();
-
-  const [selectedRepresentante, setSelectedRepresentante] = useState(null);
+export default function PopupUpdateRepresentante({ show, setShow, representante, proveedor, onSubmit }) {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nombre_representante: '',
     apellido_representante: '',
@@ -22,26 +14,19 @@ const PopUpEditarRepresentante = ({ isOpen, onClose, onSuccess, proveedorId }) =
     correo_representante: ''
   });
 
-  // Cargar representantes cuando se abre el modal
+  // Prellenar el formulario cuando cambia el representante
   useEffect(() => {
-    if (isOpen && proveedorId) {
-      fetchRepresentantes(proveedorId);
-    }
-  }, [isOpen, proveedorId]);
-
-  // Cuando se selecciona un representante, llenar el formulario
-  useEffect(() => {
-    if (selectedRepresentante) {
+    if (representante) {
       setFormData({
-        nombre_representante: selectedRepresentante.nombre_representante || '',
-        apellido_representante: selectedRepresentante.apellido_representante || '',
-        rut_representante: selectedRepresentante.rut_representante || '',
-        cargo_representante: selectedRepresentante.cargo_representante || '',
-        fono_representante: selectedRepresentante.fono_representante || '',
-        correo_representante: selectedRepresentante.correo_representante || ''
+        nombre_representante: representante.nombre_representante || '',
+        apellido_representante: representante.apellido_representante || '',
+        rut_representante: representante.rut_representante || '',
+        cargo_representante: representante.cargo_representante || '',
+        fono_representante: representante.fono_representante || '',
+        correo_representante: representante.correo_representante || ''
       });
     }
-  }, [selectedRepresentante]);
+  }, [representante]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,264 +36,461 @@ const PopUpEditarRepresentante = ({ isOpen, onClose, onSuccess, proveedorId }) =
     }));
   };
 
-  const handleSelectRepresentante = (representante) => {
-    setSelectedRepresentante(representante);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedRepresentante) {
-      alert('❌ Debes seleccionar un representante');
+    if (!representante?.id_representante) {
+      showErrorAlert('Error', 'No se encontró el ID del representante');
       return;
     }
 
-    const resultado = await updateRepresentante(
-      selectedRepresentante.id_representante,
-      formData
-    );
+    setLoading(true);
 
-    if (resultado) {
-      onSuccess();
+    try {
+      const [result, error] = await onSubmit(representante.id_representante, formData);
+
+      if (result) {
+        showSuccessAlert('¡Actualizado!', 'El representante se actualizó exitosamente');
+        handleClose();
+      } else {
+        showErrorAlert('Error', error || 'No se pudo actualizar el representante');
+      }
+    } catch (error) {
+      showErrorAlert('Error', 'Ocurrió un error inesperado');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    setSelectedRepresentante(null);
-    setFormData({
-      nombre_representante: '',
-      apellido_representante: '',
-      rut_representante: '',
-      cargo_representante: '',
-      fono_representante: '',
-      correo_representante: ''
-    });
-    onClose();
+  const handleClose = () => {
+    setShow(false);
   };
 
-  if (!isOpen) return null;
+  if (!show || !representante || !proveedor) return null;
 
   return (
-    <div
-      className="bg popup-layer-2"
-      style={{
-        background: 'rgba(0, 0, 0, 0.6)',
-        backdropFilter: 'blur(4px)'
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
-        
+    <div className="bg" style={{ zIndex: 1001 }}>
+      <div className="popup" style={{
+        maxWidth: '700px',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        background: 'white',
+        borderRadius: '16px'
+      }}>
         {/* Header */}
-        <div className="relative px-6 pt-6 pb-4 border-b border-stone-200">
-          <div className="flex items-center space-x-2">
-            <FaEdit className="w-6 h-6 text-stone-600" />
-            <h2 className="text-xl font-semibold text-stone-800">
-              Editar Representante
-            </h2>
-          </div>
+        <div style={{
+          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+          padding: '20px 30px',
+          borderRadius: '16px 16px 0 0',
+          position: 'relative',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        }}>
           <button
-            className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-lg transition-colors"
-            onClick={onClose}
+            className='close'
+            onClick={handleClose}
+            style={{
+              position: 'absolute',
+              top: '15px',
+              right: '15px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              backdropFilter: 'blur(10px)',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '8px',
+              borderRadius: '50%',
+              zIndex: 10,
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
           >
-            <FaTimes className="w-5 h-5" />
+            <FaTimes style={{ width: '18px', height: '18px', color: 'white' }} />
           </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(10px)',
+              padding: '12px',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <FaEdit style={{ fontSize: '28px', color: 'white' }} />
+            </div>
+            <div>
+              <h2 style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                margin: '0',
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}>
+                Actualizar Representante
+              </h2>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.9)',
+                margin: '3px 0 0 0',
+                fontSize: '13px',
+                fontWeight: '300'
+              }}>
+                Proveedor: {proveedor.rol_proveedor}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-          {loadingReps ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-stone-200 rounded-full"></div>
-                <div className="w-16 h-16 border-4 border-stone-600 rounded-full animate-spin absolute top-0 border-t-transparent"></div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ padding: '25px 30px' }}>
+          <div style={{
+            background: 'white',
+            padding: '20px',
+            borderRadius: '12px',
+            marginBottom: '20px',
+            border: '1px solid #e5e7eb'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              marginBottom: '20px',
+              paddingBottom: '12px',
+              borderBottom: '2px solid #f3f4f6'
+            }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                padding: '8px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <FaUserTie style={{ fontSize: '16px', color: 'white' }} />
               </div>
-              <p className="mt-4 text-stone-600">Cargando representantes...</p>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: 0
+              }}>
+                Datos del Representante
+              </h3>
             </div>
-          ) : representantes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <FaUserTie className="text-6xl mb-4 text-stone-300" />
-              <p className="text-stone-600">Este proveedor no tiene representantes</p>
-            </div>
-          ) : (
-            <div className="p-6 space-y-6">
-              {/* Lista de Representantes */}
-              <div className="bg-stone-50 rounded-lg p-5">
-                <h3 className="font-semibold text-stone-800 mb-4 flex items-center gap-2">
-                  <FaUserTie className="w-5 h-5 text-stone-600" />
-                  Selecciona un Representante
-                </h3>
-                <div className="space-y-2">
-                  {representantes.map((rep) => (
-                    <button
-                      key={rep.id_representante}
-                      type="button"
-                      onClick={() => handleSelectRepresentante(rep)}
-                      className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                        selectedRepresentante?.id_representante === rep.id_representante
-                          ? 'border-stone-600 bg-stone-100'
-                          : 'border-stone-200 hover:border-stone-400 bg-white'
-                      }`}
-                    >
-                      <div className="font-semibold text-stone-800">
-                        {rep.nombre_representante} {rep.apellido_representante}
-                      </div>
-                      <div className="text-sm text-stone-600">
-                        {rep.cargo_representante} • {rep.rut_representante}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '15px'
+            }}>
+              {/* Nombre */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '6px'
+                }}>
+                  Nombre *
+                </label>
+                <input
+                  type="text"
+                  name="nombre_representante"
+                  value={formData.nombre_representante}
+                  onChange={handleChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                />
               </div>
 
-              {/* Formulario de Edición */}
-              {selectedRepresentante && (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="bg-stone-50 rounded-lg p-5">
-                    <h3 className="font-semibold text-stone-800 mb-4">
-                      Datos del Representante
-                    </h3>
+              {/* Apellido */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '6px'
+                }}>
+                  Apellido *
+                </label>
+                <input
+                  type="text"
+                  name="apellido_representante"
+                  value={formData.apellido_representante}
+                  onChange={handleChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                />
+              </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Nombre */}
-                      <div>
-                        <label htmlFor="nombre_representante" className="block text-sm font-medium text-stone-700 mb-1">
-                          Nombre *
-                        </label>
-                        <input
-                          type="text"
-                          id="nombre_representante"
-                          name="nombre_representante"
-                          value={formData.nombre_representante}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
-                          required
-                        />
-                      </div>
+              {/* RUT */}
+              <div>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '6px'
+                }}>
+                  <FaIdCard style={{ fontSize: '12px' }} />
+                  RUT *
+                </label>
+                <input
+                  type="text"
+                  name="rut_representante"
+                  value={formData.rut_representante}
+                  onChange={handleChange}
+                  placeholder="12.345.678-9"
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontFamily: 'monospace',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                />
+              </div>
 
-                      {/* Apellido */}
-                      <div>
-                        <label htmlFor="apellido_representante" className="block text-sm font-medium text-stone-700 mb-1">
-                          Apellido *
-                        </label>
-                        <input
-                          type="text"
-                          id="apellido_representante"
-                          name="apellido_representante"
-                          value={formData.apellido_representante}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
-                          required
-                        />
-                      </div>
+              {/* Cargo */}
+              <div>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '6px'
+                }}>
+                  <FaBriefcase style={{ fontSize: '12px' }} />
+                  Cargo *
+                </label>
+                <input
+                  type="text"
+                  name="cargo_representante"
+                  value={formData.cargo_representante}
+                  onChange={handleChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                />
+              </div>
 
-                      {/* RUT */}
-                      <div>
-                        <label htmlFor="rut_representante" className="block text-sm font-medium text-stone-700 mb-1">
-                          RUT *
-                        </label>
-                        <input
-                          type="text"
-                          id="rut_representante"
-                          name="rut_representante"
-                          value={formData.rut_representante}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
-                          placeholder="12.345.678-9"
-                          required
-                        />
-                      </div>
+              {/* Teléfono */}
+              <div>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '6px'
+                }}>
+                  <FaPhone style={{ fontSize: '12px' }} />
+                  Teléfono *
+                </label>
+                <input
+                  type="tel"
+                  name="fono_representante"
+                  value={formData.fono_representante}
+                  onChange={handleChange}
+                  placeholder="+56 9 1234 5678"
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                />
+              </div>
 
-                      {/* Cargo */}
-                      <div>
-                        <label htmlFor="cargo_representante" className="block text-sm font-medium text-stone-700 mb-1">
-                          Cargo *
-                        </label>
-                        <input
-                          type="text"
-                          id="cargo_representante"
-                          name="cargo_representante"
-                          value={formData.cargo_representante}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
-                          required
-                        />
-                      </div>
+              {/* Correo */}
+              <div>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '6px'
+                }}>
+                  <FaEnvelope style={{ fontSize: '12px' }} />
+                  Correo Electrónico *
+                </label>
+                <input
+                  type="email"
+                  name="correo_representante"
+                  value={formData.correo_representante}
+                  onChange={handleChange}
+                  placeholder="ejemplo@correo.com"
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                />
+              </div>
+            </div>
+          </div>
 
-                      {/* Teléfono */}
-                      <div>
-                        <label htmlFor="fono_representante" className="block text-sm font-medium text-stone-700 mb-1">
-                          Teléfono
-                        </label>
-                        <input
-                          type="tel"
-                          id="fono_representante"
-                          name="fono_representante"
-                          value={formData.fono_representante}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
-                          placeholder="+56 9 1234 5678"
-                        />
-                      </div>
-
-                      {/* Email */}
-                      <div>
-                        <label htmlFor="correo_representante" className="block text-sm font-medium text-stone-700 mb-1">
-                          Email
-                        </label>
-                        <input
-                          type="email"
-                          id="correo_representante"
-                          name="correo_representante"
-                          value={formData.correo_representante}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent transition-all"
-                          placeholder="ejemplo@correo.com"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-end space-x-3 pt-4 border-t border-stone-200">
-                    <button
-                      type="button"
-                      onClick={handleCancel}
-                      className="px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-lg transition-colors"
-                      disabled={updating}
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      className={`px-6 py-2.5 bg-stone-600 hover:bg-stone-700 text-white font-medium rounded-lg transition-all flex items-center space-x-2 ${
-                        updating ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                      disabled={updating}
-                    >
-                      {updating ? (
-                        <>
-                          <FaSpinner className="animate-spin h-4 w-4" />
-                          <span>Guardando...</span>
-                        </>
-                      ) : (
-                        <>
-                          <FaEdit className="w-4 h-4" />
-                          <span>Guardar Cambios</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
+          {/* Botones */}
+          <div style={{
+            display: 'flex',
+            gap: '10px',
+            justifyContent: 'flex-end',
+            paddingTop: '15px',
+            borderTop: '2px solid #f3f4f6'
+          }}>
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={loading}
+              style={{
+                padding: '10px 24px',
+                background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                fontSize: '13px',
+                opacity: loading ? 0.5 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+              onMouseOver={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(107, 114, 128, 0.4)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
+              }}
+            >
+              <FaTimes style={{ fontSize: '12px' }} />
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                padding: '10px 24px',
+                background: loading
+                  ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                  : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+              onMouseOver={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(245, 158, 11, 0.4)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
+              }}
+            >
+              {loading ? (
+                <>
+                  <FaSpinner style={{ fontSize: '12px', animation: 'spin 1s linear infinite' }} />
+                  Actualizando...
+                </>
+              ) : (
+                <>
+                  <FaEdit style={{ fontSize: '12px' }} />
+                  Actualizar Representante
+                </>
               )}
-            </div>
-          )}
-        </div>
+            </button>
+          </div>
+        </form>
       </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   );
-};
-
-export default PopUpEditarRepresentante;
+}
