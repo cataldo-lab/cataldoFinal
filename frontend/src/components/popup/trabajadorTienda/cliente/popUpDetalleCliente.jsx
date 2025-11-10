@@ -39,7 +39,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
       }}>
         {/* Header con gradiente */}
         <div style={{
-          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+          background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
           padding: '20px 30px',
           borderRadius: '16px 16px 0 0',
           position: 'relative',
@@ -130,7 +130,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
               <div style={{
                 width: '64px',
                 height: '64px',
-                border: '4px solid #3b82f6',
+                border: '4px solid #6b7280',
                 borderTop: '4px solid transparent',
                 borderRadius: '50%',
                 position: 'absolute',
@@ -162,13 +162,13 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                 borderBottom: '2px solid #f3f4f6'
               }}>
                 <div style={{
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
                   padding: '8px',
                   borderRadius: '8px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)'
+                  boxShadow: '0 2px 4px rgba(107, 114, 128, 0.3)'
                 }}>
                   <FaUser style={{ fontSize: '16px', color: 'white' }} />
                 </div>
@@ -185,10 +185,10 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                 {/* Nombre Completo */}
                 <div style={{
-                  background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                  background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
                   padding: '15px',
                   borderRadius: '10px',
-                  border: '1px solid #93c5fd',
+                  border: '1px solid #d1d5db',
                   gridColumn: 'span 2'
                 }}>
                   <div style={{
@@ -197,11 +197,11 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                     gap: '8px',
                     marginBottom: '8px'
                   }}>
-                    <FaUser style={{ fontSize: '14px', color: '#2563eb' }} />
+                    <FaUser style={{ fontSize: '14px', color: '#4b5563' }} />
                     <h4 style={{
                       fontSize: '11px',
                       fontWeight: '700',
-                      color: '#1e40af',
+                      color: '#374151',
                       margin: 0,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px'
@@ -212,7 +212,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                   <p style={{
                     fontSize: '15px',
                     fontWeight: '700',
-                    color: '#1e3a8a',
+                    color: '#1f2937',
                     margin: 0
                   }}>
                     {usuario?.nombreCompleto}
@@ -671,23 +671,23 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                   {/* Uso de Datos */}
                   <div style={{
                     background: clienteDetalle.Acepta_uso_datos
-                      ? 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)'
+                      ? 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)'
                       : 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
                     padding: '15px',
                     borderRadius: '10px',
-                    border: clienteDetalle.Acepta_uso_datos ? '1px solid #93c5fd' : '1px solid #d1d5db',
+                    border: clienteDetalle.Acepta_uso_datos ? '1px solid #9ca3af' : '1px solid #d1d5db',
                     textAlign: 'center'
                   }}>
                     <div style={{ fontSize: '32px', marginBottom: '6px' }}>
                       {clienteDetalle.Acepta_uso_datos
-                        ? <FaCheckCircle style={{ color: '#2563eb' }} />
+                        ? <FaCheckCircle style={{ color: '#4b5563' }} />
                         : <FaTimesCircle style={{ color: '#9ca3af' }} />
                       }
                     </div>
                     <div style={{
                       fontSize: '11px',
                       fontWeight: '700',
-                      color: clienteDetalle.Acepta_uso_datos ? '#1e40af' : '#6b7280',
+                      color: clienteDetalle.Acepta_uso_datos ? '#374151' : '#6b7280',
                       marginBottom: '3px',
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px'
@@ -697,7 +697,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                     <div style={{
                       fontSize: '13px',
                       fontWeight: '700',
-                      color: clienteDetalle.Acepta_uso_datos ? '#1d4ed8' : '#9ca3af'
+                      color: clienteDetalle.Acepta_uso_datos ? '#1f2937' : '#9ca3af'
                     }}>
                       {clienteDetalle.Acepta_uso_datos ? 'Acepta' : 'No acepta'}
                     </div>
@@ -857,7 +857,7 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                 onClick={onEditar}
                 style={{
                   padding: '10px 24px',
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
@@ -865,18 +865,18 @@ const PopUpDetalleCliente = ({ isOpen, onClose, onEditar, clienteId }) => {
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   fontSize: '13px',
-                  boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)',
+                  boxShadow: '0 2px 4px rgba(107, 114, 128, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px'
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.4)';
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(107, 114, 128, 0.4)';
                 }}
                 onMouseOut={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.3)';
+                  e.currentTarget.style.boxShadow = '0 2px 4px rgba(107, 114, 128, 0.3)';
                 }}
               >
                 <FaEdit style={{ fontSize: '12px' }} />
