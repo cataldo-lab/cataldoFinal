@@ -55,23 +55,33 @@ export async function getDashboardStats() {
         console.log("⚠️ Materiales bajo stock:", materialesBajoStock);
         
         // Calcular ingresos del mes actual
+        // Contamos operaciones completadas cuyo primer abono (orden_trabajo) fue este mes
         const inicioMes = new Date();
         inicioMes.setDate(1);
         inicioMes.setHours(0, 0, 0, 0);
         console.log("📅 Inicio del mes:", inicioMes);
-        
-        const operacionesCompletadas = await operacionRepository
-            .createQueryBuilder("operacion")
-            .where("operacion.estado_operacion = :estado", { estado: "completada" })
-            .andWhere("operacion.fecha_creacion >= :fecha", { fecha: inicioMes })
+
+        const historialRepository = AppDataSource.getRepository("Historial");
+
+        // Buscar historial donde orden_trabajo = true y fecha_cambio >= inicioMes
+        const historialesOrdenTrabajo = await historialRepository
+            .createQueryBuilder("historial")
+            .leftJoinAndSelect("historial.operacion", "operacion")
+            .where("historial.orden_trabajo = :ordenTrabajo", { ordenTrabajo: true })
+            .andWhere("historial.fecha_cambio >= :fecha", { fecha: inicioMes })
+            .andWhere("operacion.estado_operacion = :estado", { estado: "completada" })
             .getMany();
-        console.log("💰 Operaciones completadas este mes:", operacionesCompletadas.length);
-        
-        const ingresosMesActual = operacionesCompletadas.reduce(
-            (total, op) => total + parseFloat(op.costo_operacion || 0), 
+
+        console.log("💰 Operaciones con orden de trabajo este mes y completadas:", historialesOrdenTrabajo.length);
+
+        const ingresosMesActual = historialesOrdenTrabajo.reduce(
+            (total, historial) => {
+                const costo = parseFloat(historial.operacion?.costo_operacion || 0);
+                return total + costo;
+            },
             0
         );
-        console.log("💵 Ingresos mes actual:", ingresosMesActual);
+        console.log("💵 Ingresos mes actual (desde primer abono):", ingresosMesActual);
         
         const resultado = {
             operacionesPendientes,
