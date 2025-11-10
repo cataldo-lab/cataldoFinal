@@ -7,7 +7,7 @@ import {
   deleteProducto,
   getCategorias
 } from '@services/producto.service.js';
-import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
+import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
 
 export const useProductos = () => {
   const [productos, setProductos] = useState([]);

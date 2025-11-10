@@ -1,10 +1,11 @@
 // frontend/src/pages/trabajador-tienda/Productos.jsx
 import { useState } from 'react';
 import { useProductos, useFormatPrecio } from '@hooks/productos/useProductos';
+import { useDeleteProducto } from '@hooks/productos/useDeleteProducto';
 import PopupCreateProducto from '@components/trabajadorTienda/PopupCreateProducto';
 import PopupUpdateProducto from '@components/trabajadorTienda/PopupUpdateProducto';
 import Search from '@components/Search';
-import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
+import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 import { FaBox } from 'react-icons/fa';
 
 // Icons
@@ -28,11 +29,12 @@ export default function Productos() {
     limpiarFiltros,
     handleCreateProducto,
     handleUpdateProducto,
-    handleDeleteProducto,
     fetchProductos
   } = useProductos();
 
   const { formatPrecio } = useFormatPrecio();
+  const { handleDelete: deleteProducto, handleBulkDelete: bulkDeleteProductos, isDeleting } = useDeleteProducto();
+
   const [showCreatePopup, setShowCreatePopup] = useState(false);
   const [showUpdatePopup, setShowUpdatePopup] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
@@ -44,30 +46,18 @@ export default function Productos() {
   };
 
   const handleDelete = async (id) => {
-    try {
-      const result = await deleteDataAlert();
-      if (result.isConfirmed) {
-        await handleDeleteProducto(id);
-        setSelectedItems([]);
-      }
-    } catch (error) {
-      showErrorAlert('Error', 'No se pudo eliminar el producto');
+    const success = await deleteProducto(id, fetchProductos);
+    if (success) {
+      setSelectedItems([]);
     }
   };
 
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
-    
-    try {
-      const result = await deleteDataAlert();
-      if (result.isConfirmed) {
-        const promises = selectedItems.map(id => handleDeleteProducto(id));
-        await Promise.all(promises);
-        showSuccessAlert('Éxito', `${selectedItems.length} productos desactivados correctamente`);
-        setSelectedItems([]);
-      }
-    } catch (error) {
-      showErrorAlert('Error', 'No se pudieron desactivar los productos seleccionados');
+
+    const success = await bulkDeleteProductos(selectedItems, fetchProductos);
+    if (success) {
+      setSelectedItems([]);
     }
   };
 
@@ -115,10 +105,13 @@ export default function Productos() {
             {selectedItems.length > 0 && (
               <button
                 onClick={handleBulkDelete}
-                className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2"
+                disabled={isDeleting}
+                className={`bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2 ${
+                  isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
                 <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5 filter brightness-0 invert" />
-                Desactivar ({selectedItems.length})
+                {isDeleting ? 'Desactivando...' : `Desactivar (${selectedItems.length})`}
               </button>
             )}
             <button
@@ -266,14 +259,20 @@ export default function Productos() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleEdit(producto)}
-                            className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
+                            disabled={isDeleting}
+                            className={`p-2 hover:bg-stone-100 rounded-lg transition-colors ${
+                              isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
                             title="Editar"
                           >
                             <FaEdit className="w-5 h-5 text-stone-600" />
                           </button>
                           <button
                             onClick={() => handleDelete(producto.id_producto)}
-                            className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                            disabled={isDeleting}
+                            className={`p-2 hover:bg-red-50 rounded-lg transition-colors ${
+                              isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
                             title={producto.activo ? "Desactivar" : "Activar"}
                           >
                             <FaTrash className="w-5 h-5 text-red-600" />
