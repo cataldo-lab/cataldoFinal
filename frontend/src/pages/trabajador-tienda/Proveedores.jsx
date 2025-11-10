@@ -595,7 +595,7 @@ export default function Proveedores() {
                           >
                             {proveedor.rol_proveedor}
                           </button>
-                          <span className="text-sm text-gray-500">ID: {proveedor.id_proveedor}</span>
+                          
                         </div>
                       </td>
 
