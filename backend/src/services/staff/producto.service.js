@@ -181,7 +181,7 @@ export async function updateProductoService(id, datosActualizados) {
 }
 
 /**
- * Eliminar producto permanentemente
+ * Eliminar (desactivar) producto
  */
 export async function deleteProductoService(id) {
     try {
@@ -195,10 +195,11 @@ export async function deleteProductoService(id) {
             return [null, "Producto no encontrado"];
         }
 
-        // Eliminar permanentemente
-        await productoRepository.remove(producto);
+        // Desactivar en lugar de eliminar
+        producto.activo = false;
+        await productoRepository.save(producto);
 
-        return [{ message: "Producto eliminado exitosamente" }, null];
+        return [producto, null];
 
     } catch (error) {
         console.error("Error al eliminar producto:", error);

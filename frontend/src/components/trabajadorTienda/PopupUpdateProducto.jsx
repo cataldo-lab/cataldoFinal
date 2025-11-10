@@ -50,15 +50,6 @@ export default function PopupUpdateProducto({
         activo: producto.activo ? 'true' : 'false'
       });
       setEsServicio(producto.servicio || false);
-      const nuevosCostos = {
-        costo_fabricacion: parseInt(producto.costo_fabricacion) || 0,
-        costo_barnizador: parseInt(producto.costo_barnizador) || 0,
-        costo_vidrio: parseInt(producto.costo_vidrio) || 0,
-        costo_tela: parseInt(producto.costo_tela) || 0,
-        costo_materiales_otros: parseInt(producto.costo_materiales_otros) || 0
-      };
-      setCostos(nuevosCostos);
-      setMargenGanancia(parseFloat(producto.margen_ganancia) || 30);
     }
   }, [producto, reset]);
 
@@ -81,27 +72,21 @@ export default function PopupUpdateProducto({
     setPrecioVentaCalculado(precioCalculado);
   }, [costos, margenGanancia]);
 
-  const handleCostoChange = (nombre, valor) => {
-    setCostos(prev => ({
-      ...prev,
-      [nombre]: parseInt(valor) || 0
-    }));
-  };
-
-  const handleMargenChange = (valor) => {
-    setMargenGanancia(parseFloat(valor) || 0);
-  };
+  // Actualizar estado de servicio
+  useEffect(() => {
+    setEsServicio(tipoProducto === 'true');
+  }, [tipoProducto]);
 
   const handleFormSubmit = async (formData) => {
     const productoData = {
       ...formData,
-      costo_fabricacion: parseInt(costos.costo_fabricacion),
-      costo_barnizador: parseInt(costos.costo_barnizador),
-      costo_vidrio: parseInt(costos.costo_vidrio),
-      costo_tela: parseInt(costos.costo_tela),
-      costo_materiales_otros: parseInt(costos.costo_materiales_otros),
-      precio_venta: Math.round(precioVentaCalculado),
-      margen_ganancia: margenGanancia,
+      costo_fabricacion: parseInt(formData.costo_fabricacion) || 0,
+      costo_barnizador: parseInt(formData.costo_barnizador) || 0,
+      costo_vidrio: parseInt(formData.costo_vidrio) || 0,
+      costo_tela: parseInt(formData.costo_tela) || 0,
+      costo_materiales_otros: parseInt(formData.costo_materiales_otros) || 0,
+      precio_venta: precioVentaCalculado,
+      margen_ganancia: parseInt(formData.margen_ganancia) || 30,
       servicio: esServicio,
       oferta: formData.oferta === 'true',
       activo: formData.activo === 'true'
@@ -142,141 +127,186 @@ export default function PopupUpdateProducto({
           <img src={CloseIcon} alt="Cerrar" style={{ width: '24px', height: '24px' }} />
         </button>
 
-        <Form
-          title="Editar Producto"
-          fields={[
-            {
-              label: "Nombre del Producto",
-              name: "nombre_producto",
-              defaultValue: producto.nombre_producto,
-              placeholder: 'Mesa de comedor 6 personas',
-              fieldType: 'input',
-              type: "text",
-              required: true,
-              minLength: 3,
-              maxLength: 100,
-            },
-            {
-              label: "Categoría",
-              name: "categoria_producto",
-              fieldType: 'select',
-              options: categorias.map(cat => ({ 
-                value: cat, 
-                label: cat 
-              })),
-              required: true,
-              defaultValue: producto.categoria_producto
-            },
-            {
-              label: "Descripción",
-              name: "descripcion_producto",
-              defaultValue: producto.descripcion_producto || '',
-              placeholder: 'Descripción detallada del producto',
-              fieldType: 'textarea',
-              required: false,
-              maxLength: 500,
-            },
-            {
-              label: "¿Es un servicio?",
-              name: "tipo_producto",
-              fieldType: 'select',
-              options: [
-                { value: 'false', label: 'No - Es un producto físico' },
-                { value: 'true', label: 'Sí - Es un servicio' }
-              ],
-              required: true,
-              defaultValue: producto.servicio ? 'true' : 'false',
-              onChange: (e) => setEsServicio(e.target.value === 'true')
-            },
-            {
-              label: "Costo de Fabricación",
-              name: "costo_fabricacion",
-              defaultValue: producto.costo_fabricacion,
-              placeholder: '0',
-              fieldType: 'input',
-              type: "number",
-              required: true,
-              min: 0,
-              onChange: (e) => handleCostoChange('costo_fabricacion', e.target.value)
-            },
-            {
-              label: "Costo Barnizado",
-              name: "costo_barnizador",
-              defaultValue: producto.costo_barnizador,
-              placeholder: '0',
-              fieldType: 'input',
-              type: "number",
-              required: false,
-              min: 0,
-              onChange: (e) => handleCostoChange('costo_barnizador', e.target.value)
-            },
-            {
-              label: "Costo Vidrio",
-              name: "costo_vidrio",
-              defaultValue: producto.costo_vidrio,
-              placeholder: '0',
-              fieldType: 'input',
-              type: "number",
-              required: false,
-              min: 0,
-              onChange: (e) => handleCostoChange('costo_vidrio', e.target.value)
-            },
-            {
-              label: "Costo Tela",
-              name: "costo_tela",
-              defaultValue: producto.costo_tela,
-              placeholder: '0',
-              fieldType: 'input',
-              type: "number",
-              required: false,
-              min: 0,
-              onChange: (e) => handleCostoChange('costo_tela', e.target.value)
-            },
-            {
-              label: "Otros Costos",
-              name: "costo_materiales_otros",
-              defaultValue: producto.costo_materiales_otros,
-              placeholder: '0',
-              fieldType: 'input',
-              type: "number",
-              required: false,
-              min: 0,
-              onChange: (e) => handleCostoChange('costo_materiales_otros', e.target.value)
-            },
-            {
-              label: (
-                <div style={{ marginBottom: '10px' }}>
-                  <strong>Costo Total: ${costoTotal.toLocaleString('es-CL')}</strong>
-                </div>
-              ),
-              name: "costo_total_display",
-              fieldType: 'custom',
-              customRender: () => null
-            },
-            {
-              label: (
-                <span>
-                  Margen de Ganancia (%)
-                  <span className='tooltip-icon'>
-                    <img src={QuestionIcon} alt="Ayuda" />
-                    <span className='tooltip-text'>Porcentaje de ganancia sobre el costo total</span>
-                  </span>
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
+          <div style={{ padding: '20px' }}>
+            <h2 style={{ marginBottom: '20px', fontSize: '1.5em', fontWeight: 'bold' }}>
+              Editar Producto
+            </h2>
+
+            {/* Nombre del Producto */}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+                Nombre del Producto *
+              </label>
+              <Controller
+                name="nombre_producto"
+                control={control}
+                rules={{ 
+                  required: 'El nombre es requerido',
+                  minLength: { value: 3, message: 'Mínimo 3 caracteres' },
+                  maxLength: { value: 100, message: 'Máximo 100 caracteres' }
+                }}
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    type="text"
+                    placeholder="Mesa de comedor 6 personas"
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: `1px solid ${errors.nombre_producto ? '#ef4444' : '#ddd'}`,
+                      borderRadius: '5px',
+                      fontSize: '1em',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                )}
+              />
+              {errors.nombre_producto && (
+                <span style={{ color: '#ef4444', fontSize: '0.85em' }}>
+                  {errors.nombre_producto.message}
                 </span>
-              ),
-              name: "margen_ganancia",
-              defaultValue: producto.margen_ganancia,
-              placeholder: '30',
-              fieldType: 'input',
-              type: "number",
-              required: false,
-              min: 0,
-              max: 100,
-              onChange: (e) => handleMargenChange(e.target.value)
-            },
-            {
-              label: (
-                <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e8f5e9', borderRadius: '5px' }}>
-                  <strong>Precio de Venta Calculado: ${Math.round(precioVentaCalculado).toLocaleString('es-CL')}</strong>
+              )}
+            </div>
+
+            {/* Categoría */}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+                Categoría *
+              </label>
+              <Controller
+                name="categoria_producto"
+                control={control}
+                rules={{ required: 'La categoría es requerida' }}
+                render={({ field }) => (
+                  <select
+                    {...field}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: `1px solid ${errors.categoria_producto ? '#ef4444' : '#ddd'}`,
+                      borderRadius: '5px',
+                      fontSize: '1em',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <option value="">Seleccionar categoría</option>
+                    {categorias.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                )}
+              />
+              {errors.categoria_producto && (
+                <span style={{ color: '#ef4444', fontSize: '0.85em' }}>
+                  {errors.categoria_producto.message}
+                </span>
+              )}
+            </div>
+
+            {/* Descripción */}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+                Descripción
+              </label>
+              <Controller
+                name="descripcion_producto"
+                control={control}
+                rules={{ maxLength: { value: 500, message: 'Máximo 500 caracteres' } }}
+                render={({ field }) => (
+                  <textarea
+                    {...field}
+                    placeholder="Descripción detallada del producto"
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: `1px solid ${errors.descripcion_producto ? '#ef4444' : '#ddd'}`,
+                      borderRadius: '5px',
+                      fontSize: '1em',
+                      minHeight: '80px',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                )}
+              />
+              {errors.descripcion_producto && (
+                <span style={{ color: '#ef4444', fontSize: '0.85em' }}>
+                  {errors.descripcion_producto.message}
+                </span>
+              )}
+            </div>
+
+            {/* Tipo de Producto */}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+                ¿Es un servicio? *
+              </label>
+              <Controller
+                name="tipo_producto"
+                control={control}
+                rules={{ required: 'Este campo es requerido' }}
+                render={({ field }) => (
+                  <select
+                    {...field}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #ddd',
+                      borderRadius: '5px',
+                      fontSize: '1em',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <option value="false">No - Es un producto físico</option>
+                    <option value="true">Sí - Es un servicio</option>
+                  </select>
+                )}
+              />
+            </div>
+
+            {/* Costos */}
+            <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '5px' }}>
+              <h3 style={{ marginBottom: '10px', fontWeight: 'bold' }}>Costos</h3>
+              
+              {[
+                { name: 'costo_fabricacion', label: 'Costo de Fabricación' },
+                { name: 'costo_barnizador', label: 'Costo Barnizado' },
+                { name: 'costo_vidrio', label: 'Costo Vidrio' },
+                { name: 'costo_tela', label: 'Costo Tela' },
+                { name: 'costo_materiales_otros', label: 'Otros Costos' }
+              ].map(({ name, label }) => (
+                <div key={name} style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'block', marginBottom: '3px', fontSize: '0.9em', fontWeight: '500' }}>
+                    {label}
+                  </label>
+                  <Controller
+                    name={name}
+                    control={control}
+                    rules={{ 
+                      min: { value: 0, message: 'No puede ser negativo' }
+                    }}
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        type="number"
+                        placeholder="0"
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          border: `1px solid ${errors[name] ? '#ef4444' : '#ddd'}`,
+                          borderRadius: '5px',
+                          fontSize: '0.95em',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    )}
+                  />
+                  {errors[name] && (
+                    <span style={{ color: '#ef4444', fontSize: '0.8em' }}>
+                      {errors[name].message}
+                    </span>
+                  )}
                 </div>
               ))}
 

@@ -36,6 +36,7 @@ export default function Productos() {
   const [showCreatePopup, setShowCreatePopup] = useState(false);
   const [showUpdatePopup, setShowUpdatePopup] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [selectedItems, setSelectedItems] = useState([]);
 
   const handleEdit = (producto) => {
     setProductoSeleccionado(producto);
@@ -44,9 +45,45 @@ export default function Productos() {
 
   const handleDelete = async (id) => {
     try {
-      await handleDeleteProducto(id);
+      const result = await deleteDataAlert();
+      if (result.isConfirmed) {
+        await handleDeleteProducto(id);
+        setSelectedItems([]);
+      }
     } catch (error) {
       showErrorAlert('Error', 'No se pudo eliminar el producto');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) return;
+    
+    try {
+      const result = await deleteDataAlert();
+      if (result.isConfirmed) {
+        const promises = selectedItems.map(id => handleDeleteProducto(id));
+        await Promise.all(promises);
+        showSuccessAlert('Éxito', `${selectedItems.length} productos desactivados correctamente`);
+        setSelectedItems([]);
+      }
+    } catch (error) {
+      showErrorAlert('Error', 'No se pudieron desactivar los productos seleccionados');
+    }
+  };
+
+  const toggleSelectItem = (id) => {
+    if (selectedItems.includes(id)) {
+      setSelectedItems(selectedItems.filter(itemId => itemId !== id));
+    } else {
+      setSelectedItems([...selectedItems, id]);
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.length === productos.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(productos.map(p => p.id_producto));
     }
   };
 
@@ -74,13 +111,24 @@ export default function Productos() {
               Administra el catálogo de productos y servicios - Total: {productos.length}
             </p>
           </div>
-          <button
-            onClick={() => setShowCreatePopup(true)}
-            className="bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 hover:to-stone-800 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2"
-          >
-            <img src={AddIcon} alt="Agregar" className="w-5 h-5 filter brightness-0 invert" />
-            Nuevo Producto
-          </button>
+          <div className="flex gap-3">
+            {selectedItems.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2"
+              >
+                <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5 filter brightness-0 invert" />
+                Desactivar ({selectedItems.length})
+              </button>
+            )}
+            <button
+              onClick={() => setShowCreatePopup(true)}
+              className="bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 hover:to-stone-800 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2"
+            >
+              <img src={AddIcon} alt="Agregar" className="w-5 h-5 filter brightness-0 invert" />
+              Nuevo Producto
+            </button>
+          </div>
         </div>
 
         {/* Filtros */}
@@ -226,7 +274,7 @@ export default function Productos() {
                           <button
                             onClick={() => handleDelete(producto.id_producto)}
                             className="p-2 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Eliminar producto"
+                            title={producto.activo ? "Desactivar" : "Activar"}
                           >
                             <FaTrash className="w-5 h-5 text-red-600" />
                           </button>
