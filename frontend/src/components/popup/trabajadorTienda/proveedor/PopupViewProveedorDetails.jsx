@@ -224,11 +224,12 @@ export default function PopupViewProveedorDetails({
                   </h4>
                 </div>
                 <div style={{ fontSize: '12px', color: '#475569', lineHeight: '1.6' }}>
-                  <div style={{
+                 {/* <div style={{
                     padding: '6px 0',
                     borderBottom: '1px dashed #cbd5e1'
                   }}>
                     <span style={{ fontWeight: '600', color: '#334155', display: 'block', marginBottom: '3px', fontSize: '11px' }}>ID</span>
+                    
                     <span style={{
                       background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
                       color: 'white',
@@ -240,7 +241,8 @@ export default function PopupViewProveedorDetails({
                     }}>
                       #{proveedor.id_proveedor}
                     </span>
-                  </div>
+                    
+                  </div>*/}
                   <div style={{
                     padding: '6px 0',
                     borderBottom: '1px dashed #cbd5e1'
@@ -522,7 +524,7 @@ export default function PopupViewProveedorDetails({
                     color: '#6b7280',
                     fontWeight: '500'
                   }}>
-                    {tieneRepresentantes ? 'Información del representante asignado' : 'Sin representante asignado'}
+                    
                   </span>
                 </div>
               </div>
@@ -556,6 +558,9 @@ export default function PopupViewProveedorDetails({
                   <FaPlus />
                   Agregar
                 </button>
+
+
+
               ) : (
                 <button
                   onClick={() => {
@@ -591,6 +596,9 @@ export default function PopupViewProveedorDetails({
                 </button>
               )}
             </div>
+            
+
+
 
             {tieneRepresentantes ? (
               <div>
