@@ -7,7 +7,7 @@ import {
   deleteProducto,
   getCategorias
 } from '@services/producto.service.js';
-import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
+import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 
 export const useProductos = () => {
   const [productos, setProductos] = useState([]);
@@ -88,25 +88,21 @@ export const useProductos = () => {
     }
   };
 
-  // Eliminar producto
+  // Desactivar producto
   const handleDeleteProducto = async (id) => {
     try {
       const result = await deleteDataAlert();
-      if (!result.isConfirmed) {
-        return false;
+      if (result.isConfirmed) {
+        const response = await deleteProducto(id);
+        if (response.status === 'Success') {
+          showSuccessAlert('Éxito', 'Producto desactivado correctamente');
+          await fetchProductos();
+          return true;
+        }
       }
-
-      const response = await deleteProducto(id);
-      if (response.status === 'Success') {
-        showSuccessAlert('Éxito', 'Producto eliminado correctamente');
-        await fetchProductos();
-        return true;
-      } else {
-        showErrorAlert('Error', response.message || 'Error al eliminar producto');
-        return false;
-      }
+      return false;
     } catch (error) {
-      showErrorAlert('Error', 'Error al eliminar producto');
+      showErrorAlert('Error', 'Error al desactivar producto');
       return false;
     }
   };
