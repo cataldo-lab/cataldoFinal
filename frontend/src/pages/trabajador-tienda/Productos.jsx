@@ -1,10 +1,10 @@
 // frontend/src/pages/trabajador-tienda/Productos.jsx
 import { useState } from 'react';
 import { useProductos, useFormatPrecio } from '@hooks/productos/useProductos';
+import { useDeleteProductos } from '@hooks/productos/useDeleteProductos';
 import PopupCreateProducto from '@components/trabajadorTienda/PopupCreateProducto';
 import PopupUpdateProducto from '@components/trabajadorTienda/PopupUpdateProducto';
 import Search from '@components/Search';
-import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
 import { FaBox } from 'react-icons/fa';
 
 // Icons
@@ -28,63 +28,28 @@ export default function Productos() {
     limpiarFiltros,
     handleCreateProducto,
     handleUpdateProducto,
-    handleDeleteProducto,
     fetchProductos
   } = useProductos();
 
   const { formatPrecio } = useFormatPrecio();
+
+  // Hook para manejar la eliminación de productos
+  const {
+    selectedItems,
+    isDeleting,
+    handleDelete,
+    handleBulkDelete,
+    toggleSelectItem,
+    toggleSelectAll
+  } = useDeleteProductos(productos, fetchProductos);
+
   const [showCreatePopup, setShowCreatePopup] = useState(false);
   const [showUpdatePopup, setShowUpdatePopup] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-  const [selectedItems, setSelectedItems] = useState([]);
 
   const handleEdit = (producto) => {
     setProductoSeleccionado(producto);
     setShowUpdatePopup(true);
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      const result = await deleteDataAlert();
-      if (result.isConfirmed) {
-        await handleDeleteProducto(id);
-        setSelectedItems([]);
-      }
-    } catch (error) {
-      showErrorAlert('Error', 'No se pudo eliminar el producto');
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedItems.length === 0) return;
-    
-    try {
-      const result = await deleteDataAlert();
-      if (result.isConfirmed) {
-        const promises = selectedItems.map(id => handleDeleteProducto(id));
-        await Promise.all(promises);
-        showSuccessAlert('Éxito', `${selectedItems.length} productos desactivados correctamente`);
-        setSelectedItems([]);
-      }
-    } catch (error) {
-      showErrorAlert('Error', 'No se pudieron desactivar los productos seleccionados');
-    }
-  };
-
-  const toggleSelectItem = (id) => {
-    if (selectedItems.includes(id)) {
-      setSelectedItems(selectedItems.filter(itemId => itemId !== id));
-    } else {
-      setSelectedItems([...selectedItems, id]);
-    }
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedItems.length === productos.length) {
-      setSelectedItems([]);
-    } else {
-      setSelectedItems(productos.map(p => p.id_producto));
-    }
   };
 
   if (loading) {
@@ -115,10 +80,20 @@ export default function Productos() {
             {selectedItems.length > 0 && (
               <button
                 onClick={handleBulkDelete}
-                className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2"
+                disabled={isDeleting}
+                className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-3 rounded-xl shadow-md transition-all duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5 filter brightness-0 invert" />
-                Desactivar ({selectedItems.length})
+                {isDeleting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5 filter brightness-0 invert" />
+                    Desactivar ({selectedItems.length})
+                  </>
+                )}
               </button>
             )}
             <button
