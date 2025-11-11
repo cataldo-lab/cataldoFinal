@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useGetMyOrders } from '@hooks/cliente/useGetMyOrders';
+import { useGetMyOrderDetail } from '@hooks/cliente/useGetMyOrderDetail';
 import {
-  getMisPedidos,
-  getMiPedidoById,
   getEstadoPedidoLabel,
   getEstadoPedidoColor,
   formatearFecha,
@@ -27,39 +27,25 @@ import {
 } from 'react-icons/fa';
 
 const MisPedidos = () => {
-  const [pedidos, setPedidos] = useState([]);
-  const [pedidosFiltrados, setPedidosFiltrados] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Usar hook personalizado para obtener pedidos
+  const { pedidos, loading, error, refetch } = useGetMyOrders({ autoFetch: true });
+
+  // Usar hook personalizado para detalle de pedido
+  const {
+    pedido: pedidoSeleccionado,
+    loading: loadingDetalle,
+    fetchPedido,
+    clearPedido
+  } = useGetMyOrderDetail();
 
   // Estados para filtros
+  const [pedidosFiltrados, setPedidosFiltrados] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
   // Estados para modal de detalle
-  const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
-  const [loadingDetalle, setLoadingDetalle] = useState(false);
-
-  // Cargar pedidos - memoizada para evitar recreación
-  const cargarPedidos = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await getMisPedidos();
-
-      if (response.status === 'Success') {
-        setPedidos(response.data || []);
-      } else {
-        setError(response.message || 'Error al cargar los pedidos');
-      }
-    } catch (err) {
-      console.error('Error al cargar pedidos:', err);
-      setError('Error al cargar los pedidos');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   // Aplicar filtros - memoizada con dependencias
   const aplicarFiltros = useCallback(() => {
@@ -83,39 +69,19 @@ const MisPedidos = () => {
     setPedidosFiltrados(resultado);
   }, [pedidos, filtroEstado, busqueda]);
 
-  // Cargar pedidos al montar el componente
-  useEffect(() => {
-    cargarPedidos();
-  }, [cargarPedidos]);
-
   // Aplicar filtros cuando cambian
   useEffect(() => {
     aplicarFiltros();
   }, [aplicarFiltros]);
 
   const verDetalle = async (pedido) => {
-    try {
-      setLoadingDetalle(true);
-      setMostrarDetalle(true);
-
-      const response = await getMiPedidoById(pedido.id_operacion);
-
-      if (response.status === 'Success') {
-        setPedidoSeleccionado(response.data);
-      } else {
-        setPedidoSeleccionado(pedido);
-      }
-    } catch (err) {
-      console.error('Error al cargar detalle:', err);
-      setPedidoSeleccionado(pedido);
-    } finally {
-      setLoadingDetalle(false);
-    }
+    setMostrarDetalle(true);
+    await fetchPedido(pedido.id_operacion);
   };
 
   const cerrarDetalle = () => {
     setMostrarDetalle(false);
-    setPedidoSeleccionado(null);
+    clearPedido();
   };
 
   const limpiarFiltros = () => {
@@ -150,7 +116,7 @@ const MisPedidos = () => {
           <h2 className="text-xl font-semibold text-red-700 mb-2">Error al cargar pedidos</h2>
           <p className="text-red-600 mb-4">{error}</p>
           <button
-            onClick={cargarPedidos}
+            onClick={refetch}
             className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition"
           >
             Reintentar
