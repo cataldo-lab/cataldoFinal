@@ -300,7 +300,8 @@ export default function PopupCreateProducto({
                 fontWeight: 'bold',
                 color: '#2e7d32'
               }}>
-                <FaMoneyBillWave /> Costo Total: ${costoTotal.toFixed(2)}
+                <FaMoneyBillWave style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+                Costo Total: ${costoTotal.toFixed(0)}
               </div>
             </div>
 
@@ -308,10 +309,7 @@ export default function PopupCreateProducto({
             <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
                 Margen de Ganancia (%)
-                <span className='tooltip-icon' style={{ marginLeft: '5px', cursor: 'help' }}>
-                  <img src={QuestionIcon} alt="Ayuda" style={{ width: '16px', height: '16px' }} />
-                  <span className='tooltip-text'>Porcentaje de ganancia sobre el costo total</span>
-                </span>
+                
               </label>
               <Controller
                 name="margen_ganancia"
@@ -352,7 +350,8 @@ export default function PopupCreateProducto({
               fontWeight: 'bold',
               color: '#2e7d32'
             }}>
-             <FaDollarSign />Precio de Venta Calculado: ${precioVentaCalculado.toFixed(2)}
+               <FaDollarSign style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} /> 
+              Precio de Venta Calculado: ${precioVentaCalculado.toFixed(0)}
             </div>
 
             {/* ¿Producto en Oferta? */}

@@ -6,7 +6,13 @@ import PopupCreateProducto from '@components/trabajadorTienda/PopupCreateProduct
 import PopupUpdateProducto from '@components/trabajadorTienda/PopupUpdateProducto';
 import Search from '@components/Search';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
-import { FaBox } from 'react-icons/fa';
+import { FaBox,
+        FaTools,
+        FaFire,
+        FaSync,
+        FaSearch,
+        
+ } from 'react-icons/fa';
 
 // Icons
 import AddIcon from '@assets/AddIcon.svg';
@@ -176,7 +182,7 @@ export default function Productos() {
             <div>
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
                 <FaSearch className="inline-block mr-2" />
-                Buscar:
+                 Buscar:
               </label>
               <div className="relative">
                 <input
@@ -240,7 +246,8 @@ export default function Productos() {
                           <span className="font-semibold text-gray-900">{producto.nombre_producto}</span>
                           {producto.oferta && (
                             <span className="ml-0 mt-1 px-2 py-0.5 bg-red-100 text-red-800 text-xs rounded-full w-fit">
-                              🔥 Oferta
+                              <FaFire className="inline-block mr-1" />
+                              Oferta
                             </span>
                           )}
                         </div>
@@ -256,7 +263,16 @@ export default function Productos() {
                             ? 'bg-purple-100 text-purple-800' 
                             : 'bg-gray-100 text-gray-800'
                         }`}>
-                          {producto.servicio ? '🛠️ Servicio' : '📦 Producto'}
+                          {producto.servicio ? 
+                          <>
+                            <FaTools className="inline-block mr-1" />
+                            Servicio
+                          </> : 
+                          <>
+                            <FaBox className="inline-block mr-1" />
+                            Producto
+                          </>
+                        }
                         </span>
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap font-semibold text-green-600">
@@ -289,7 +305,7 @@ export default function Productos() {
                             className={`p-2 hover:bg-red-50 rounded-lg transition-colors ${
                               isDeleting ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
-                            title="Eliminar"
+                            title={producto.activo ? "Eliminar" : "Activar"}
                           >
                             <FaTrash className="w-5 h-5 text-red-600" />
                           </button>
