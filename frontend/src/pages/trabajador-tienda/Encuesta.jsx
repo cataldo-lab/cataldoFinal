@@ -11,7 +11,8 @@ import {
   FaBoxOpen,
   FaCheckCircle,
   FaTimesCircle,
-  FaCalendarAlt
+  FaCalendarAlt,
+  FaInfoCircle
 } from 'react-icons/fa';
 import {
   crearEncuesta,
@@ -27,6 +28,7 @@ const Encuesta = () => {
   const [estadisticas, setEstadisticas] = useState(null);
   const [loading, setLoading] = useState(true);
   const [vistaActual, setVistaActual] = useState('crear'); // 'crear', 'lista', 'estadisticas'
+  const [debugInfo, setDebugInfo] = useState(null); // Info de debug
 
   // Estados del formulario
   const [operacionSeleccionada, setOperacionSeleccionada] = useState('');
@@ -41,11 +43,33 @@ const Encuesta = () => {
 
   const cargarDatos = async () => {
     setLoading(true);
+    setDebugInfo(null);
     try {
       if (vistaActual === 'crear') {
+        console.log('🔍 Solicitando operaciones sin encuesta...');
         const response = await getOperacionesSinEncuesta();
+        console.log('📦 Respuesta del servidor:', response);
+
         if (response.success) {
-          setOperacionesSinEncuesta(response.data || []);
+          const operaciones = response.data || [];
+          console.log('✅ Operaciones recibidas:', operaciones.length);
+          console.log('📋 Detalle operaciones:', operaciones);
+
+          setOperacionesSinEncuesta(operaciones);
+
+          // Guardar info de debug
+          setDebugInfo({
+            totalOperaciones: operaciones.length,
+            operaciones: operaciones.map(op => ({
+              id: op.id_operacion,
+              estado: op.estado_operacion,
+              cliente: op.cliente?.nombreCompleto,
+              descripcion: op.descripcion_operacion
+            }))
+          });
+        } else {
+          console.error('❌ Error en respuesta:', response.message);
+          showErrorAlert('Error', response.message || 'No se pudieron cargar las operaciones');
         }
       } else if (vistaActual === 'lista') {
         const response = await getEncuestas({ page: 1, limit: 50 });
@@ -59,8 +83,8 @@ const Encuesta = () => {
         }
       }
     } catch (error) {
-      console.error('Error al cargar datos:', error);
-      showErrorAlert('Error', 'No se pudieron cargar los datos');
+      console.error('💥 Error al cargar datos:', error);
+      showErrorAlert('Error', 'No se pudieron cargar los datos: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -199,15 +223,60 @@ const Encuesta = () => {
               Nueva Encuesta de Satisfacción
             </h2>
 
+            {/* Información de Debug */}
+            {debugInfo && (
+              <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+                <div className="flex items-start gap-2">
+                  <FaInfoCircle className="text-blue-600 text-xl mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-blue-900 mb-2">Información de Debug:</p>
+                    <p className="text-sm text-blue-800">
+                      Se encontraron <strong>{debugInfo.totalOperaciones}</strong> operación(es) en estado "entregada" sin encuesta.
+                    </p>
+                    {debugInfo.totalOperaciones === 0 && (
+                      <div className="mt-3 text-sm text-blue-700">
+                        <p className="font-semibold mb-1">Posibles causas:</p>
+                        <ul className="list-disc ml-5 space-y-1">
+                          <li>No hay operaciones con estado <code className="bg-blue-200 px-1 rounded">"entregada"</code></li>
+                          <li>Todas las operaciones entregadas ya tienen encuesta</li>
+                          <li>Las operaciones están en otro estado (cotización, pendiente, en_proceso, terminada, completada, pagada)</li>
+                        </ul>
+                        <p className="mt-2 font-semibold">
+                          💡 Consejo: Revisa que tus operaciones estén en estado <code className="bg-blue-200 px-1 rounded">"entregada"</code> antes de crear encuestas.
+                        </p>
+                      </div>
+                    )}
+                    {debugInfo.totalOperaciones > 0 && (
+                      <div className="mt-3">
+                        <p className="font-semibold text-blue-900 mb-1">Operaciones disponibles:</p>
+                        <div className="max-h-40 overflow-y-auto">
+                          {debugInfo.operaciones.map((op, idx) => (
+                            <div key={idx} className="text-sm text-blue-700 bg-blue-100 p-2 rounded mb-1">
+                              <strong>#{op.id}</strong> - Estado: <code>{op.estado}</code> - Cliente: {op.cliente || 'N/A'}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {operacionesSinEncuesta.length === 0 ? (
               <div className="text-center py-12">
                 <FaCheckCircle className="text-6xl text-green-500 mx-auto mb-4" />
                 <p className="text-xl text-gray-600 font-semibold">
-                  ¡Excelente! No hay operaciones pendientes de encuesta
+                  No hay operaciones disponibles para encuesta
                 </p>
                 <p className="text-gray-500 mt-2">
-                  Todas las operaciones entregadas tienen su encuesta registrada
+                  Solo las operaciones en estado <strong>"entregada"</strong> pueden tener encuestas
                 </p>
+                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg inline-block">
+                  <p className="text-sm text-yellow-800">
+                    📌 <strong>Recuerda:</strong> Cambia el estado de la operación a "entregada" para poder crear una encuesta
+                  </p>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -226,7 +295,7 @@ const Encuesta = () => {
                     {operacionesSinEncuesta.map((op) => (
                       <option key={op.id_operacion} value={op.id_operacion}>
                         #{op.id_operacion} - {op.cliente?.nombreCompleto || 'Sin cliente'} -{' '}
-                        {op.descripcion_operacion || 'Sin descripción'}
+                        {op.descripcion_operacion || 'Sin descripción'} [Estado: {op.estado_operacion}]
                       </option>
                     ))}
                   </select>
