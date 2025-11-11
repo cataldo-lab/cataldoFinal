@@ -153,6 +153,7 @@ export default function Productos() {
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
                 Estado:
               </label>
+              
               <select
                 value={filtros.activo.toString()}
                 onChange={(e) => handleFiltroChange('activo', e.target.value === 'true')}
@@ -226,7 +227,7 @@ export default function Productos() {
                   productos.map((producto) => (
                     <tr key={producto.id_producto} className="hover:bg-gray-50 transition-colors">
                       
-                      
+                      {/* Nombre */}
                       <td className="px-3 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
                           <span className="font-semibold text-gray-900">{producto.nombre_producto}</span>
@@ -238,11 +239,13 @@ export default function Productos() {
                           )}
                         </div>
                       </td>
+                      {/* Categoría */}
                       <td className="px-3 py-4 whitespace-nowrap">
                         <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                           {producto.categoria_producto}
                         </span>
                       </td>
+                      {/* Tipo */}
                       <td className="px-3 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           producto.servicio 

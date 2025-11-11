@@ -180,9 +180,6 @@ export async function updateProductoService(id, datosActualizados) {
     }
 }
 
-/**
- * Eliminar (desactivar) producto
- */
 export async function deleteProductoService(id) {
     try {
         const productoRepository = AppDataSource.getRepository("Producto");
@@ -195,9 +192,8 @@ export async function deleteProductoService(id) {
             return [null, "Producto no encontrado"];
         }
 
-        // Desactivar en lugar de eliminar
-        producto.activo = false;
-        await productoRepository.save(producto);
+        // Eliminar completamente de la base de datos
+        await productoRepository.delete({ id_producto: id });
 
         return [producto, null];
 

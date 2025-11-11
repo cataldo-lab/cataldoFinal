@@ -105,7 +105,6 @@ export async function updateProducto(req, res) {
 
 /**
  * DELETE /api/productos/:id
- * Desactivar producto
  */
 export async function deleteProducto(req, res) {
     try {
@@ -115,7 +114,7 @@ export async function deleteProducto(req, res) {
 
         if (error) return handleErrorClient(res, 404, error);
 
-        handleSuccess(res, 200, "Producto desactivado exitosamente", producto);
+        handleSuccess(res, 200, "Producto eliminado exitosamente", producto);
 
     } catch (error) {
         handleErrorServer(res, 500, error.message);

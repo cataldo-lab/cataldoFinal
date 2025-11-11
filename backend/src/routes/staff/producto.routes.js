@@ -63,7 +63,7 @@ router.put(
  * Rutas de eliminación (solo gerente)
  */
 
-// DELETE /api/productos/:id - Desactivar producto
+// DELETE /api/productos/:id 
 router.delete(
     "/:id",
     isManager,
