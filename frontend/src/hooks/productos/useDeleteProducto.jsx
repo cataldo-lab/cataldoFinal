@@ -29,7 +29,7 @@ export const useDeleteProducto = () => {
       const response = await deleteProducto(id);
 
       if (response.status === 'Success') {
-        showSuccessAlert('Éxito', 'Producto desactivado correctamente');
+        showSuccessAlert('Éxito', 'Producto eliminado correctamente');
 
         // Ejecutar callback de éxito si existe
         if (onSuccess && typeof onSuccess === 'function') {
@@ -38,12 +38,12 @@ export const useDeleteProducto = () => {
 
         return true;
       } else {
-        showErrorAlert('Error', response.message || 'No se pudo desactivar el producto');
+        showErrorAlert('Error', response.message || 'No se pudo eliminar el producto');
         return false;
       }
     } catch (error) {
       console.error('Error al eliminar producto:', error);
-      showErrorAlert('Error', 'Error al desactivar el producto');
+      showErrorAlert('Error', 'Error al eliminar el producto');
       return false;
     } finally {
       setIsDeleting(false);
@@ -81,7 +81,7 @@ export const useDeleteProducto = () => {
       const successCount = responses.filter(res => res.status === 'Success').length;
 
       if (allSuccess) {
-        showSuccessAlert('Éxito', `${successCount} productos desactivados correctamente`);
+        showSuccessAlert('Éxito', `${successCount} productos eliminados correctamente`);
 
         // Ejecutar callback de éxito si existe
         if (onSuccess && typeof onSuccess === 'function') {
@@ -92,7 +92,7 @@ export const useDeleteProducto = () => {
       } else {
         showErrorAlert(
           'Parcialmente completado',
-          `Se desactivaron ${successCount} de ${ids.length} productos`
+          `Se eliminaron ${successCount} de ${ids.length} productos`
         );
 
         // Ejecutar callback de éxito parcial
@@ -104,7 +104,7 @@ export const useDeleteProducto = () => {
       }
     } catch (error) {
       console.error('Error al eliminar productos en lote:', error);
-      showErrorAlert('Error', 'Error al desactivar los productos seleccionados');
+      showErrorAlert('Error', 'Error al eliminar los productos seleccionados');
       return false;
     } finally {
       setIsDeleting(false);

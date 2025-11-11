@@ -40,12 +40,12 @@ export default function PopupUpdateProducto({
         categoria_producto: producto.categoria_producto || '',
         descripcion_producto: producto.descripcion_producto || '',
         tipo_producto: producto.servicio ? 'true' : 'false',
-        costo_fabricacion: producto.costo_fabricacion || 0,
-        costo_barnizador: producto.costo_barnizador || 0,
-        costo_vidrio: producto.costo_vidrio || 0,
-        costo_tela: producto.costo_tela || 0,
-        costo_materiales_otros: producto.costo_materiales_otros || 0,
-        margen_ganancia: producto.margen_ganancia || 30,
+        costo_fabricacion: parseInt(producto.costo_fabricacion) || 0,
+        costo_barnizador: parseInt(producto.costo_barnizador) || 0,
+        costo_vidrio: parseInt(producto.costo_vidrio) || 0,
+        costo_tela: parseInt(producto.costo_tela) || 0,
+        costo_materiales_otros: parseInt(producto.costo_materiales_otros) || 0,
+        margen_ganancia: parseInt(producto.margen_ganancia) || 30,
         oferta: producto.oferta ? 'true' : 'false',
         activo: producto.activo ? 'true' : 'false'
       });

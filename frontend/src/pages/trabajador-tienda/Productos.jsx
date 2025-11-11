@@ -111,7 +111,7 @@ export default function Productos() {
                 }`}
               >
                 <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5 filter brightness-0 invert" />
-                {isDeleting ? 'Desactivando...' : `Desactivar (${selectedItems.length})`}
+                {isDeleting ? 'Eliminando...' : `Eliminar (${selectedItems.length})`}
               </button>
             )}
             <button
@@ -273,7 +273,7 @@ export default function Productos() {
                             className={`p-2 hover:bg-red-50 rounded-lg transition-colors ${
                               isDeleting ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
-                            title={producto.activo ? "Desactivar" : "Activar"}
+                            title="Eliminar"
                           >
                             <FaTrash className="w-5 h-5 text-red-600" />
                           </button>
