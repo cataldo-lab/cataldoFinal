@@ -11,7 +11,7 @@ import { FaBox,
         FaFire,
         FaSync,
         FaSearch,
-        FaMailbox
+        
  } from 'react-icons/fa';
 
 // Icons
@@ -167,7 +167,7 @@ export default function Productos() {
 
             <div>
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                <FaSearch className="inline-block mr-1" />
+                <FaSearch className="inline-block mr-2" />
                  Buscar:
               </label>
               <div className="relative">
@@ -216,9 +216,7 @@ export default function Productos() {
                   <tr>
                     <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
                       <div className="flex flex-col items-center gap-2">
-                        <span className="text-4xl">
-                          <FaMailbox />
-                        </span>
+                        <span className="text-4xl">📭</span>
                         <p className="text-lg">No hay productos que mostrar</p>
                         <p className="text-sm">Intenta cambiar los filtros o crear un nuevo producto</p>
                       </div>
