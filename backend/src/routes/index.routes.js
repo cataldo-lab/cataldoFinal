@@ -16,6 +16,7 @@ import papelesRoutes from "./staff/papeles.routes.js";
 import dashboardRoutes from "./gerente/dashboard.routes.js";
 import correoRoutes from "./correo.routes.js";
 import cumpleanosRoutes from "./cumpleanos.routes.js";
+import encuestaRoutes from "./encuesta.routes.js";
 
 const router = Router();
 
@@ -35,5 +36,6 @@ router
     .use("/proveedores", proveedorRoutes)
     .use("/dashboard", dashboardRoutes)
     .use("/correos", correoRoutes)
-    .use("/cumpleanos", cumpleanosRoutes);
+    .use("/cumpleanos", cumpleanosRoutes)
+    .use("/encuestas", encuestaRoutes);
 export default router;

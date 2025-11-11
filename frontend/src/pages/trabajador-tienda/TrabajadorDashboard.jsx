@@ -22,7 +22,8 @@ import {
     FaChartLine,
     FaTimesCircle,
     FaMoneyBillWave,
-    FaCalendarTimes
+    FaCalendarTimes,
+    FaComments
 } from 'react-icons/fa';
 
 import { MdSpaceDashboard } from "react-icons/md";
@@ -677,9 +678,9 @@ const TrabajadorDashboard = () => {
                         />
 
                         <QuickAccessButton
-                            icon={FaBox}
-                            label="Gestionar Productos"
-                            onClick={() => navigate('/trabajador/products')}
+                            icon={FaComments}
+                            label="Encuestas"
+                            onClick={() => navigate('/trabajador/encuestas')}
                             colorFrom="stone-600"
                             colorTo="stone-500"
                             hoverFrom="purple-700"
