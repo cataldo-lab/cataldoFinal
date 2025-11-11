@@ -1,5 +1,6 @@
 // frontend/src/pages/trabajador-tienda/Encuesta.jsx
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   FaStar,
   FaRegStar,
@@ -12,23 +13,34 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaCalendarAlt,
-  FaInfoCircle
+  FaInfoCircle,
+  FaEdit,
+  FaArrowLeft
 } from 'react-icons/fa';
 import {
   crearEncuesta,
   getEncuestas,
   getOperacionesSinEncuesta,
-  getEstadisticasEncuestas
+  getEstadisticasEncuestas,
+  getEncuestaById,
+  actualizarEncuesta
 } from '../../services/encuesta.service.js';
 import { showSuccessAlert, showErrorAlert } from '../../helpers/sweetAlert.js';
 
 const Encuesta = () => {
+  const { id } = useParams(); // Obtener ID de la URL si existe
+  const navigate = useNavigate();
+
   const [operacionesSinEncuesta, setOperacionesSinEncuesta] = useState([]);
   const [encuestas, setEncuestas] = useState([]);
   const [estadisticas, setEstadisticas] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [vistaActual, setVistaActual] = useState('crear'); // 'crear', 'lista', 'estadisticas'
+  const [vistaActual, setVistaActual] = useState('crear'); // 'crear', 'lista', 'estadisticas', 'editar'
   const [debugInfo, setDebugInfo] = useState(null); // Info de debug
+
+  // Estados para encuesta individual (cuando se navega con ID)
+  const [encuestaIndividual, setEncuestaIndividual] = useState(null);
+  const [modoEdicion, setModoEdicion] = useState(false);
 
   // Estados del formulario
   const [operacionSeleccionada, setOperacionSeleccionada] = useState('');
@@ -37,9 +49,52 @@ const Encuesta = () => {
   const [comentario, setComentario] = useState('');
   const [enviando, setEnviando] = useState(false);
 
+  // Efecto para cargar encuesta cuando hay ID en la URL
   useEffect(() => {
-    cargarDatos();
-  }, [vistaActual]);
+    if (id) {
+      cargarEncuestaIndividual(id);
+      setVistaActual('editar');
+    } else {
+      setVistaActual('crear');
+      setEncuestaIndividual(null);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) {
+      cargarDatos();
+    }
+  }, [vistaActual, id]);
+
+  // Función para cargar una encuesta específica por ID
+  const cargarEncuestaIndividual = async (encuestaId) => {
+    setLoading(true);
+    try {
+      console.log(`🔍 Cargando encuesta ID: ${encuestaId}...`);
+      const response = await getEncuestaById(encuestaId);
+      console.log('📦 Respuesta:', response);
+
+      if (response.success) {
+        const encuesta = response.data;
+        setEncuestaIndividual(encuesta);
+        // Pre-llenar el formulario con los datos de la encuesta
+        setNotaPedido(encuesta.nota_pedido);
+        setNotaRepartidor(encuesta.nota_repartidor);
+        setComentario(encuesta.comentario || '');
+        console.log('✅ Encuesta cargada exitosamente:', encuesta);
+      } else {
+        console.error('❌ Error:', response.message);
+        showErrorAlert('Error', response.message || 'No se pudo cargar la encuesta');
+        navigate('/trabajador/encuestas');
+      }
+    } catch (error) {
+      console.error('💥 Error al cargar encuesta:', error);
+      showErrorAlert('Error', 'No se pudo cargar la encuesta: ' + error.message);
+      navigate('/trabajador/encuestas');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -127,6 +182,39 @@ const Encuesta = () => {
     }
   };
 
+  // Función para actualizar encuesta existente
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+
+    if (!encuestaIndividual) {
+      showErrorAlert('Error', 'No hay encuesta para actualizar');
+      return;
+    }
+
+    setEnviando(true);
+    try {
+      const response = await actualizarEncuesta(encuestaIndividual.id_encuesta, {
+        nota_pedido: notaPedido,
+        nota_repartidor: notaRepartidor,
+        comentario: comentario.trim() || null
+      });
+
+      if (response.success) {
+        showSuccessAlert('¡Éxito!', 'Encuesta actualizada correctamente');
+        // Recargar la encuesta
+        await cargarEncuestaIndividual(encuestaIndividual.id_encuesta);
+        setModoEdicion(false);
+      } else {
+        showErrorAlert('Error', response.message || 'No se pudo actualizar la encuesta');
+      }
+    } catch (error) {
+      console.error('Error al actualizar encuesta:', error);
+      showErrorAlert('Error', error.message || 'Error al actualizar la encuesta');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
   const renderStars = (rating, setRating, disabled = false) => {
     return (
       <div className="flex gap-2">
@@ -181,39 +269,173 @@ const Encuesta = () => {
           <p className="text-gray-600">Administra las encuestas de satisfacción de clientes</p>
         </div>
 
-        {/* Tabs de navegación */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => setVistaActual('crear')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-              vistaActual === 'crear'
-                ? 'bg-stone-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            <FaClipboardList /> Crear Encuesta
-          </button>
-          <button
-            onClick={() => setVistaActual('lista')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-              vistaActual === 'lista'
-                ? 'bg-stone-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            <FaCommentDots /> Ver Encuestas
-          </button>
-          <button
-            onClick={() => setVistaActual('estadisticas')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-              vistaActual === 'estadisticas'
-                ? 'bg-stone-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            <FaChartBar /> Estadísticas
-          </button>
-        </div>
+        {/* Tabs de navegación - Solo mostrar si NO estamos en vista de edición individual */}
+        {!id && (
+          <div className="flex gap-2 mb-6 flex-wrap">
+            <button
+              onClick={() => setVistaActual('crear')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                vistaActual === 'crear'
+                  ? 'bg-stone-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <FaClipboardList /> Crear Encuesta
+            </button>
+            <button
+              onClick={() => setVistaActual('lista')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                vistaActual === 'lista'
+                  ? 'bg-stone-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <FaCommentDots /> Ver Encuestas
+            </button>
+            <button
+              onClick={() => setVistaActual('estadisticas')}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                vistaActual === 'estadisticas'
+                  ? 'bg-stone-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <FaChartBar /> Estadísticas
+            </button>
+          </div>
+        )}
+
+        {/* Vista de Edición Individual - Cuando se navega con ID en la URL */}
+        {id && encuestaIndividual && (
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            {/* Botón para volver */}
+            <button
+              onClick={() => navigate('/trabajador/encuestas')}
+              className="mb-6 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-all flex items-center gap-2"
+            >
+              <FaArrowLeft /> Volver a la lista
+            </button>
+
+            <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
+              <FaEdit className="text-stone-600" />
+              {modoEdicion ? 'Editar Encuesta' : 'Ver Encuesta'} #{encuestaIndividual.id_encuesta}
+            </h2>
+
+            {/* Información de la Operación */}
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+              <p className="font-semibold text-blue-900 mb-2">Información de la Operación:</p>
+              <p className="text-sm text-blue-800">
+                <strong>Operación #</strong>{encuestaIndividual.operacion?.id_operacion || 'N/A'}
+              </p>
+              <p className="text-sm text-blue-800">
+                <strong>Cliente:</strong> {encuestaIndividual.operacion?.cliente?.nombreCompleto || 'Sin cliente'}
+              </p>
+              <p className="text-sm text-blue-800">
+                <strong>Estado:</strong> {encuestaIndividual.operacion?.estado_operacion || 'N/A'}
+              </p>
+              <p className="text-sm text-blue-800 flex items-center gap-1">
+                <FaCalendarAlt />
+                <strong>Fecha de encuesta:</strong> {formatDate(encuestaIndividual.fecha_encuesta)}
+              </p>
+            </div>
+
+            {/* Formulario de edición/visualización */}
+            <form onSubmit={handleUpdate} className="space-y-6">
+              {/* Nota del Pedido */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <FaBoxOpen className="inline mr-2" />
+                  Calificación del Pedido (1-7)
+                </label>
+                {renderStars(notaPedido, setNotaPedido, !modoEdicion)}
+                <p className="text-sm text-gray-600 mt-2">
+                  Calificación actual: <span className="font-bold text-stone-600">{notaPedido}/7</span>
+                </p>
+              </div>
+
+              {/* Nota del Repartidor */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <FaTruck className="inline mr-2" />
+                  Calificación del Repartidor (1-7)
+                </label>
+                {renderStars(notaRepartidor, setNotaRepartidor, !modoEdicion)}
+                <p className="text-sm text-gray-600 mt-2">
+                  Calificación actual: <span className="font-bold text-stone-600">{notaRepartidor}/7</span>
+                </p>
+              </div>
+
+              {/* Comentario */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <FaCommentDots className="inline mr-2" />
+                  Comentario
+                </label>
+                <textarea
+                  value={comentario}
+                  onChange={(e) => setComentario(e.target.value)}
+                  placeholder="Escribe aquí cualquier comentario adicional..."
+                  maxLength={255}
+                  rows={4}
+                  disabled={!modoEdicion}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:ring-2 focus:ring-stone-200 focus:outline-none resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {comentario.length}/255 caracteres
+                </p>
+              </div>
+
+              {/* Botones de acción */}
+              <div className="flex gap-3">
+                {!modoEdicion ? (
+                  <button
+                    type="button"
+                    onClick={() => setModoEdicion(true)}
+                    className="flex-1 bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 hover:to-stone-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <FaEdit />
+                    Habilitar Edición
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="submit"
+                      disabled={enviando}
+                      className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                    >
+                      {enviando ? (
+                        <>
+                          <FaSync className="animate-spin" />
+                          Guardando...
+                        </>
+                      ) : (
+                        <>
+                          <FaCheckCircle />
+                          Guardar Cambios
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModoEdicion(false);
+                        // Restaurar valores originales
+                        setNotaPedido(encuestaIndividual.nota_pedido);
+                        setNotaRepartidor(encuestaIndividual.nota_repartidor);
+                        setComentario(encuestaIndividual.comentario || '');
+                      }}
+                      disabled={enviando}
+                      className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <FaTimesCircle />
+                      Cancelar
+                    </button>
+                  </>
+                )}
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* Vista de Crear Encuesta */}
         {vistaActual === 'crear' && (
