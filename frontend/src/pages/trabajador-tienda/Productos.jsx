@@ -132,7 +132,7 @@ export default function Productos() {
 
         {/* Filtros */}
         <div className="bg-white p-6 rounded-xl shadow-md mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
                 Categoría:
@@ -160,25 +160,12 @@ export default function Productos() {
                 className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:outline-none"
               >
                 <option value="todos">Todos</option>
-                <option value="producto">📦 Productos</option>
-                <option value="servicio">🛠️ Servicios</option>
+                <option value="producto">Productos</option>
+                <option value="servicio">Servicios</option>
               </select>
             </div>
 
-            <div>
-              <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                Estado:
-              </label>
-              
-              <select
-                value={filtros.activo.toString()}
-                onChange={(e) => handleFiltroChange('activo', e.target.value === 'true')}
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-stone-500 focus:outline-none"
-              >
-                <option value="true">✓ Activos</option>
-                <option value="false">✗ Inactivos</option>
-              </select>
-            </div>
+            
 
             <div>
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
