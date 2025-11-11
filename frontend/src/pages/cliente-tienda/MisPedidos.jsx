@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   getMisPedidos,
   getMiPedidoById,
@@ -42,17 +42,8 @@ const MisPedidos = () => {
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
   const [loadingDetalle, setLoadingDetalle] = useState(false);
 
-  // Cargar pedidos al montar el componente
-  useEffect(() => {
-    cargarPedidos();
-  }, []);
-
-  // Aplicar filtros cuando cambian
-  useEffect(() => {
-    aplicarFiltros();
-  }, [pedidos, filtroEstado, busqueda]);
-
-  const cargarPedidos = async () => {
+  // Cargar pedidos - memoizada para evitar recreaciÃ³n
+  const cargarPedidos = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getMisPedidos();
@@ -68,9 +59,10 @@ const MisPedidos = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const aplicarFiltros = () => {
+  // Aplicar filtros - memoizada con dependencias
+  const aplicarFiltros = useCallback(() => {
     let resultado = [...pedidos];
 
     // Filtrar por estado
@@ -78,7 +70,7 @@ const MisPedidos = () => {
       resultado = resultado.filter(p => p.estado_operacion === filtroEstado);
     }
 
-    // Filtrar por búsqueda
+    // Filtrar por bÃºsqueda
     if (busqueda.trim()) {
       const textoBusqueda = busqueda.toLowerCase();
       resultado = resultado.filter(p =>
@@ -89,7 +81,17 @@ const MisPedidos = () => {
     }
 
     setPedidosFiltrados(resultado);
-  };
+  }, [pedidos, filtroEstado, busqueda]);
+
+  // Cargar pedidos al montar el componente
+  useEffect(() => {
+    cargarPedidos();
+  }, [cargarPedidos]);
+
+  // Aplicar filtros cuando cambian
+  useEffect(() => {
+    aplicarFiltros();
+  }, [aplicarFiltros]);
 
   const verDetalle = async (pedido) => {
     try {
@@ -121,7 +123,7 @@ const MisPedidos = () => {
     setBusqueda('');
   };
 
-  // Estadísticas rápidas
+  // EstadÃ­sticas rÃ¡pidas
   const estadisticas = {
     total: pedidos.length,
     enProceso: pedidos.filter(p => p.estado_operacion === 'en_proceso').length,
@@ -169,7 +171,7 @@ const MisPedidos = () => {
         <p className="text-gray-600">Gestiona y visualiza todos tus pedidos</p>
       </div>
 
-      {/* Estadísticas */}
+      {/* EstadÃ­sticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
           <div className="flex items-center justify-between">
@@ -212,22 +214,22 @@ const MisPedidos = () => {
         </div>
       </div>
 
-      {/* Barra de búsqueda y filtros */}
+      {/* Barra de bÃºsqueda y filtros */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
-          {/* Búsqueda */}
+          {/* BÃºsqueda */}
           <div className="flex-1 relative">
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar por número de pedido o descripción..."
+              placeholder="Buscar por nÃºmero de pedido o descripciÃ³n..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
-          {/* Botón de filtros */}
+          {/* BotÃ³n de filtros */}
           <button
             onClick={() => setMostrarFiltros(!mostrarFiltros)}
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition border border-gray-300"
@@ -252,7 +254,7 @@ const MisPedidos = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Todos los estados</option>
-                  <option value="cotizacion">Cotización</option>
+                  <option value="cotizacion">CotizaciÃ³n</option>
                   <option value="orden_trabajo">Orden de Trabajo</option>
                   <option value="pendiente">Pendiente</option>
                   <option value="en_proceso">En Proceso</option>
@@ -286,8 +288,8 @@ const MisPedidos = () => {
           </h3>
           <p className="text-gray-500">
             {pedidos.length === 0
-              ? 'Aún no tienes pedidos registrados'
-              : 'Intenta ajustar los filtros de búsqueda'
+              ? 'AÃºn no tienes pedidos registrados'
+              : 'Intenta ajustar los filtros de bÃºsqueda'
             }
           </p>
         </div>
@@ -334,7 +336,7 @@ const PedidoCard = ({ pedido, onVerDetalle }) => {
           </div>
 
           <p className="text-gray-600 text-sm mb-3">
-            {pedido.descripcion_operacion || 'Sin descripción'}
+            {pedido.descripcion_operacion || 'Sin descripciÃ³n'}
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -388,7 +390,7 @@ const PedidoCard = ({ pedido, onVerDetalle }) => {
           </div>
         </div>
 
-        {/* Botón de acción */}
+        {/* BotÃ³n de acciÃ³n */}
         <div className="flex md:flex-col gap-2">
           <button
             onClick={() => onVerDetalle(pedido)}
@@ -440,7 +442,7 @@ const ModalDetallePedido = ({ pedido, loading, onClose }) => {
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Fecha de creación</p>
+                  <p className="text-sm text-gray-500 mb-1">Fecha de creaciÃ³n</p>
                   <p className="font-medium text-gray-700">{formatearFechaHora(pedido.fecha_creacion)}</p>
                 </div>
                 {pedido.fecha_entrega_estimada && (
@@ -452,10 +454,10 @@ const ModalDetallePedido = ({ pedido, loading, onClose }) => {
               </div>
             </div>
 
-            {/* Descripción */}
+            {/* DescripciÃ³n */}
             {pedido.descripcion_operacion && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Descripción</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">DescripciÃ³n</h3>
                 <p className="text-gray-600">{pedido.descripcion_operacion}</p>
               </div>
             )}
@@ -477,7 +479,7 @@ const ModalDetallePedido = ({ pedido, loading, onClose }) => {
                           </h4>
                           {prod.producto?.categoria_producto && (
                             <p className="text-sm text-gray-500 mb-1">
-                              Categoría: {prod.producto.categoria_producto}
+                              CategorÃ­a: {prod.producto.categoria_producto}
                             </p>
                           )}
                           {prod.especificaciones && (
@@ -543,7 +545,7 @@ const ModalDetallePedido = ({ pedido, loading, onClose }) => {
                         <div>
                           <p className="text-sm text-gray-600">
                             De <span className="font-medium">{getEstadoPedidoLabel(cambio.estado_anterior)}</span>
-                            {' ’ '}
+                            {' â†’ '}
                             <span className="font-medium">{getEstadoPedidoLabel(cambio.estado_nuevo)}</span>
                           </p>
                           {cambio.observaciones && (
