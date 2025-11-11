@@ -6,7 +6,13 @@ import PopupCreateProducto from '@components/trabajadorTienda/PopupCreateProduct
 import PopupUpdateProducto from '@components/trabajadorTienda/PopupUpdateProducto';
 import Search from '@components/Search';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
-import { FaBox } from 'react-icons/fa';
+import { FaBox,
+        FaTools,
+        FaFire,
+        FaSync,
+        FaSearch,
+        FaMailbox
+ } from 'react-icons/fa';
 
 // Icons
 import AddIcon from '@assets/AddIcon.svg';
@@ -111,7 +117,7 @@ export default function Productos() {
                 }`}
               >
                 <img src={DeleteIcon} alt="Eliminar" className="w-5 h-5 filter brightness-0 invert" />
-                {isDeleting ? 'Desactivando...' : `Desactivar (${selectedItems.length})`}
+                {isDeleting ? 'Eliminando...' : `Eliminar (${selectedItems.length})`}
               </button>
             )}
             <button
@@ -161,7 +167,8 @@ export default function Productos() {
 
             <div>
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                🔍 Buscar:
+                <FaSearch className="inline-block mr-1" />
+                 Buscar:
               </label>
               <div className="relative">
                 <input
@@ -183,7 +190,8 @@ export default function Productos() {
             onClick={limpiarFiltros}
             className="mt-4 bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg transition-colors text-sm"
           >
-            🔄 Limpiar filtros
+            <FaSync className="inline-block mr-2" />
+            Limpiar filtros
           </button>
         </div>
 
@@ -208,7 +216,9 @@ export default function Productos() {
                   <tr>
                     <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
                       <div className="flex flex-col items-center gap-2">
-                        <span className="text-4xl">📭</span>
+                        <span className="text-4xl">
+                          <FaMailbox />
+                        </span>
                         <p className="text-lg">No hay productos que mostrar</p>
                         <p className="text-sm">Intenta cambiar los filtros o crear un nuevo producto</p>
                       </div>
@@ -224,7 +234,8 @@ export default function Productos() {
                           <span className="font-semibold text-gray-900">{producto.nombre_producto}</span>
                           {producto.oferta && (
                             <span className="ml-0 mt-1 px-2 py-0.5 bg-red-100 text-red-800 text-xs rounded-full w-fit">
-                              🔥 Oferta
+                              <FaFire className="inline-block mr-1" />
+                              Oferta
                             </span>
                           )}
                         </div>
@@ -240,7 +251,16 @@ export default function Productos() {
                             ? 'bg-purple-100 text-purple-800' 
                             : 'bg-gray-100 text-gray-800'
                         }`}>
-                          {producto.servicio ? '🛠️ Servicio' : '📦 Producto'}
+                          {producto.servicio ? 
+                          <>
+                            <FaTools className="inline-block mr-1" />
+                            Servicio
+                          </> : 
+                          <>
+                            <FaBox className="inline-block mr-1" />
+                            Producto
+                          </>
+                        }
                         </span>
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap font-semibold text-green-600">
@@ -273,7 +293,7 @@ export default function Productos() {
                             className={`p-2 hover:bg-red-50 rounded-lg transition-colors ${
                               isDeleting ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
-                            title={producto.activo ? "Desactivar" : "Activar"}
+                            title={producto.activo ? "Eliminar" : "Activar"}
                           >
                             <FaTrash className="w-5 h-5 text-red-600" />
                           </button>

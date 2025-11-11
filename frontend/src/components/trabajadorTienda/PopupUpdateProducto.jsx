@@ -5,6 +5,12 @@ import '@styles/popup.css';
 import CloseIcon from '@assets/XIcon.svg';
 import QuestionIcon from '@assets/QuestionCircleIcon.svg';
 
+import {
+  FaMoneyBillWave,
+  FaDollarSign
+} from 'react-icons/fa';
+
+
 export default function PopupUpdateProducto({ 
   show, 
   setShow, 
@@ -40,12 +46,12 @@ export default function PopupUpdateProducto({
         categoria_producto: producto.categoria_producto || '',
         descripcion_producto: producto.descripcion_producto || '',
         tipo_producto: producto.servicio ? 'true' : 'false',
-        costo_fabricacion: producto.costo_fabricacion || 0,
-        costo_barnizador: producto.costo_barnizador || 0,
-        costo_vidrio: producto.costo_vidrio || 0,
-        costo_tela: producto.costo_tela || 0,
-        costo_materiales_otros: producto.costo_materiales_otros || 0,
-        margen_ganancia: producto.margen_ganancia || 30,
+        costo_fabricacion: parseInt(producto.costo_fabricacion) || 0,
+        costo_barnizador: parseInt(producto.costo_barnizador) || 0,
+        costo_vidrio: parseInt(producto.costo_vidrio) || 0,
+        costo_tela: parseInt(producto.costo_tela) || 0,
+        costo_materiales_otros: parseInt(producto.costo_materiales_otros) || 0,
+        margen_ganancia: parseInt(producto.margen_ganancia) || 30,
         oferta: producto.oferta ? 'true' : 'false',
         activo: producto.activo ? 'true' : 'false'
       });
@@ -318,7 +324,8 @@ export default function PopupUpdateProducto({
                 fontWeight: 'bold',
                 color: '#2e7d32'
               }}>
-                💰 Costo Total: ${costoTotal.toFixed(2)}
+                <FaMoneyBillWave style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+                Costo Total: ${costoTotal.toFixed(0)}
               </div>
             </div>
 
@@ -326,10 +333,7 @@ export default function PopupUpdateProducto({
             <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
                 Margen de Ganancia (%)
-                <span className='tooltip-icon' style={{ marginLeft: '5px', cursor: 'help' }}>
-                  <img src={QuestionIcon} alt="Ayuda" style={{ width: '16px', height: '16px' }} />
-                  <span className='tooltip-text'>Porcentaje de ganancia sobre el costo total</span>
-                </span>
+                
               </label>
               <Controller
                 name="margen_ganancia"
@@ -371,7 +375,8 @@ export default function PopupUpdateProducto({
               fontWeight: 'bold',
               color: '#2e7d32'
             }}>
-              💵 Precio de Venta Calculado: ${precioVentaCalculado.toFixed(2)}
+              <FaDollarSign style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+               Precio de Venta Calculado: ${precioVentaCalculado.toFixed(0)}
             </div>
 
             {/* ¿Producto en Oferta? */}
