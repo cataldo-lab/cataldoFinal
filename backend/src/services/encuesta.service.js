@@ -48,6 +48,15 @@ export async function crearEncuesta(encuestaData) {
       };
     }
 
+    // Validar que la operación esté en estado válido para encuesta
+    const estadosValidos = ['entregada'];
+    if (!estadosValidos.includes(operacion.estado_operacion)) {
+      return {
+        success: false,
+        message: `La operación debe estar en estado "entregada" para crear una encuesta. Estado actual: ${operacion.estado_operacion}`
+      };
+    }
+
     // Verificar si ya existe una encuesta para esta operación
     const encuestaExistente = await encuestaRepository.findOne({
       where: { operacion: { id_operacion } }
@@ -405,8 +414,8 @@ export async function getOperacionesSinEncuesta() {
     let queryBuilder = operacionRepository
       .createQueryBuilder("operacion")
       .leftJoinAndSelect("operacion.cliente", "cliente")
-      .where("operacion.estado_operacion IN (:...estados)", {
-        estados: ['entregada', 'pagada']
+      .where("operacion.estado_operacion = :estado", {
+        estado: 'entregada'
       })
       .orderBy("operacion.fecha_entrega_estimada", "DESC");
 
