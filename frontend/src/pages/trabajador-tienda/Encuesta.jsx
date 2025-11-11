@@ -451,23 +451,11 @@ const Encuesta = () => {
                 <div className="flex items-start gap-2">
                   <FaInfoCircle className="text-blue-600 text-xl mt-0.5" />
                   <div className="flex-1">
-                    <p className="font-semibold text-blue-900 mb-2">Información de Debug:</p>
+                    <p className="font-semibold text-blue-900 mb-2">Información general encuestas pendientes:</p>
                     <p className="text-sm text-blue-800">
-                      Se encontraron <strong>{debugInfo.totalOperaciones}</strong> operación(es) en estado "entregada" sin encuesta.
+                      Se encontraron <strong>{debugInfo.totalOperaciones}</strong> encuestas pendientes.
                     </p>
-                    {debugInfo.totalOperaciones === 0 && (
-                      <div className="mt-3 text-sm text-blue-700">
-                        <p className="font-semibold mb-1">Posibles causas:</p>
-                        <ul className="list-disc ml-5 space-y-1">
-                          <li>No hay operaciones con estado <code className="bg-blue-200 px-1 rounded">"entregada"</code></li>
-                          <li>Todas las operaciones entregadas ya tienen encuesta</li>
-                          <li>Las operaciones están en otro estado (cotización, pendiente, en_proceso, terminada, completada, pagada)</li>
-                        </ul>
-                        <p className="mt-2 font-semibold">
-                          💡 Consejo: Revisa que tus operaciones estén en estado <code className="bg-blue-200 px-1 rounded">"entregada"</code> antes de crear encuestas.
-                        </p>
-                      </div>
-                    )}
+                    
                     {debugInfo.totalOperaciones > 0 && (
                       <div className="mt-3">
                         <p className="font-semibold text-blue-900 mb-1">Operaciones disponibles:</p>
@@ -614,12 +602,10 @@ const Encuesta = () => {
                   >
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                       <div>
-                        <h3 className="text-lg font-bold text-stone-800">
-                          Operación #{encuesta.operacion?.id_operacion}
-                        </h3>
-                        <p className="text-sm text-gray-600">
+                        
+                        <h4 className="text-sm text-stone-600">
                           Cliente: {encuesta.operacion?.cliente?.nombreCompleto || 'Sin cliente'}
-                        </p>
+                        </h4>
                         <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                           <FaCalendarAlt />
                           {formatDate(encuesta.fecha_encuesta)}
@@ -677,22 +663,22 @@ const Encuesta = () => {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6">
+                <div className="bg-gradient-to-br from-gray-500 to-gray-600 text-white rounded-xl p-6">
                   <p className="text-sm opacity-90 mb-2">Total Encuestas</p>
                   <p className="text-4xl font-bold">{estadisticas.total}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6">
+                <div className="bg-gradient-to-br from-stone-500 to-stone-600 text-white rounded-xl p-6">
                   <p className="text-sm opacity-90 mb-2">Promedio Pedido</p>
                   <p className="text-4xl font-bold">{estadisticas.promedio_pedido}/7</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-6">
+                <div className="bg-gradient-to-br from-neutral-500 to-neutral-600 text-white rounded-xl p-6">
                   <p className="text-sm opacity-90 mb-2">Promedio Repartidor</p>
                   <p className="text-4xl font-bold">{estadisticas.promedio_repartidor}/7</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6">
+                <div className="bg-gradient-to-br from-zinc-500 to-zinc-600 text-white rounded-xl p-6">
                   <p className="text-sm opacity-90 mb-2">Con Comentarios</p>
                   <p className="text-4xl font-bold">{estadisticas.con_comentarios}</p>
                 </div>
