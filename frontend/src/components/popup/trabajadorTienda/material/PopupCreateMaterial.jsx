@@ -33,9 +33,12 @@ export default function PopupCreateMaterial({
         return;
       }
 
-      // Validar stock mínimo
-      if (parseInt(formData.stock_minimo) < 0) {
-        setError('El stock mínimo no puede ser negativo');
+      // Obtener la existencia_material (será el stock_minimo también)
+      const existencia = parseInt(formData.existencia_material) || 0;
+
+      // Validar existencia no negativa
+      if (existencia < 0) {
+        setError('La existencia no puede ser negativa');
         setLoading(false);
         return;
       }
@@ -45,8 +48,8 @@ export default function PopupCreateMaterial({
         nombre_material: formData.nombre_material.trim(),
         unidad_medida: formData.unidad_medida,
         precio_unitario: parseFloat(formData.precio_unitario),
-        stock_minimo: parseInt(formData.stock_minimo) || 10,
-        existencia_material: parseInt(formData.existencia_material) || 0,
+        stock_minimo: existencia, // Ahora stock_minimo es igual a existencia_material
+        existencia_material: existencia,
         id_proveedor: formData.id_proveedor ? parseInt(formData.id_proveedor) : null,
         activo: true
       };
@@ -178,28 +181,10 @@ export default function PopupCreateMaterial({
             {
               label: (
                 <span>
-                  Stock Mínimo *
+                  Existencia Inicial / Stock *
                   <span className='tooltip-icon' style={{ marginLeft: '5px' }}>
                     <img src={QuestionIcon} alt="Ayuda" style={{ width: '16px', height: '16px' }} />
-                    <span className='tooltip-text'>Cantidad mínima antes de alerta de reabastecimiento</span>
-                  </span>
-                </span>
-              ),
-              name: "stock_minimo",
-              placeholder: '10',
-              fieldType: 'input',
-              type: "number",
-              required: true,
-              min: 0,
-              defaultValue: '10'
-            },
-            {
-              label: (
-                <span>
-                  Existencia Inicial
-                  <span className='tooltip-icon' style={{ marginLeft: '5px' }}>
-                    <img src={QuestionIcon} alt="Ayuda" style={{ width: '16px', height: '16px' }} />
-                    <span className='tooltip-text'>Cantidad actual en inventario (opcional, por defecto 0)</span>
+                    <span className='tooltip-text'>Cantidad inicial en inventario. Este valor también será el stock mínimo</span>
                   </span>
                 </span>
               ),
@@ -207,7 +192,7 @@ export default function PopupCreateMaterial({
               placeholder: '0',
               fieldType: 'input',
               type: "number",
-              required: false,
+              required: true,
               min: 0,
               defaultValue: '0'
             },
