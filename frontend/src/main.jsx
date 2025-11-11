@@ -169,6 +169,14 @@ const router = createBrowserRouter([
             )
           },
           {
+            path: '/trabajador/encuestas/:id',
+            element:(
+              <ProtectedRoute allowedRoles={['administrador', 'gerente', 'trabajador_tienda']}>
+                <EncuestasTrabajador />
+              </ProtectedRoute>
+            )
+          },
+          {
             path: '/gerente/dashboard',
             element:(
               <ProtectedRoute allowedRoles={['administrador', 'gerente']}>

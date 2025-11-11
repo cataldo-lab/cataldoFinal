@@ -405,11 +405,12 @@ export async function getEstadisticasEncuestas() {
  */
 export async function getOperacionesSinEncuesta() {
   try {
+    // Obtener IDs de operaciones que YA tienen encuesta
     const operacionesConEncuesta = await encuestaRepository
       .createQueryBuilder("encuesta")
-      .select("encuesta.operacion")
+      .select("encuesta.id_operacion", "id_operacion")
       .getRawMany()
-      .then(rows => rows.map(row => row.encuesta_id_operacion));
+      .then(rows => rows.map(row => row.id_operacion));
 
     let queryBuilder = operacionRepository
       .createQueryBuilder("operacion")
