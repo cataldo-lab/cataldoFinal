@@ -16,7 +16,6 @@ export const useProductos = () => {
   const [filtros, setFiltros] = useState({
     categoria: '',
     activo: true,
-    tipo: 'todos', // 'todos', 'producto', 'servicio'
     busqueda: ''
   });
 
@@ -115,17 +114,13 @@ export const useProductos = () => {
 
   // Limpiar filtros
   const limpiarFiltros = () => {
-    setFiltros({ categoria: '', activo: true, tipo: 'todos', busqueda: '' });
+    setFiltros({ categoria: '', activo: true, busqueda: '' });
   };
 
-  // Productos filtrados por búsqueda y tipo
-  const productosFiltrados = productos.filter(p => {
-    const coincideBusqueda = p.nombre_producto.toLowerCase().includes(filtros.busqueda.toLowerCase());
-    const coincideTipo = filtros.tipo === 'todos' ||
-                         (filtros.tipo === 'servicio' && p.servicio) ||
-                         (filtros.tipo === 'producto' && !p.servicio);
-    return coincideBusqueda && coincideTipo;
-  });
+  // Productos filtrados por búsqueda
+  const productosFiltrados = productos.filter(p =>
+    p.nombre_producto.toLowerCase().includes(filtros.busqueda.toLowerCase())
+  );
 
   // Cargar datos al montar
   useEffect(() => {
