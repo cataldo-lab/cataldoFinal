@@ -4,6 +4,7 @@ import Operacion from "../entity/operacion.entity.js";
 import ProductoOperacion from "../entity/producto_operacion.entity.js";
 import Producto from "../entity/producto.entity.js";
 import User from "../entity/personas/user.entity.js";
+import Cliente from "../entity/personas/cliente.entity.js";
 
 /**
  * Obtener todas las operaciones del cliente autenticado
@@ -184,5 +185,66 @@ export async function getMiOperacionByIdService(userId, operacionId) {
   } catch (error) {
     console.error("Error al obtener la operación del cliente:", error);
     return [null, "Error interno del servidor al obtener el pedido"];
+  }
+}
+
+/**
+ * Obtener el perfil completo del cliente autenticado
+ * @param {number} userId - ID del usuario autenticado
+ * @returns {Promise<[Object|null, string|null]>}
+ */
+export async function getMiPerfilService(userId) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+
+    // Obtener usuario con relación de cliente y comuna
+    const user = await userRepository.findOne({
+      where: { id: userId },
+      relations: ["cliente", "comuna", "comuna.provincia", "comuna.provincia.region"],
+    });
+
+    if (!user) {
+      return [null, "Usuario no encontrado"];
+    }
+
+    // Remover datos sensibles
+    const { password, ...userData } = user;
+
+    // Formatear datos del perfil
+    const perfil = {
+      // Datos de User
+      id: userData.id,
+      rut: userData.rut,
+      nombreCompleto: userData.nombreCompleto,
+      email: userData.email,
+      telefono: userData.telefono,
+      calle: userData.calle,
+      rol: userData.rol,
+      createdAt: userData.createdAt,
+      updatedAt: userData.updatedAt,
+
+      // Datos de ubicación (Comuna)
+      ubicacion: userData.comuna ? {
+        comuna: userData.comuna.nombre_comuna,
+        provincia: userData.comuna.provincia?.nombre_provincia,
+        region: userData.comuna.provincia?.region?.nombre_region,
+      } : null,
+
+      // Datos de Cliente (si existe)
+      datosCliente: userData.cliente ? {
+        id_cliente: userData.cliente.id_cliente,
+        cumpleanos: userData.cliente.cumpleanos_cliente,
+        whatsapp: userData.cliente.whatsapp_cliente,
+        correo_alterno: userData.cliente.correo_alterno_cliente,
+        categoria: userData.cliente.categoria_cliente,
+        descuento: parseFloat(userData.cliente.descuento_cliente || 0),
+        acepta_uso_datos: userData.cliente.Acepta_uso_datos,
+      } : null,
+    };
+
+    return [perfil, null];
+  } catch (error) {
+    console.error("Error al obtener el perfil del cliente:", error);
+    return [null, "Error interno del servidor al obtener el perfil"];
   }
 }
