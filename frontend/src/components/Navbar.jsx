@@ -96,7 +96,7 @@ const Navbar = () => {
         // Rutas para cliente (todos tienen acceso)
         if (activeRole === "cliente" && rolesDisponibles.includes("cliente")) {
             routes.push(
-                { path: "/cliente/orders", label: "Mis Pedidos" },
+                { path: "/cliente/pedidos", label: "Mis Pedidos" },
                 { path: "/cliente/profile", label: "Mi Perfil" }
             );
         }
