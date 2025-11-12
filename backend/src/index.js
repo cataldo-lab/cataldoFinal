@@ -42,16 +42,6 @@ async function setupServer() {
 
     app.use(morgan("dev"));
 
-    // Middleware para asegurar UTF-8 en todas las respuestas JSON
-    app.use((req, res, next) => {
-      const originalJson = res.json;
-      res.json = function(data) {
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        return originalJson.call(this, data);
-      };
-      next();
-    });
-
     app.use(
       session({
         secret: cookieKey,
