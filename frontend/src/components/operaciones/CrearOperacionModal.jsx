@@ -1,17 +1,29 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { FaTimes, FaPlus, FaTrash, FaShoppingCart, FaCalendarAlt, FaSearch, FaUserPlus } from 'react-icons/fa';
 import { useCrearOperacion } from '@hooks/papeles/useCrearOperacion';
 import PopUpCrearCliente from '@components/popup/trabajadorTienda/cliente/popUpCrearCliente';
 
 const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], productos = [], onClienteCreado }) => {
-    // Estados del formulario
-    const [formData, setFormData] = useState({
-        id_cliente: '',
-        estado_operacion: 'pendiente',
-        descripcion_operacion: '',
-        cantidad_abono: 0,
-        fecha_entrega_estimada: ''
+    // React Hook Form
+    const { control, handleSubmit: handleFormSubmit, watch, setValue, reset: resetForm, formState: { errors } } = useForm({
+        defaultValues: {
+            id_cliente: '',
+            estado_operacion: 'pendiente',
+            descripcion_operacion: '',
+            cantidad_abono: 0,
+            fecha_entrega_estimada: ''
+        }
     });
+
+    // Observar valores del formulario
+    const formData = {
+        id_cliente: watch('id_cliente'),
+        estado_operacion: watch('estado_operacion'),
+        descripcion_operacion: watch('descripcion_operacion'),
+        cantidad_abono: watch('cantidad_abono'),
+        fecha_entrega_estimada: watch('fecha_entrega_estimada')
+    };
 
     // Estados para días hábiles
     const [diasHabiles, setDiasHabiles] = useState(30);
@@ -84,17 +96,18 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
     useEffect(() => {
         if (formData.cantidad_abono > 0 && diasHabiles > 0) {
             const fechaCalculada = calcularFechaEntrega(diasHabiles);
-            setFormData(prev => ({
-                ...prev,
-                fecha_entrega_estimada: fechaCalculada.toISOString().split('T')[0]
-            }));
+            setValue('fecha_entrega_estimada', fechaCalculada.toISOString().split('T')[0]);
         } else {
-            setFormData(prev => ({
-                ...prev,
-                fecha_entrega_estimada: ''
-            }));
+            setValue('fecha_entrega_estimada', '');
         }
-    }, [diasHabiles, formData.cantidad_abono]);
+    }, [diasHabiles, formData.cantidad_abono, setValue]);
+
+    // Resetear abono cuando es cotización
+    useEffect(() => {
+        if (formData.estado_operacion === 'cotizacion') {
+            setValue('cantidad_abono', 0);
+        }
+    }, [formData.estado_operacion, setValue]);
 
     // Agregar producto a la lista
     const handleAgregarProducto = () => {
@@ -128,20 +141,12 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
             precio_unitario: '',
             especificaciones: ''
         });
+        setBusquedaProducto('');
     };
 
     // Eliminar producto de la lista
     const handleEliminarProducto = (index) => {
         setProductosSeleccionados(productosSeleccionados.filter((_, i) => i !== index));
-    };
-
-    // Manejar cambios en el formulario
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
     };
 
     // Manejar cambios en producto actual
@@ -174,14 +179,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
     };
 
     // Enviar formulario
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!formData.id_cliente) {
-            alert('Seleccione un cliente');
-            return;
-        }
-
+    const onSubmit = async (data) => {
         if (productosSeleccionados.length === 0) {
             alert('Debe agregar al menos un producto');
             return;
@@ -189,11 +187,11 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
 
         const result = await crearOperacion(
             {
-                id_cliente: parseInt(formData.id_cliente),
-                estado_operacion: formData.estado_operacion,
-                descripcion_operacion: formData.descripcion_operacion || null,
-                cantidad_abono: parseFloat(formData.cantidad_abono) || 0,
-                fecha_entrega_estimada: formData.fecha_entrega_estimada || null
+                id_cliente: parseInt(data.id_cliente),
+                estado_operacion: data.estado_operacion,
+                descripcion_operacion: data.descripcion_operacion || null,
+                cantidad_abono: parseFloat(data.cantidad_abono) || 0,
+                fecha_entrega_estimada: data.fecha_entrega_estimada || null
             },
             productosSeleccionados.map(prod => ({
                 id_producto: prod.id_producto,
@@ -212,13 +210,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
     };
 
     const handleClose = () => {
-        setFormData({
-            id_cliente: '',
-            estado_operacion: 'pendiente',
-            descripcion_operacion: '',
-            cantidad_abono: 0,
-            fecha_entrega_estimada: ''
-        });
+        resetForm();
         setProductosSeleccionados([]);
         setProductoActual({
             id_producto: '',
@@ -236,8 +228,8 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 mt-12">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[85vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-stone-600 to-stone-700 px-6 py-5 flex justify-between items-center flex-shrink-0">
                     <div className="flex items-center gap-3">
@@ -259,7 +251,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-6">
                         {/* Datos de Operación */}
                         <div className="bg-stone-50 rounded-lg p-6 border border-stone-200">
                             <h3 className="text-lg font-bold text-stone-800 mb-5 flex items-center gap-2">
@@ -296,20 +288,33 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                         />
                                     </div>
 
-                                    <select
+                                    <Controller
                                         name="id_cliente"
-                                        value={formData.id_cliente}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent bg-white"
-                                    >
-                                        <option value="">Seleccione un cliente</option>
-                                        {clientesFiltrados.map(cliente => (
-                                            <option key={cliente.id} value={cliente.id}>
-                                                {cliente.nombreCompleto} - {cliente.rut}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        control={control}
+                                        rules={{ required: 'Debe seleccionar un cliente' }}
+                                        render={({ field }) => (
+                                            <>
+                                                <select
+                                                    {...field}
+                                                    className={`w-full px-3 py-2 border ${errors.id_cliente ? 'border-red-500 bg-red-50' : 'border-stone-300'} 
+                                                        rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent bg-white mt-7.5`}
+                                                >
+                                                    <option value="">Seleccione un cliente</option>
+                                                    {clientesFiltrados.map(cliente => (
+                                                        <option key={cliente.id} value={cliente.id}>
+                                                            {cliente.nombreCompleto} - {cliente.rut}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {errors.id_cliente && (
+                                                    <p className="mt-1 text-red-600 text-xs flex items-center gap-1">
+                                                        <span>⚠️</span> {errors.id_cliente.message}
+                                                    </p>
+                                                )}
+                                            </>
+                                        )}
+                                    />
+                                    
                                     {busquedaCliente && clientesFiltrados.length === 0 && (
                                         <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
                                             <span>⚠️</span>
@@ -331,35 +336,61 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                         <label className="block text-sm font-medium text-stone-700 mb-2">
                                             Estado *
                                         </label>
-                                        <select
+                                        <Controller
                                             name="estado_operacion"
-                                            value={formData.estado_operacion}
-                                            onChange={handleChange}
-                                            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent bg-white"
-                                        >
-                                            <option value="cotizacion">Cotización</option>
-                                            <option value="orden_trabajo">Orden de Trabajo</option>
-                                            <option value="pendiente">Pendiente</option>
-                                            <option value="en_proceso">En Proceso</option>
-                                        </select>
+                                            control={control}
+                                            render={({ field }) => (
+                                                <select
+                                                    {...field}
+                                                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent bg-white"
+                                                >
+                                                    <option value="cotizacion">Cotización</option>
+                                                    <option value="orden_trabajo">Orden de Trabajo</option>
+                                                    <option value="pendiente">Pendiente</option>
+                                                    <option value="en_proceso">En Proceso</option>
+                                                </select>
+                                            )}
+                                        />
                                     </div>
 
                                     {/* Abono Inicial */}
                                     <div>
                                         <label className="block text-sm font-medium text-stone-700 mb-2">
                                             Abono Inicial
+                                            {formData.estado_operacion === 'cotizacion' && (
+                                                <span className="text-xs text-orange-600 ml-2">(No disponible en cotización)</span>
+                                            )}
                                         </label>
-                                        <input
-                                            type="number"
+                                        <Controller
                                             name="cantidad_abono"
-                                            value={formData.cantidad_abono}
-                                            onChange={handleChange}
-                                            min="0"
-                                            step="1"
-                                            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent bg-white"
-                                            placeholder="$0"
+                                            control={control}
+                                            rules={{ 
+                                                min: { value: 0, message: 'El abono no puede ser negativo' }
+                                            }}
+                                            render={({ field }) => (
+                                                <>
+                                                    <input
+                                                        {...field}
+                                                        type="number"
+                                                        min="0"
+                                                        step="1"
+                                                        disabled={formData.estado_operacion === 'cotizacion'}
+                                                        className={`w-full px-3 py-2 border ${errors.cantidad_abono ? 'border-red-500 bg-red-50' : 'border-stone-300'} rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent ${
+                                                            formData.estado_operacion === 'cotizacion' 
+                                                                ? 'bg-gray-100 cursor-not-allowed opacity-60' 
+                                                                : 'bg-white'
+                                                        }`}
+                                                        placeholder="$0"
+                                                    />
+                                                    {errors.cantidad_abono && (
+                                                        <p className="mt-1 text-red-600 text-xs flex items-center gap-1">
+                                                            <span>⚠️</span> {errors.cantidad_abono.message}
+                                                        </p>
+                                                    )}
+                                                </>
+                                            )}
                                         />
-                                        {formData.cantidad_abono > 0 && (
+                                        {formData.cantidad_abono > 0 && formData.estado_operacion !== 'cotizacion' && (
                                             <p className="text-xs text-blue-600 mt-1.5 flex items-center gap-1 font-medium">
                                                 <FaCalendarAlt />
                                                 Orden de Trabajo
@@ -373,13 +404,25 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                                     <label className="block text-sm font-medium text-stone-700 mb-2">
                                         Descripción
                                     </label>
-                                    <textarea
+                                    <Controller
                                         name="descripcion_operacion"
-                                        value={formData.descripcion_operacion}
-                                        onChange={handleChange}
-                                        rows="2"
-                                        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent resize-none bg-white"
-                                        placeholder="Descripción de la operación..."
+                                        control={control}
+                                        rules={{ maxLength: { value: 500, message: 'Máximo 500 caracteres' } }}
+                                        render={({ field }) => (
+                                            <>
+                                                <textarea
+                                                    {...field}
+                                                    rows="2"
+                                                    className={`w-full px-3 py-2 border ${errors.descripcion_operacion ? 'border-red-500 bg-red-50' : 'border-stone-300'} rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-transparent resize-none bg-white`}
+                                                    placeholder="Descripción de la operación..."
+                                                />
+                                                {errors.descripcion_operacion && (
+                                                    <p className="mt-1 text-red-600 text-xs flex items-center gap-1">
+                                                        <span>⚠️</span> {errors.descripcion_operacion.message}
+                                                    </p>
+                                                )}
+                                            </>
+                                        )}
                                     />
                                 </div>
                             </div>
@@ -642,7 +685,7 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                     </button>
                     <button
                         type="submit"
-                        onClick={handleSubmit}
+                        onClick={handleFormSubmit(onSubmit)}
                         disabled={loading || productosSeleccionados.length === 0}
                         className="px-6 py-2 bg-stone-600 text-white rounded-lg hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >

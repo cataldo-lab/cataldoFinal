@@ -115,45 +115,43 @@ export default function PopupCreateProducto({
         </button>
 
         <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <div style={{ padding: '20px' }}>
-            <h2 style={{ marginBottom: '20px', fontSize: '1.5em', fontWeight: 'bold' }}>
-              Crear Nuevo Producto
-            </h2>
+          <div className="p-5 rounded-lg">
+            <h2 className="mb-5 text-2xl font-bold">
+            Crear Nuevo Producto
+          </h2>
 
             {/* Nombre del Producto */}
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
-                Nombre del Producto *
-              </label>
-              <Controller
-                name="nombre_producto"
-                control={control}
-                rules={{ 
-                  required: 'El nombre es requerido',
-                  minLength: { value: 3, message: 'Mínimo 3 caracteres' },
-                  maxLength: { value: 100, message: 'Máximo 100 caracteres' }
-                }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    type="text"
-                    placeholder="Mesa de comedor 6 personas"
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      border: `1px solid ${errors.nombre_producto ? '#ef4444' : '#ddd'}`,
-                      borderRadius: '5px',
-                      fontSize: '1em'
-                    }}
-                  />
+            <Controller
+            name="nombre_producto"
+            control={control}
+            rules={{ 
+              required: 'El nombre es requerido',
+              minLength: { value: 3, message: 'Mínimo 3 caracteres' },
+              maxLength: { value: 100, message: 'Máximo 100 caracteres' }
+            }}
+            render={({ field }) => (
+              <>
+                <input
+                  {...field}
+                  type="text"
+                  placeholder="Mesa de comedor 6 personas"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: `1px solid ${errors.nombre_producto ? '#ef4444' : '#ddd'}`,
+                    borderRadius: '5px',
+                    fontSize: '1em',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                {errors.nombre_producto && (
+                  <div style={{ color: '#ef4444', fontSize: '0.85em', marginTop: '5px' }}>
+                    {errors.nombre_producto.message}
+                  </div>
                 )}
-              />
-              {errors.nombre_producto && (
-                <span style={{ color: '#ef4444', fontSize: '0.85em' }}>
-                  {errors.nombre_producto.message}
-                </span>
-              )}
-            </div>
+              </>
+            )}
+          />
 
             {/* Categoría */}
             <div style={{ marginBottom: '15px' }}>
@@ -191,14 +189,15 @@ export default function PopupCreateProducto({
 
             {/* Descripción */}
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
-                Descripción
-              </label>
-              <Controller
-                name="descripcion_producto"
-                control={control}
-                rules={{ maxLength: { value: 500, message: 'Máximo 500 caracteres' } }}
-                render={({ field }) => (
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+              Descripción
+            </label>
+            <Controller
+              name="descripcion_producto"
+              control={control}
+              rules={{ maxLength: { value: 250, message: 'Máximo 250 caracteres' } }}
+              render={({ field }) => (
+                <>
                   <textarea
                     {...field}
                     placeholder="Descripción detallada del producto"
@@ -209,17 +208,19 @@ export default function PopupCreateProducto({
                       borderRadius: '5px',
                       fontSize: '1em',
                       minHeight: '80px',
-                      fontFamily: 'inherit'
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box'
                     }}
                   />
-                )}
-              />
-              {errors.descripcion_producto && (
-                <span style={{ color: '#ef4444', fontSize: '0.85em' }}>
-                  {errors.descripcion_producto.message}
-                </span>
+                  {errors.descripcion_producto && (
+                    <div style={{ color: '#ef4444', fontSize: '0.85em', marginTop: '5px' }}>
+                      {errors.descripcion_producto.message}
+                    </div>
+                  )}
+                </>
               )}
-            </div>
+            />
+          </div>
 
             {/* Tipo de Producto */}
             <div style={{ marginBottom: '15px' }}>

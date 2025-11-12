@@ -134,25 +134,22 @@ export default function PopupUpdateProducto({
         </button>
 
         <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <div style={{ padding: '20px' }}>
-            <h2 style={{ marginBottom: '20px', fontSize: '1.5em', fontWeight: 'bold' }}>
+          <div className="p-5 rounded-lg">
+            <h2 className="mb-5 text-2xl font-bold">
               Editar Producto
             </h2>
 
             {/* Nombre del Producto */}
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
-                Nombre del Producto *
-              </label>
-              <Controller
-                name="nombre_producto"
-                control={control}
-                rules={{ 
-                  required: 'El nombre es requerido',
-                  minLength: { value: 3, message: 'Mínimo 3 caracteres' },
-                  maxLength: { value: 100, message: 'Máximo 100 caracteres' }
-                }}
-                render={({ field }) => (
+            <Controller
+              name="nombre_producto"
+              control={control}
+              rules={{ 
+                required: 'El nombre es requerido',
+                minLength: { value: 3, message: 'Mínimo 3 caracteres' },
+                maxLength: { value: 100, message: 'Máximo 100 caracteres' }
+              }}
+              render={({ field }) => (
+                <>
                   <input
                     {...field}
                     type="text"
@@ -166,14 +163,14 @@ export default function PopupUpdateProducto({
                       boxSizing: 'border-box'
                     }}
                   />
-                )}
-              />
-              {errors.nombre_producto && (
-                <span style={{ color: '#ef4444', fontSize: '0.85em' }}>
-                  {errors.nombre_producto.message}
-                </span>
+                  {errors.nombre_producto && (
+                    <div style={{ color: '#ef4444', fontSize: '0.85em', marginTop: '5px' }}>
+                      {errors.nombre_producto.message}
+                    </div>
+                  )}
+                </>
               )}
-            </div>
+            />
 
             {/* Categoría */}
             <div style={{ marginBottom: '15px' }}>
