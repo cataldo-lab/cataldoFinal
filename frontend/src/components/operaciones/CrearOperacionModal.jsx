@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { FaTimes, FaPlus, FaTrash, FaShoppingCart, FaCalendarAlt, FaSearch, FaUserPlus } from 'react-icons/fa';
 import { useCrearOperacion } from '@hooks/papeles/useCrearOperacion';
 import PopUpCrearCliente from '@components/popup/trabajadorTienda/cliente/popUpCrearCliente';
+import Swal from 'sweetalert2';
 
 const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], productos = [], onClienteCreado }) => {
     // React Hook Form
@@ -109,15 +110,37 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
         }
     }, [formData.estado_operacion, setValue]);
 
+    // Mostrar error con SweetAlert2
+    useEffect(() => {
+        if (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al crear operación',
+                text: error,
+                confirmButtonColor: '#57534e'
+            });
+        }
+    }, [error]);
+
     // Agregar producto a la lista
     const handleAgregarProducto = () => {
         if (!productoActual.id_producto) {
-            alert('Seleccione un producto');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Producto requerido',
+                text: 'Por favor seleccione un producto',
+                confirmButtonColor: '#57534e'
+            });
             return;
         }
 
         if (productoActual.cantidad <= 0) {
-            alert('La cantidad debe ser mayor a 0');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Cantidad inválida',
+                text: 'La cantidad debe ser mayor a 0',
+                confirmButtonColor: '#57534e'
+            });
             return;
         }
 
@@ -181,7 +204,12 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
     // Enviar formulario
     const onSubmit = async (data) => {
         if (productosSeleccionados.length === 0) {
-            alert('Debe agregar al menos un producto');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sin productos',
+                text: 'Debe agregar al menos un producto a la operación',
+                confirmButtonColor: '#57534e'
+            });
             return;
         }
 
@@ -202,10 +230,17 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
         );
 
         if (result.success) {
-            setTimeout(() => {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Operación creada!',
+                text: 'La operación se ha registrado exitosamente',
+                confirmButtonColor: '#57534e',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
                 onSuccess(result.data);
                 handleClose();
-            }, 1500);
+            });
         }
     };
 
@@ -658,18 +693,6 @@ const CrearOperacionModal = ({ isOpen, onClose, onSuccess, clientes = [], produc
                             </div>
                         )}
 
-                        {/* Mensajes */}
-                        {error && (
-                            <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4">
-                                <p className="text-red-800">{error}</p>
-                            </div>
-                        )}
-
-                        {success && (
-                            <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
-                                <p className="text-green-800">✅ Operación creada exitosamente</p>
-                            </div>
-                        )}
                     </form>
                 </div>
 
