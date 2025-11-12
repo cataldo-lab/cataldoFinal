@@ -6,8 +6,8 @@ import { FaPowerOff } from 'react-icons/fa';
 // ⭐ ROLES CONSISTENTES CON EL BACKEND
 const RolePermissions = {
   administrador: ["administrador", "gerente", "trabajador_tienda"],
-  gerente: ["gerente", "trabajador_tienda", "cliente"],
-  trabajador_tienda: ["trabajador_tienda", "cliente"],
+  gerente: ["gerente", "trabajador_tienda"],
+  trabajador_tienda: ["trabajador_tienda"],
   cliente: ["cliente"],
   usuario: ["cliente"],
   bloqueado: []

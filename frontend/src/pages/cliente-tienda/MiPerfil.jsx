@@ -110,7 +110,8 @@ const MiPerfil = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto bg-gray-100 min-h-screen pt-20">
-      <div className="w-full px-6 py-8">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 h-full">
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3 mb-2">
@@ -146,7 +147,7 @@ const MiPerfil = () => {
               {perfil.datosCliente?.descuento > 0 && (
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="bg-green-50 rounded-lg p-4 text-center">
-                    <FaPercentage className="text-green-500 text-2xl mx-auto mb-2" />
+                    
                     <p className="text-sm text-gray-600 mb-1">Descuento especial</p>
                     <p className="text-3xl font-bold text-green-600">{perfil.datosCliente.descuento}%</p>
                   </div>
@@ -156,8 +157,9 @@ const MiPerfil = () => {
           </div>
 
           {/* Información de contacto */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="lg:col-span-2 ">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 h-full">
+
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaUser className="text-blue-500" />
                 Información Personal
@@ -228,56 +230,7 @@ const MiPerfil = () => {
               </div>
             </div>
 
-            {/* Dirección */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <FaMapMarkerAlt className="text-blue-500" />
-                Dirección
-              </h3>
-
-              <div className="space-y-3">
-                {/* Calle */}
-                {perfil.calle && (
-                  <div className="flex items-start gap-3">
-                    <FaHome className="text-gray-400 mt-1 text-xl flex-shrink-0" />
-                    <div>
-                      <p className="text-sm text-gray-500 font-medium">Calle</p>
-                      <p className="text-gray-800 font-semibold">{perfil.calle}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Ubicación */}
-                {perfil.ubicacion && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      {perfil.ubicacion.comuna && (
-                        <div>
-                          <p className="text-xs text-gray-500 font-medium mb-1">Comuna</p>
-                          <p className="text-gray-800 font-semibold">{perfil.ubicacion.comuna}</p>
-                        </div>
-                      )}
-                      {perfil.ubicacion.provincia && (
-                        <div>
-                          <p className="text-xs text-gray-500 font-medium mb-1">Provincia</p>
-                          <p className="text-gray-800 font-semibold">{perfil.ubicacion.provincia}</p>
-                        </div>
-                      )}
-                      {perfil.ubicacion.region && (
-                        <div>
-                          <p className="text-xs text-gray-500 font-medium mb-1">Región</p>
-                          <p className="text-gray-800 font-semibold">{perfil.ubicacion.region}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {!perfil.calle && !perfil.ubicacion && (
-                  <p className="text-gray-500 text-center py-4">No hay dirección registrada</p>
-                )}
-              </div>
-            </div>
+           
           </div>
         </div>
 
@@ -301,8 +254,7 @@ const MiPerfil = () => {
               </div>
               {perfil.datosCliente?.id_cliente && (
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-gray-600">ID Cliente</span>
-                  <span className="font-semibold text-gray-800">#{perfil.datosCliente.id_cliente}</span>
+                 
                 </div>
               )}
             </div>
