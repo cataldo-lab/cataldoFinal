@@ -2,6 +2,7 @@
 import {
   getMisOperacionesService,
   getMiOperacionByIdService,
+  getMiPerfilService,
 } from "../services/cliente.service.js";
 import {
   handleErrorClient,
@@ -92,16 +93,19 @@ export async function getMiOperacion(req, res) {
  */
 export async function getMiPerfil(req, res) {
   try {
-    const user = req.user;
+    const userId = req.user?.id;
 
-    if (!user) {
+    if (!userId) {
       return handleErrorClient(res, 401, "Usuario no autenticado");
     }
 
-    // Remover datos sensibles
-    const { password, ...userData } = user;
+    const [perfil, error] = await getMiPerfilService(userId);
 
-    return handleSuccess(res, 200, "Perfil obtenido correctamente", userData);
+    if (error) {
+      return handleErrorClient(res, 404, error);
+    }
+
+    return handleSuccess(res, 200, "Perfil obtenido correctamente", perfil);
   } catch (error) {
     console.error("Error en getMiPerfil controller:", error);
     return handleErrorServer(res, 500, error.message);
