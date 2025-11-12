@@ -45,7 +45,7 @@ const MiPerfil = () => {
     }
   };
 
-  // Obtener badge de categoría
+  // Obtener badge de categorÃ­a
   const getCategoriaColor = (categoria) => {
     const colores = {
       'regular': 'bg-gray-100 text-gray-800',
@@ -99,7 +99,7 @@ const MiPerfil = () => {
         <div className="text-center bg-gray-50 p-8 rounded-lg">
           <FaUserCircle className="text-gray-300 text-6xl mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
-            No se encontró el perfil
+            No se encontrÃ³ el perfil
           </h3>
         </div>
       </div>
@@ -117,10 +117,10 @@ const MiPerfil = () => {
             <FaUserCircle className="text-blue-500" />
             Mi Perfil
           </h1>
-          <p className="text-gray-600">Información de tu cuenta y datos personales</p>
+          <p className="text-gray-600">InformaciÃ³n de tu cuenta y datos personales</p>
         </div>
 
-        {/* Información principal */}
+        {/* InformaciÃ³n principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Card principal con avatar */}
           <div className="lg:col-span-1">
@@ -155,12 +155,12 @@ const MiPerfil = () => {
             </div>
           </div>
 
-          {/* Información de contacto */}
+          {/* InformaciÃ³n de contacto */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaUser className="text-blue-500" />
-                Información Personal
+                InformaciÃ³n Personal
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -182,12 +182,12 @@ const MiPerfil = () => {
                   </div>
                 </div>
 
-                {/* Teléfono */}
+                {/* TelÃ©fono */}
                 {perfil.telefono && (
                   <div className="flex items-start gap-3">
                     <FaPhone className="text-gray-400 mt-1 text-xl flex-shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-500 font-medium">Teléfono</p>
+                      <p className="text-sm text-gray-500 font-medium">TelÃ©fono</p>
                       <p className="text-gray-800 font-semibold">{perfil.telefono}</p>
                     </div>
                   </div>
@@ -215,12 +215,12 @@ const MiPerfil = () => {
                   </div>
                 )}
 
-                {/* Cumpleaños */}
+                {/* CumpleaÃ±os */}
                 {perfil.datosCliente?.cumpleanos && (
                   <div className="flex items-start gap-3">
                     <FaBirthdayCake className="text-pink-500 mt-1 text-xl flex-shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-500 font-medium">Cumpleaños</p>
+                      <p className="text-sm text-gray-500 font-medium">CumpleaÃ±os</p>
                       <p className="text-gray-800 font-semibold">{formatearFecha(perfil.datosCliente.cumpleanos)}</p>
                     </div>
                   </div>
@@ -228,11 +228,11 @@ const MiPerfil = () => {
               </div>
             </div>
 
-            {/* Dirección */}
+            {/* DirecciÃ³n */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaMapMarkerAlt className="text-blue-500" />
-                Dirección
+                DirecciÃ³n
               </h3>
 
               <div className="space-y-3">
@@ -247,7 +247,7 @@ const MiPerfil = () => {
                   </div>
                 )}
 
-                {/* Ubicación */}
+                {/* UbicaciÃ³n */}
                 {perfil.ubicacion && (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -265,7 +265,7 @@ const MiPerfil = () => {
                       )}
                       {perfil.ubicacion.region && (
                         <div>
-                          <p className="text-xs text-gray-500 font-medium mb-1">Región</p>
+                          <p className="text-xs text-gray-500 font-medium mb-1">RegiÃ³n</p>
                           <p className="text-gray-800 font-semibold">{perfil.ubicacion.region}</p>
                         </div>
                       )}
@@ -274,20 +274,20 @@ const MiPerfil = () => {
                 )}
 
                 {!perfil.calle && !perfil.ubicacion && (
-                  <p className="text-gray-500 text-center py-4">No hay dirección registrada</p>
+                  <p className="text-gray-500 text-center py-4">No hay direcciÃ³n registrada</p>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Información adicional */}
+        {/* InformaciÃ³n adicional */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Información de cuenta */}
+          {/* InformaciÃ³n de cuenta */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
               <FaCalendarAlt className="text-blue-500" />
-              Información de Cuenta
+              InformaciÃ³n de Cuenta
             </h3>
 
             <div className="space-y-3">
@@ -296,7 +296,7 @@ const MiPerfil = () => {
                 <span className="font-semibold text-gray-800">{formatearFecha(perfil.createdAt)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-gray-600">Última actualización</span>
+                <span className="text-gray-600">Ãšltima actualizaciÃ³n</span>
                 <span className="font-semibold text-gray-800">{formatearFecha(perfil.updatedAt)}</span>
               </div>
               {perfil.datosCliente?.id_cliente && (
@@ -308,7 +308,7 @@ const MiPerfil = () => {
             </div>
           </div>
 
-          {/* Preferencias y configuración */}
+          {/* Preferencias y configuraciÃ³n */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
               <FaShieldAlt className="text-blue-500" />
@@ -330,7 +330,7 @@ const MiPerfil = () => {
           </div>
         </div>
 
-        {/* Botón de edición (placeholder) */}
+        {/* BotÃ³n de ediciÃ³n (placeholder) */}
         {/* <div className="mt-8 text-center">
           <button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg transition flex items-center gap-2 mx-auto">
             <FaEdit />
