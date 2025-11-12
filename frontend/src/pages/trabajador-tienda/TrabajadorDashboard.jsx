@@ -104,7 +104,7 @@ const OperacionesModal = ({ isOpen, onClose, estadoFiltro, titulo }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="fixed inset-0 backdrop-blur-[2px] bg-black-600 bg-opacity-5 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="bg-gradient-to-r from-stone-600 to-stone-700 text-white p-6 flex justify-between items-center">
@@ -266,7 +266,7 @@ const MaterialesBajoStockModal = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="fixed inset-0 backdrop-blur-[2px] bg-black-600 bg-opacity-5 z-50 flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white p-6 flex justify-between items-center">
