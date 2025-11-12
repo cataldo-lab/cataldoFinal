@@ -153,7 +153,6 @@ export default function PopupCreateMaterial({
               name: "unidad_medida",
               fieldType: 'select',
               options: [
-                { value: '', label: '-- Seleccionar unidad --' },
                 { value: 'unidad', label: 'Unidades (u)' },
                 { value: 'm', label: 'Metros (m)' },
                 { value: 'cm', label: 'Centímetros (cm)' },
@@ -161,12 +160,10 @@ export default function PopupCreateMaterial({
                 { value: 'kg', label: 'Kilogramos (kg)' },
                 { value: 'g', label: 'Gramos (g)' },
                 { value: 'lt', label: 'Litros (L)' },
+                { value: 'ml', label: 'Mililitros (ml)' },
                 { value: 'paquete', label: 'Paquetes' },
                 { value: 'docena', label: 'Docenas' },
-                { value: 'par', label: 'Pares' },
-                { value: 'pieza', label: 'Pieza' },
-                { value: 'rollo', label: 'Rollo' },
-                { value: 'pulgada', label: 'Pulgadas'}
+                { value: 'par', label: 'Pares' }
               ],
               required: true,
               defaultValue: ''

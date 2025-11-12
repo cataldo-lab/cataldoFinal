@@ -178,7 +178,7 @@ const ServicioCorreo = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className=" bg-gradient-to-br from-gray-50 to-blue-50 py-4 px-2 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto pt-20">
         {/* Header */}
         <div className="mb-8">
@@ -218,12 +218,12 @@ const ServicioCorreo = () => {
         </div>
 
         {/* Contenido de Tabs */}
-        <div className="bg-white rounded-b-2xl shadow-lg p-8">
+        <div className="bg-white rounded-b-2xl shadow-lg p-2">
           {activeTab === 'enviar' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Formulario de envío */}
               <div className="lg:col-span-2">
-                <form onSubmit={handleEnviarCorreo} className="space-y-6">
+                <form onSubmit={handleEnviarCorreo} className="space-y-4">
                   {/* Destinatario */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
