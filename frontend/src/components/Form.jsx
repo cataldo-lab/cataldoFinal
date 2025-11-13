@@ -26,7 +26,7 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
             className="form"
             style={{ backgroundColor: backgroundColor }}
             onSubmit={handleSubmit(onFormSubmit)}
-            autoComplete="on"
+            autoComplete="off"
         >
             <h1>{title}</h1>
             {fields.map((field, index) => (
@@ -46,12 +46,6 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                             type={field.type === 'password' && field.name === 'password' ? (showPassword ? 'text' : 'password') :
                                 field.type === 'password' && field.name === 'newPassword' ? (showNewPassword ? 'text' : 'password') :
                                 field.type}
-                            autoComplete={
-                                field.type === 'email' ? 'email' :
-                                field.type === 'password' && field.name === 'newPassword' ? 'new-password' :
-                                field.type === 'password' ? 'current-password' :
-                                field.autoComplete || 'off'
-                            }
                             defaultValue={field.defaultValue || ''}
                             disabled={field.disabled}
                             onChange={field.onChange}
