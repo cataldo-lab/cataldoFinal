@@ -1,6 +1,6 @@
 "use strict";
 import { DataSource } from "typeorm";
-import { DATABASE, DB_USERNAME, HOST, PASSWORD } from "./configEnv.js";
+import { DATABASE, DB_USERNAME, HOST, PASSWORD, DB_HOST, DB_PORT } from "./configEnv.js";
 
 import UserSchema from "../entity/personas/user.entity.js";
 import { ClienteSchema } from "../entity/personas/cliente.entity.js";
@@ -25,14 +25,14 @@ import { CorreoSchema } from "../entity/correo.entity.js";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: `${HOST}`,
-  port: 5432,
+  host: `${DB_HOST || HOST}`,
+  port: `${DB_PORT || PORT}`,
   username: `${DB_USERNAME}`,
   password: `${PASSWORD}`,
   database: `${DATABASE}`,
   entities: ["src/entity/**/*.js"],
   synchronize: true,
-  logging: false,
+  logging: true,
   entities: [
     UserSchema,
     ClienteSchema,
