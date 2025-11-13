@@ -7,12 +7,13 @@ import { AuthProvider } from '@context/AuthContext';
 import Error404 from '@pages/Error404';
 import Navbar from '@components/Navbar';
 import ProtectedRoute from '@components/ProtectedRoute';
+// Páginas críticas que se cargan inmediatamente
+import Login from '@pages/Login';
+import Home from '@pages/Home';
 // Importar los estilos principales (que incluyen Tailwind)
 import '@styles/main.css';
 
 // Lazy loading de páginas - se cargan solo cuando se navega a ellas
-const Login = lazy(() => import('@pages/Login'));
-const Home = lazy(() => import('@pages/Home'));
 const Users = lazy(() => import('@pages/Users'));
 const AuditLogs = lazy(() => import('@pages/adm/AuditLogs'));
 const TrabajadorDashboard = lazy(() => import('@pages/trabajador-tienda/TrabajadorDashboard'));
@@ -31,8 +32,35 @@ const ClientePerfil = lazy(() => import('@pages/cliente-tienda/MiPerfil'));
 // Componente de carga para Suspense
 function LoadingFallback() {
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <div>Cargando...</div>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      backgroundColor: '#f5f5f5'
+    }}>
+      <div style={{
+        textAlign: 'center',
+        fontSize: '18px',
+        color: '#333'
+      }}>
+        <div style={{
+          width: '50px',
+          height: '50px',
+          border: '4px solid #f3f3f3',
+          borderTop: '4px solid #3498db',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          margin: '0 auto 16px'
+        }}></div>
+        Cargando...
+      </div>
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
