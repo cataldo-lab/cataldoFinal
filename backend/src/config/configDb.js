@@ -32,7 +32,7 @@ export const AppDataSource = new DataSource({
   database: `${DATABASE}`,
   entities: ["src/entity/**/*.js"],
   synchronize: true,
-  logging: false,
+  logging: true,
   entities: [
     UserSchema,
     ClienteSchema,
