@@ -6,9 +6,11 @@ import useLogin from '@hooks/auth/useLogin.jsx';
 import '@styles/form.css';
 import { EMAILS_DOMINIOS_PERMITIDOS } from '@helpers/validacion/emailsDomains.js';
 import cookies from 'js-cookie';
+import { useAuth } from '@context/AuthContext';
 
 const Login = () => {
     const navigate = useNavigate();
+    const { login: authLogin } = useAuth();
     const {
         errorEmail,
         errorPassword,
@@ -34,24 +36,33 @@ const Login = () => {
     const loginSubmit = async (data) => {
         try {
             const response = await login(data);
-            
+
             if (response.status === 'Success') {
-                
+                // Obtener el usuario y token del sessionStorage y cookies
+                const storedUser = sessionStorage.getItem('usuario');
+                const token = cookies.get('jwt-auth');
+
+                if (storedUser && token) {
+                    const userData = JSON.parse(storedUser);
+                    // Actualizar el AuthContext
+                    authLogin(userData, token);
+                }
+
                 navigate('/home', { replace: true });
             } else if (response.status === 'Client error') {
                 errorData(response.details);
             } else {
                 console.error('Respuesta inesperada:', response);
                 // Mostrar error en el campo email por defecto
-                errorData({ 
-                    dataInfo: 'email', 
+                errorData({
+                    dataInfo: 'email',
                     message: response.message || 'Error de autenticación'
                 });
             }
         } catch (error) {
             console.error('Error en loginSubmit:', error);
-            errorData({ 
-                dataInfo: 'email', 
+            errorData({
+                dataInfo: 'email',
                 message: 'Error de conexión. Inténtelo nuevamente.'
             });
         }

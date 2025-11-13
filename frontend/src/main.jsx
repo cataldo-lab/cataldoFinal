@@ -79,11 +79,7 @@ function AuthenticatedLayout() {
 
 // Componente Layout para rutas públicas (sin navbar)
 function PublicLayout() {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <Outlet />
-    </Suspense>
-  );
+  return <Outlet />;
 }
 
 // Configuración del router
