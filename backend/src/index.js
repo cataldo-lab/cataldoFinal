@@ -6,7 +6,7 @@ import indexRoutes from "./routes/index.routes.js";
 import session from "express-session";
 import passport from "passport";
 import express, { json, urlencoded } from "express";
-import { cookieKey, HOST, PORT } from "./config/configEnv.js";
+import { cookieKey, HOST, PORT, ALLOWED_ORIGINS } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
 import { runInitialSetup } from "./config/initialSetup.js";
 import { passportJwtSetup } from "./auth/passport.auth.js";
@@ -18,10 +18,27 @@ async function setupServer() {
 
     app.disable("x-powered-by");
 
+    // Configurar orígenes permitidos desde variables de entorno
+    const allowedOriginsArray = ALLOWED_ORIGINS
+      ? ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+      : ['http://localhost:5173']; // Fallback para desarrollo local
+
     app.use(
       cors({
         credentials: true,
-        origin: true,
+        origin: function (origin, callback) {
+          // Permitir requests sin origin (como mobile apps o curl)
+          if (!origin) return callback(null, true);
+
+          if (allowedOriginsArray.indexOf(origin) !== -1) {
+            callback(null, true);
+          } else {
+            console.log(`❌ CORS bloqueado para origen: ${origin}`);
+            callback(new Error('No permitido por CORS'));
+          }
+        },
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
       }),
     );
 
