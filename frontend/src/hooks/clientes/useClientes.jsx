@@ -1,41 +1,52 @@
 // src/hooks/clientes/useClientes.jsx
 
-import { useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAllClientes } from '../../services/clienteData.service.js';
-import { useApi } from '@hooks/shared/useApi.jsx';
 
 /**
- * Hook simplificado para obtener y manejar la lista de todos los clientes
+ * Hook para obtener y manejar la lista de todos los clientes
  * @param {Object} options - Opciones de configuración
  * @param {boolean} options.autoFetch - Si debe cargar automáticamente (default: true)
  * @returns {Object} { clientes, total, loading, error, refetch }
  */
 export const useClientes = ({ autoFetch = true } = {}) => {
-  // Crear función memoizada para la API
-  const apiFunction = useCallback(() => getAllClientes(), []);
+  const [clientes, setClientes] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(autoFetch);
+  const [error, setError] = useState(null);
 
-  // Usar el hook genérico useApi
-  const { data, loading, error, refetch } = useApi(apiFunction, {
-    autoFetch,
-    initialData: []
-  });
+  const fetchClientes = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const resultado = await getAllClientes();
+      
+      if (resultado.success) {
+        const clientesData = resultado.data?.clientes || resultado.data || [];
+        setClientes(clientesData);
+        setTotal(resultado.data?.total || clientesData.length);
+      } else {
+        setError(resultado.message || 'Error al obtener clientes');
+      }
+    } catch (err) {
+      setError(err.message || 'Error al obtener clientes');
+      console.error('Error en useClientes:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  // Calcular clientes y total desde data
-  const { clientes, total } = useMemo(() => {
-    if (!data) return { clientes: [], total: 0 };
-
-    const clientesData = data.clientes || data || [];
-    return {
-      clientes: clientesData,
-      total: data.total || clientesData.length
-    };
-  }, [data]);
+  useEffect(() => {
+    if (autoFetch) {
+      fetchClientes();
+    }
+  }, [autoFetch, fetchClientes]);
 
   return {
     clientes,
     total,
     loading,
     error,
-    refetch
+    refetch: fetchClientes
   };
 };

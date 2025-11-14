@@ -1,38 +1,62 @@
 // frontend/src/hooks/proveedores/useGetProveedores.jsx
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { getProveedores } from '@services/proveedor.service.js';
-import { useApi } from '@hooks/shared/useApi.jsx';
 
 /**
- * Hook simplificado para obtener lista de proveedores con filtros
- * @param {boolean} autoFetch - Si debe cargar automáticamente (default: false)
+ * Hook para obtener lista de proveedores con filtros
  * @returns {Object} Estado y funciones
  */
-export const useGetProveedores = (autoFetch = false) => {
-  // Crear función memoizada para la API
-  const apiFunction = useCallback(
-    (filtros = {}) => getProveedores(filtros),
-    []
-  );
-
-  // Usar el hook genérico useApi
-  const { data, loading, error, execute, setData } = useApi(apiFunction, {
-    autoFetch,
-    initialData: []
-  });
+export const useGetProveedores = () => {
+  const [proveedores, setProveedores] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   /**
-   * Resetear estado (limpiar datos)
+   * Obtener proveedores con filtros opcionales
+   * @param {Object} filtros - Filtros a aplicar
+   * @param {string} [filtros.rol_proveedor] - Filtrar por rol
+   * @param {string} [filtros.search] - Búsqueda general
+   */
+  const fetchProveedores = useCallback(async (filtros = {}) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await getProveedores(filtros);
+
+      if (response.status === 'Success') {
+        setProveedores(response.data || []);
+        return response.data;
+      } else {
+        throw new Error(response.details || 'Error al obtener proveedores');
+      }
+
+    } catch (err) {
+      const errorMessage = err.response?.data?.details || 
+                          err.message || 
+                          'Error al obtener proveedores';
+      setError(errorMessage);
+      console.error('Error en useGetProveedores:', err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Resetear estado
    */
   const reset = useCallback(() => {
-    setData([]);
-  }, [setData]);
+    setProveedores([]);
+    setLoading(false);
+    setError(null);
+  }, []);
 
   return {
-    proveedores: data,
+    proveedores,
     loading,
     error,
-    fetchProveedores: execute,
+    fetchProveedores,
     reset
   };
 };
