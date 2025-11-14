@@ -1,9 +1,9 @@
-import { lazy } from 'react';
 import ProtectedRoute from '@components/ProtectedRoute';
+import { lazyWithRetry } from '@helpers/lazyWithRetry';
 
-// Lazy loading de componentes de administrador
-const Users = lazy(() => import('@pages/Users'));
-const AuditLogs = lazy(() => import('@pages/adm/AuditLogs'));
+// Lazy loading de componentes de administrador con retry
+const Users = lazyWithRetry(() => import('@pages/Users'));
+const AuditLogs = lazyWithRetry(() => import('@pages/adm/AuditLogs'));
 
 export const adminRoutes = [
   {

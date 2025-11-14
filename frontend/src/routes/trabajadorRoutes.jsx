@@ -1,16 +1,16 @@
-import { lazy } from 'react';
 import ProtectedRoute from '@components/ProtectedRoute';
+import { lazyWithRetry } from '@helpers/lazyWithRetry';
 
-// Lazy loading de componentes de trabajador
-const TrabajadorDashboard = lazy(() => import('@pages/trabajador-tienda/TrabajadorDashboard'));
-const ProductosTrabajador = lazy(() => import('@pages/trabajador-tienda/Productos'));
-const MaterialesTrabajador = lazy(() => import('@pages/trabajador-tienda/Materiales'));
-const OperacionesTrabajador = lazy(() => import('@pages/trabajador-tienda/TrabajadorOperaciones'));
-const ClientesStaff = lazy(() => import('@pages/trabajador-tienda/Clientes'));
-const ProveedoresStaff = lazy(() => import('@pages/trabajador-tienda/Proveedores'));
-const PapelesStaff = lazy(() => import('@pages/trabajador-tienda/Papeles'));
-const ServicioCorreo = lazy(() => import('@pages/trabajador-tienda/ServicioCorreo'));
-const EncuestasTrabajador = lazy(() => import('@pages/trabajador-tienda/Encuesta'));
+// Lazy loading de componentes de trabajador con retry
+const TrabajadorDashboard = lazyWithRetry(() => import('@pages/trabajador-tienda/TrabajadorDashboard'));
+const ProductosTrabajador = lazyWithRetry(() => import('@pages/trabajador-tienda/Productos'));
+const MaterialesTrabajador = lazyWithRetry(() => import('@pages/trabajador-tienda/Materiales'));
+const OperacionesTrabajador = lazyWithRetry(() => import('@pages/trabajador-tienda/TrabajadorOperaciones'));
+const ClientesStaff = lazyWithRetry(() => import('@pages/trabajador-tienda/Clientes'));
+const ProveedoresStaff = lazyWithRetry(() => import('@pages/trabajador-tienda/Proveedores'));
+const PapelesStaff = lazyWithRetry(() => import('@pages/trabajador-tienda/Papeles'));
+const ServicioCorreo = lazyWithRetry(() => import('@pages/trabajador-tienda/ServicioCorreo'));
+const EncuestasTrabajador = lazyWithRetry(() => import('@pages/trabajador-tienda/Encuesta'));
 
 // Roles permitidos para trabajadores (se puede acceder también con admin y gerente)
 const trabajadorRoles = ['administrador', 'gerente', 'trabajador_tienda'];

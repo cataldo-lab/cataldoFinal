@@ -1,9 +1,9 @@
-import { lazy } from 'react';
 import ProtectedRoute from '@components/ProtectedRoute';
+import { lazyWithRetry } from '@helpers/lazyWithRetry';
 
-// Lazy loading de componentes de cliente
-const ClientePedidos = lazy(() => import('@pages/cliente-tienda/MisPedidos'));
-const ClientePerfil = lazy(() => import('@pages/cliente-tienda/MiPerfil'));
+// Lazy loading de componentes de cliente con retry
+const ClientePedidos = lazyWithRetry(() => import('@pages/cliente-tienda/MisPedidos'));
+const ClientePerfil = lazyWithRetry(() => import('@pages/cliente-tienda/MiPerfil'));
 
 export const clienteRoutes = [
   {

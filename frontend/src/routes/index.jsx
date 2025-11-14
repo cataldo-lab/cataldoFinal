@@ -1,8 +1,8 @@
-import { lazy } from 'react';
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { AuthProvider } from '@context/AuthContext';
 import ProtectedRoute from '@components/ProtectedRoute';
 import Navbar from '@components/Navbar';
+import { lazyWithRetry } from '@helpers/lazyWithRetry';
 
 // Importar las rutas por rol
 import { adminRoutes } from './adminRoutes';
@@ -10,10 +10,10 @@ import { trabajadorRoutes } from './trabajadorRoutes';
 import { gerenteRoutes } from './gerenteRoutes';
 import { clienteRoutes } from './clienteRoutes';
 
-// Lazy loading solo para páginas comunes
-const Login = lazy(() => import('@pages/Login'));
-const Home = lazy(() => import('@pages/Home'));
-const Error404 = lazy(() => import('@pages/Error404'));
+// Lazy loading con retry para páginas comunes
+const Login = lazyWithRetry(() => import('@pages/Login'));
+const Home = lazyWithRetry(() => import('@pages/Home'));
+const Error404 = lazyWithRetry(() => import('@pages/Error404'));
 
 // Layout para rutas autenticadas (con navbar)
 function AuthenticatedLayout() {

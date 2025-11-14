@@ -1,8 +1,8 @@
-import { lazy } from 'react';
 import ProtectedRoute from '@components/ProtectedRoute';
+import { lazyWithRetry } from '@helpers/lazyWithRetry';
 
-// Lazy loading de componentes de gerente
-const GerenteDashboard = lazy(() => import('@pages/gerente/gerenteDashboard'));
+// Lazy loading de componentes de gerente con retry
+const GerenteDashboard = lazyWithRetry(() => import('@pages/gerente/gerenteDashboard'));
 
 export const gerenteRoutes = [
   {
