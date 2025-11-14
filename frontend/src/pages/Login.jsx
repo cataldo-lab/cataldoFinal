@@ -68,6 +68,7 @@ const Login = () => {
                         placeholder: "example@gmail.cl",
                         fieldType: 'input',
                         type: "email",
+                        autoComplete: "email",
                         required: true,
                         minLength: 5,
                         maxLength: 30,
@@ -76,7 +77,7 @@ const Login = () => {
                             dominioValido: (value) => {
                                 if (!value.includes("@")) return "Email inválido";
                                 const dominio = value.split("@")[1];
-                                return EMAILS_DOMINIOS_PERMITIDOS.includes(dominio) || 
+                                return EMAILS_DOMINIOS_PERMITIDOS.includes(dominio) ||
                                     "El correo debe pertenecer a un dominio permitido";
                             }
                         },
@@ -88,6 +89,7 @@ const Login = () => {
                         placeholder: "**********",
                         fieldType: 'input',
                         type: "password",
+                        autoComplete: "current-password",
                         required: true,
                         minLength: 4,
                         maxLength: 26,
