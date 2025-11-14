@@ -1,6 +1,7 @@
 import useTable from '@hooks/table/useTable.jsx';
+import { memo } from 'react';
 
-export default function Table({ data, columns, filter, dataToFilter, initialSortName, onSelectionChange }) {
+const Table = memo(function Table({ data, columns, filter, dataToFilter, initialSortName, onSelectionChange }) {
   const { tableRef } = useTable({ data, columns, filter, dataToFilter, initialSortName, onSelectionChange });
 
   return (
@@ -8,4 +9,6 @@ export default function Table({ data, columns, filter, dataToFilter, initialSort
       <div ref={tableRef}></div>
     </div>
   );
-}
+});
+
+export default Table;
