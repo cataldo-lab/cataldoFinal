@@ -16,7 +16,7 @@ import '@styles/trabajadorTienda/Clientes.css';
 import ViewIcon from '@assets/ViewIcon.svg';
 import UpdateIcon from '@assets/updateIcon.svg';
 import PasskeyIcon from '@assets/PasskeyIcon.svg'; // o usa otro icono para bloquear
-import DeleteIcon from '@assets/DeleteIcon.svg';
+import DeleteIcon from '@assets/deleteIcon.svg';
 import ChevronDownIcon from '@assets/ChevronDownIcon.svg';
 
 import { FaUser, FaSearch, FaSync, FaFilter, FaChevronDown, FaChevronUp, FaPlus } from 'react-icons/fa';
