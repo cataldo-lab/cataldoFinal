@@ -5,8 +5,9 @@ import useRegister from '@hooks/auth/useRegister.jsx';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 import '@styles/form.css';
 //import { esEmailValido } from '@helpers/validacion/emailValidator.js';
-import { EMAILS_DOMINIOS_PERMITIDOS, 
+import { EMAILS_DOMINIOS_PERMITIDOS,
          EMAILS_DOMINIOS_BLOQUEADOS } from '@helpers/validacion/emailsDomains.js';
+import { RUT_PATTERN_STRICT, RUT_ERROR_MESSAGE } from '@helpers/validacion/rutRegex.js';
 
 const Register = () => {
 	const navigate = useNavigate();
@@ -33,8 +34,6 @@ const registerSubmit = async (data) => {
         showErrorAlert('Cancelado', 'Ocurrió un error al registrarse.');
     }
 }
-
-const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
 
 	return (
 		<main className="w-full min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-800">
@@ -86,8 +85,8 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                         type: "text",
 						minLength: 9,
 						maxLength: 12,
-						pattern: patternRut,
-						patternMessage: "Debe ser xx.xxx.xxx-x o xxxxxxxx-x",
+						pattern: RUT_PATTERN_STRICT,
+						patternMessage: RUT_ERROR_MESSAGE,
 						required: true,
                         errorMessageData: errorRut,
                         onChange: (e) => handleInputChange('rut', e.target.value)
