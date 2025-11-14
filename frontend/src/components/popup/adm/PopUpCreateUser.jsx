@@ -83,6 +83,7 @@ export default function PopupCreateUser({ show, setShow, action, isLoading }) {
                                 placeholder: 'example@gmail.cl',
                                 fieldType: 'input',
                                 type: "email",
+                                autoComplete: "email",
                                 required: true,
                                 minLength: 3,
                                 maxLength: 35,
@@ -107,6 +108,7 @@ export default function PopupCreateUser({ show, setShow, action, isLoading }) {
                                 placeholder: "**********",
                                 fieldType: 'input',
                                 type: "password",
+                                autoComplete: "new-password",
                                 required: true,
                                 minLength: 8,
                                 maxLength: 26,
@@ -128,6 +130,7 @@ export default function PopupCreateUser({ show, setShow, action, isLoading }) {
                                 placeholder: "+56912345678",
                                 fieldType: 'input',
                                 type: "tel",
+                                autoComplete: "tel",
                                 required: false,
                             }
                         ]}
