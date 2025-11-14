@@ -21,7 +21,7 @@ import encuestaRoutes from "./encuesta.routes.js";
 const router = Router();
 
 router
-    .use("/auth", authRoutes)
+    .use("/session", authRoutes) // Cambiado de /auth a /session para evitar bloqueadores
     .use("/user", userRoutes)
     .use("/admin", adminRoutes)
     .use("/gerente", gerenteRoutes)

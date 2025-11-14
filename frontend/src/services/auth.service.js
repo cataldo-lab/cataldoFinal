@@ -5,8 +5,8 @@ import { convertirMinusculas } from '@helpers/formatData.js';
 
 export async function login(dataUser) {
     try {
-        const response = await axios.post('/auth/login', {
-            email: dataUser.email, 
+        const response = await axios.post('/session/verify', {
+            email: dataUser.email,
             password: dataUser.password
         });
         
@@ -35,6 +35,13 @@ export async function login(dataUser) {
             return response.data;
         }
     } catch (error) {
+        // Detectar si la petición fue bloqueada por un bloqueador de anuncios
+        if (error.message === 'Network Error' && !error.response) {
+            return {
+                status: 'error',
+                message: 'La conexión fue bloqueada. Por favor, desactive su bloqueador de anuncios o extensiones de seguridad para este sitio e intente nuevamente.'
+            };
+        }
         return error.response?.data || { status: 'error', message: 'Error de conexión' };
     }
 }
@@ -43,7 +50,7 @@ export async function register(data) {
     try {
         const dataRegister = convertirMinusculas(data);
         const { nombreCompleto, email, rut, password } = dataRegister;
-        const response = await axios.post('/auth/register', {
+        const response = await axios.post('/session/create', {
             nombreCompleto,
             email,
             rut,
@@ -51,13 +58,20 @@ export async function register(data) {
         });
         return response.data;
     } catch (error) {
+        // Detectar si la petición fue bloqueada por un bloqueador de anuncios
+        if (error.message === 'Network Error' && !error.response) {
+            return {
+                status: 'error',
+                message: 'La conexión fue bloqueada. Por favor, desactive su bloqueador de anuncios o extensiones de seguridad para este sitio e intente nuevamente.'
+            };
+        }
         return error.response?.data || { status: 'error', message: 'Error de conexión' };
     }
 }
 
 export async function logout() {
     try {
-        await axios.post('/auth/logout');
+        await axios.post('/session/end');
         
         // Limpiar datos del usuario
         sessionStorage.removeItem('usuario');
