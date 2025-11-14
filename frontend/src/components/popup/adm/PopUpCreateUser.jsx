@@ -4,6 +4,7 @@ import CloseIcon from '@assets/XIcon.svg';
 import QuestionIcon from '@assets/QuestionCircleIcon.svg';
 import { useState } from 'react';
 import { convertirMinusculas } from '@helpers/formatData.js';
+import { RUT_PATTERN_STRICT, RUT_ERROR_MESSAGE } from '@helpers/validacion/rutRegex.js';
 //import { EMAILS_DOMINIOS_PERMITIDOS } from '@helpers/validacion/emailValidation.js';
 
 export default function PopupCreateUser({ show, setShow, action, isLoading }) {
@@ -46,8 +47,6 @@ export default function PopupCreateUser({ show, setShow, action, isLoading }) {
         }
     };
 
-    const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/);
-    
     return (
         <div>
             { show && (
@@ -98,8 +97,8 @@ export default function PopupCreateUser({ show, setShow, action, isLoading }) {
                                 type: "text",
                                 minLength: 9,
                                 maxLength: 12,
-                                pattern: patternRut,
-                                patternMessage: "Debe ser xx.xxx.xxx-x o xxxxxxxx-x",
+                                pattern: RUT_PATTERN_STRICT,
+                                patternMessage: RUT_ERROR_MESSAGE,
                                 required: true,
                             },
                             {
