@@ -318,7 +318,7 @@ Authorization: Bearer <tu_token_jwt>
 
 ```bash
 # 1. Login
-curl -X POST http://localhost:3000/api/auth/login \
+curl -X POST http://localhost:3000/api/session/verify \
   -H "Content-Type: application/json" \
   -d '{"email":"gerente@example.com","password":"password123"}'
 
