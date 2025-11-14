@@ -6,8 +6,8 @@ import { useCreateMaterial } from "@hooks/materiales/useCreateMaterial";
 import { useUpdateMaterial } from "@hooks/materiales/useUpdateMaterial";
 import { useDeleteMaterial } from "@hooks/materiales/useDeleteMaterial";
 import { showErrorAlert, showSuccessAlert, deleteDataAlert } from '@helpers/sweetAlert.js';
-import PopupCreateMaterial from '@components/popup/trabajadorTienda/material/PopupCreateMaterial.jsx';
-import PopupUpdateMaterial from '@components/popup/trabajadorTienda/material/PopupUpdatematerial.jsx';
+import PopupCreateMaterial from '@components/popup/trabajadorTienda/material/PopupCreateMaterial';
+import PopupUpdateMaterial from '@components/popup/trabajadorTienda/material/PopupUpdateMaterial';
 //import useProveedoresSafe from '@hooks/prooveedores/useProveedoresSafe';
 import { useProveedoresConRepresentantes } from '@hooks/prooveedores/useProveedoresConRepresentantes';
 import  PopupCreateProveedorConRepresentante  from
