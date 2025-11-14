@@ -27,17 +27,38 @@ export default defineConfig({
     }
   },
   build: {
-  rollupOptions: {
-    output: {
-      manualChunks: {
-        'react-vendor': ['react', 'react-dom'],
-        'router-vendor': ['react-router-dom'],
-        'form-vendor': ['react-hook-form'],
-        'ui-vendor': ['sweetalert2', 'react-toastify', 'react-icons']
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React core - framework base
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+
+          // UI libraries - componentes de interfaz
+          'ui-vendor': [
+            'react-icons',
+            'sweetalert2',
+            'react-toastify'
+          ],
+
+          // Form & table libraries - formularios y tablas
+          'form-table-vendor': [
+            'react-hook-form',
+            'react-tabulator'
+          ],
+
+          // Utilities - utilidades
+          'utils-vendor': [
+            'axios',
+            'lodash',
+            'js-cookie',
+            'jwt-decode',
+            '@formkit/tempo',
+            'rut.js'
+          ]
+        }
       }
-    }
+    },
+    // Aumentar el límite de advertencia a 600kb (solo para evitar advertencias después de la optimización)
+    chunkSizeWarningLimit: 600
   }
-}
-
 });
-
