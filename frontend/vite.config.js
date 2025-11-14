@@ -25,19 +25,5 @@ export default defineConfig({
       '@helpers': path.resolve(__dirname, './src/helpers'),
       '@validaciones': path.resolve(__dirname, './src/validaciones')
     }
-  },
-  build: {
-  rollupOptions: {
-    output: {
-      manualChunks: {
-        'react-vendor': ['react', 'react-dom'],
-        'router-vendor': ['react-router-dom'],
-        'form-vendor': ['react-hook-form'],
-        'ui-vendor': ['sweetalert2', 'react-toastify', 'react-icons']
-      }
-    }
   }
-}
-
 });
-

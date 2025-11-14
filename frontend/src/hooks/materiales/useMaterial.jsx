@@ -1,32 +1,51 @@
 // frontend/src/hooks/materiales/useMaterial.jsx
-import { useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { getMaterialById } from '@services/materiales.service.js';
-import { useApi } from '@hooks/shared/useApi.jsx';
 
-/**
- * Hook simplificado para obtener un material por ID
- * @param {number} id - ID del material
- * @param {boolean} autoFetch - Si debe cargar automáticamente
- * @returns {Object} { material: data, loading, error, fetchMaterial: refetch, setMaterial: setData }
- */
+
 export function useMaterial(id, autoFetch = true) {
-  // Crear función memoizada para la API
-  const apiFunction = useCallback(
-    () => id ? getMaterialById(id) : Promise.resolve({ success: false, message: 'ID no proporcionado' }),
-    [id]
-  );
+  const [material, setMaterial] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Usar el hook genérico useApi
-  const { data, loading, error, refetch, setData } = useApi(apiFunction, {
-    autoFetch: autoFetch && !!id,
-    initialData: null
-  });
+  const fetchMaterial = async () => {
+    if (!id) {
+      setError('ID de material no proporcionado');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await getMaterialById(id);
+      
+      if (response.success) {
+        setMaterial(response.data);
+      } else {
+        setError(response.message);
+        setMaterial(null);
+      }
+    } catch (err) {
+      console.error('Error en useMaterial:', err);
+      setError('Error inesperado al cargar material');
+      setMaterial(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (autoFetch && id) {
+      fetchMaterial();
+    }
+  }, [id, autoFetch]);
 
   return {
-    material: data,
+    material,
     loading,
     error,
-    fetchMaterial: refetch,
-    setMaterial: setData
+    fetchMaterial,
+    setMaterial
   };
 }

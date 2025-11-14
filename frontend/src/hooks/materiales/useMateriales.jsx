@@ -1,33 +1,47 @@
 // frontend/src/hooks/materiales/useMateriales.jsx
-import { useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { getMateriales } from '@services/materiales.service.js';
-import { useApi } from '@hooks/shared/useApi.jsx';
 
-/**
- * Hook simplificado para obtener materiales
- * @param {boolean} incluirInactivos - Si incluir materiales inactivos
- * @param {boolean} autoFetch - Si debe cargar automáticamente
- * @returns {Object} { materiales: data, loading, error, fetchMateriales: refetch, setMateriales: setData }
- */
+
 export function useMateriales(incluirInactivos = false, autoFetch = true) {
-  // Crear función memoizada para la API
-  const apiFunction = useCallback(
-    () => getMateriales(incluirInactivos),
-    [incluirInactivos]
-  );
+  const [materiales, setMateriales] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Usar el hook genérico useApi
-  const { data, loading, error, refetch, setData } = useApi(apiFunction, {
-    autoFetch,
-    initialData: []
-  });
+  const fetchMateriales = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await getMateriales(incluirInactivos);
+      
+      if (response.success) {
+        setMateriales(response.data || []);
+      } else {
+        setError(response.message);
+        setMateriales([]);
+      }
+    } catch (err) {
+      console.error('Error en useMateriales:', err);
+      setError('Error inesperado al cargar materiales');
+      setMateriales([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (autoFetch) {
+      fetchMateriales();
+    }
+  }, [incluirInactivos, autoFetch]);
 
   return {
-    materiales: data,
+    materiales,
     loading,
     error,
-    fetchMateriales: refetch,
-    setMateriales: setData
+    fetchMateriales,
+    setMateriales
   };
 }
 
