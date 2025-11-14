@@ -4,7 +4,7 @@ import useUsers from '@hooks/users/useGetUsers.jsx';
 import usePostUsers from '@hooks/users/usePostUsers.jsx';
 import Search from '@components/Search';
 import Popup from '@components/popup/adm/PopupUpdateUser';
-import PopupCreateUser from '@components/popup/adm/PopupCreateUser';
+import PopupCreateUser from '@components/popup/adm/PopUpCreateUser';
 import DeleteIcon from '@assets/DeleteIcon.svg';
 import UpdateIcon from '@assets/UpdateIcon.svg';
 import AddIcon from '@assets/AddIcon.svg';
