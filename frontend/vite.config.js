@@ -23,7 +23,8 @@ export default defineConfig({
       '@styles': path.resolve(__dirname, './src/styles'),
       '@assets': path.resolve(__dirname, './src/assets'),
       '@helpers': path.resolve(__dirname, './src/helpers'),
-      '@validaciones': path.resolve(__dirname, './src/validaciones')
+      '@validaciones': path.resolve(__dirname, './src/validaciones'),
+      '@routes': path.resolve(__dirname, './src/routes')
     }
   }
 });

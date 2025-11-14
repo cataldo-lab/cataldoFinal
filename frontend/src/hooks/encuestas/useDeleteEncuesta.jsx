@@ -3,22 +3,12 @@ import { useState } from 'react';
 import { eliminarEncuesta } from '@services/encuesta.service.js';
 import { deleteDataAlert, showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 
-/**
- * Hook para eliminar encuestas
- * @param {Function} fetchEncuestas - Función para recargar lista de encuestas
- * @param {Function} fetchOperacionesSinEncuesta - Función para recargar operaciones sin encuesta
- * @returns {Object} Estado y función para eliminar encuestas
- */
+
 const useDeleteEncuesta = (fetchEncuestas, fetchOperacionesSinEncuesta) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  /**
-   * Elimina una encuesta después de confirmar
-   * @param {Object} encuesta - Datos de la encuesta a eliminar
-   * @param {number} encuesta.id_encuesta - ID de la encuesta
-   * @returns {Promise<boolean>} True si fue exitoso, false si falló
-   */
+
   const handleDelete = async (encuesta) => {
     if (!encuesta || !encuesta.id_encuesta) {
       showErrorAlert('Error', 'No hay encuesta seleccionada');

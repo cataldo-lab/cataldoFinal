@@ -3,11 +3,7 @@ import { useState } from 'react';
 import { actualizarEncuesta } from '@services/encuesta.service.js';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 
-/**
- * Hook para actualizar encuestas
- * @param {Function} fetchEncuestas - Función para recargar lista de encuestas
- * @returns {Object} Estado y función para actualizar encuestas
- */
+
 const useUpdateEncuesta = (fetchEncuestas) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [dataEncuesta, setDataEncuesta] = useState(null);
@@ -23,14 +19,7 @@ const useUpdateEncuesta = (fetchEncuestas) => {
     }
   };
 
-  /**
-   * Actualiza una encuesta existente
-   * @param {Object} updatedEncuestaData - Datos actualizados de la encuesta
-   * @param {number} updatedEncuestaData.nota_pedido - Nueva nota del pedido (1-7)
-   * @param {number} updatedEncuestaData.nota_repartidor - Nueva nota del repartidor (1-7)
-   * @param {string} updatedEncuestaData.comentario - Nuevo comentario
-   * @returns {Promise<boolean>} True si fue exitoso, false si falló
-   */
+ 
   const handleUpdate = async (updatedEncuestaData) => {
     if (!dataEncuesta || !dataEncuesta.id_encuesta) {
       showErrorAlert('Error', 'No hay encuesta seleccionada');

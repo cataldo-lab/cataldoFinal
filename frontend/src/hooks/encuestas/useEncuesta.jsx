@@ -10,13 +10,7 @@ import {
   eliminarEncuesta as eliminarEncuestaAPI
 } from '@services/encuesta.service';
 
-/**
- * Hook para manejar el sistema de encuestas
- * Incluye CRUD de encuestas, operaciones sin encuesta y estadísticas
- * @param {Object} options - Opciones de configuración
- * @param {boolean} options.autoFetch - Si debe cargar automáticamente datos (default: false)
- * @returns {Object} Estado y funciones para manejar encuestas
- */
+
 export const useEncuesta = ({ autoFetch = false } = {}) => {
   // Estados para encuestas
   const [encuestas, setEncuestas] = useState([]);
@@ -117,15 +111,8 @@ export const useEncuesta = ({ autoFetch = false } = {}) => {
     }
   }, []);
 
-  /**
-   * Crea una nueva encuesta
-   * @param {Object} encuestaData - Datos de la encuesta
-   * @param {number} encuestaData.id_operacion - ID de la operación
-   * @param {number} encuestaData.nota_pedido - Nota del pedido (1-7)
-   * @param {number} encuestaData.nota_repartidor - Nota del repartidor (1-7)
-   * @param {string} encuestaData.comentario - Comentario opcional
-   * @returns {Promise<Object>} Resultado de la creación
-   */
+
+
   const crear = useCallback(async (encuestaData) => {
     try {
       setCreando(true);
@@ -201,11 +188,7 @@ export const useEncuesta = ({ autoFetch = false } = {}) => {
     }
   }, [fetchEncuestas]);
 
-  /**
-   * Elimina una encuesta
-   * @param {number} id - ID de la encuesta
-   * @returns {Promise<Object>} Resultado de la eliminación
-   */
+
   const eliminar = useCallback(async (id) => {
     try {
       setEliminando(true);
