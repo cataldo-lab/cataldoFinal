@@ -2,7 +2,11 @@
 
 ## Introducción al Capítulo
 
-En este capítulo se presenta el proceso completo de desarrollo del sistema de gestión de mueblería "Cataldo Imprenta". Se describe desde la arquitectura diseñada, pasando por la configuración inicial del entorno de desarrollo, hasta la implementación final del software. Se incluyen los desafíos encontrados durante el desarrollo, las soluciones implementadas, y los resultados de pruebas, optimización y métricas de rendimiento alcanzadas. El objetivo es documentar las decisiones técnicas tomadas y justificar las tecnologías seleccionadas para cada componente del sistema.
+Este capítulo documenta el desarrollo integral del sistema **Cataldo Imprenta**, una solución empresarial completa para la gestión de mueblería. Se presentan desde los fundamentos arquitectónicos hasta la implementación operativa, incluyendo la configuración del entorno de desarrollo, el diseño de capas, y la estructura modular del código.
+
+A través de las secciones siguientes se describe: (1) el diseño y configuración de la arquitectura en capas; (2) la organización estructural del backend y frontend; (3) los problemas técnicos encontrados y sus soluciones; y (4) las métricas de rendimiento y pruebas realizadas.
+
+El objetivo principal es presentar un sistema robusto, mantenible y escalable, que demuestra la aplicación de patrones de ingeniería de software profesionales en un contexto empresarial real.
 
 ---
 
@@ -183,66 +187,73 @@ cd frontend && npm run dev
 ```
 backend/
 ├── src/
-│   ├── config/              # Configuraciones
-│   │   ├── database.ts      # Conexión PostgreSQL + TypeORM
-│   │   ├── typeorm.config.ts
-│   │   └── passport.ts      # Configuración JWT/Passport
+│   ├── config/              # Configuración inicial
+│   │   ├── database.js      # Conexión PostgreSQL + TypeORM
+│   │   ├── passport.js      # Autenticación JWT
+│   │   └── email.js         # SMTP configuration
 │   │
-│   ├── entity/              # Modelos de Base de Datos (18+)
-│   │   ├── Usuario.ts
-│   │   ├── Producto.ts
-│   │   ├── Operacion.ts
-│   │   ├── Inventario.ts
-│   │   ├── Cotizacion.ts
-│   │   ├── OrdenTrabajo.ts
-│   │   ├── Cliente.ts
-│   │   ├── Empresa.ts
-│   │   └── ... (más entidades)
+│   ├── entity/              # Modelos de BD (18+ entidades)
+│   │   ├── Usuario.js
+│   │   ├── Producto.js
+│   │   ├── Operacion.js
+│   │   ├── Cliente.js
+│   │   ├── Inventario.js
+│   │   ├── Cotizacion.js
+│   │   └── ... (más modelos)
 │   │
-│   ├── routes/              # Definición de rutas (50+ endpoints)
-│   │   ├── auth.routes.ts
-│   │   ├── usuarios.routes.ts
-│   │   ├── productos.routes.ts
-│   │   ├── operaciones.routes.ts
-│   │   ├── inventario.routes.ts
-│   │   ├── dashboard.routes.ts
+│   ├── controllers/         # Controladores por funcionalidad
+│   │   ├── auth.controller.js
+│   │   ├── user.controller.js
+│   │   ├── audit.controller.js
+│   │   ├── encuesta.controller.js
+│   │   ├── correo.controller.js
+│   │   ├── cliente/
+│   │   │   ├── cliente.controller.js
+│   │   │   └── perfil.controller.js
+│   │   ├── gerente/
+│   │   │   └── dashboard.controller.js
+│   │   └── staff/
+│   │       ├── cliente.controller.js
+│   │       ├── operacion.controller.js
+│   │       ├── producto.controller.js
+│   │       ├── material.controller.js
+│   │       ├── proveedor.controller.js
+│   │       └── direccion.controller.js
+│   │
+│   ├── routes/              # Definición de endpoints (50+)
+│   │   ├── auth.routes.js
+│   │   ├── usuarios.routes.js
+│   │   ├── operaciones.routes.js
+│   │   ├── productos.routes.js
+│   │   ├── inventario.routes.js
 │   │   └── ... (más rutas)
 │   │
-│   ├── controllers/         # Lógica de manejo de requests
-│   │   ├── AdminController.ts
-│   │   ├── GerenteController.ts
-│   │   ├── StaffController.ts
-│   │   ├── ClienteController.ts
-│   │   └── AuthController.ts
-│   │
 │   ├── services/            # Lógica de negocio reutilizable
-│   │   ├── AuthService.ts
-│   │   ├── OperacionesService.ts
-│   │   ├── InventarioService.ts
-│   │   ├── EmailService.ts
-│   │   ├── DashboardService.ts
-│   │   ├── CotizacionService.ts
+│   │   ├── AuthService.js
+│   │   ├── OperacionesService.js
+│   │   ├── InventarioService.js
+│   │   ├── EmailService.js
+│   │   ├── DashboardService.js
 │   │   └── ... (más servicios)
 │   │
 │   ├── middleware/          # Middleware de Express
-│   │   ├── auth.middleware.ts
-│   │   ├── errorHandler.ts
-│   │   ├── validation.ts
-│   │   └── cors.ts
+│   │   ├── auth.middleware.js
+│   │   ├── errorHandler.js
+│   │   ├── validation.js
+│   │   └── cors.js
 │   │
 │   ├── jobs/                # Tareas programadas (cron)
-│   │   ├── CumpleañosJob.ts
+│   │   ├── CumpleanosJob.js
 │   │   └── ... (más jobs)
 │   │
-│   ├── utils/               # Utilidades y helpers
-│   │   ├── logger.ts
-│   │   ├── validators.ts
-│   │   └── constants.ts
+│   ├── utils/               # Utilidades
+│   │   ├── logger.js
+│   │   ├── validators.js
+│   │   └── constants.js
 │   │
-│   └── app.ts               # Configuración de Express
+│   └── app.js               # Punto de entrada Express
 │
 ├── .env                     # Variables de entorno
-├── tsconfig.json
 └── package.json
 ```
 
@@ -268,34 +279,33 @@ Response JSON
 
 #### 7.2.1.3. Descripción de Componentes Clave
 
-**AuthService (src/services/AuthService.ts):**
-- Generación de JWT
-- Validación de credenciales
-- Renovación de tokens
-- Gestión de sesiones
+**Controladores (17 controladores totales):**
 
-**OperacionesService (src/services/OperacionesService.ts):**
-- CRUD de cotizaciones
-- CRUD de órdenes de trabajo
-- Cambios de estado
-- Notificaciones de estado
+Los controladores están organizados por módulo de funcionalidad y rol de usuario, manejando la lógica de presentación y validación de requests:
 
-**InventarioService (src/services/InventarioService.ts):**
-- Gestión de stock
-- Alertas de productos bajos
-- Registro de movimientos
-- Reportes de inventario
+- **AuthController:** Login, registro, logout con auditoría de eventos
+- **UserController:** CRUD de usuarios, gestión de perfiles
+- **ClienteController:** Operaciones y perfil del cliente autenticado
+- **StaffController (7 submódulos):** Gestión de operaciones, productos, materiales, proveedores, clientes y direcciones
+- **GerenteController:** Dashboard y análisis gerencial
+- **AuditController:** Logs de actividad y historial de cambios
+- **EncuestaController:** Gestión de encuestas de satisfacción
+- **CorreoController:** Historial y estadísticas de emails
 
-**EmailService (src/services/EmailService.ts):**
-- Envío de correos con Nodemailer
-- Plantillas de email
-- Soporte múltiples proveedores SMTP
+**Servicios (Lógica de Negocio):**
 
-**DashboardService (src/services/DashboardService.ts):**
-- Estadísticas globales
-- Análisis de operaciones
-- Métricas por período
-- 6 endpoints de análisis principales
+- **AuthService:** Generación y validación de JWT, gestión de sesiones
+- **OperacionesService:** CRUD de cotizaciones, órdenes de trabajo, cambios de estado
+- **InventarioService:** Gestión de stock, alertas, movimientos y reportes
+- **EmailService:** Envío con Nodemailer, plantillas, múltiples SMTP
+- **DashboardService:** Análisis, estadísticas y métricas por período
+
+**Middleware:**
+
+- **auth.middleware.js:** Validación de JWT y roles
+- **errorHandler.js:** Centralización de manejo de errores
+- **validation.js:** Validación de datos con reglas Joi/Yup
+- **cors.js:** Control de acceso entre dominios
 
 ---
 
@@ -306,99 +316,79 @@ Response JSON
 ```
 frontend/
 ├── src/
-│   ├── pages/               # Páginas por módulo
+│   ├── pages/               # Páginas por módulo/rol
 │   │   ├── admin/
-│   │   │   ├── AdminDashboard.tsx
-│   │   │   ├── GestionUsuarios.tsx
-│   │   │   ├── GestionProductos.tsx
-│   │   │   └── ... (más páginas)
-│   │   │
+│   │   │   ├── AdminDashboard.jsx
+│   │   │   ├── GestionUsuarios.jsx
+│   │   │   └── GestionProductos.jsx
 │   │   ├── gerente/
-│   │   │   ├── GerenteDashboard.tsx
-│   │   │   ├── AnalisisOperaciones.tsx
-│   │   │   ├── ReportesVentas.tsx
-│   │   │   └── ... (más páginas)
-│   │   │
+│   │   │   ├── GerenteDashboard.jsx
+│   │   │   ├── AnalisisOperaciones.jsx
+│   │   │   └── ReportesVentas.jsx
 │   │   ├── staff/
-│   │   │   ├── StaffDashboard.tsx
-│   │   │   ├── GestionOperaciones.tsx
-│   │   │   ├── RegistroTrabajo.tsx
-│   │   │   └── ... (más páginas)
-│   │   │
+│   │   │   ├── StaffDashboard.jsx
+│   │   │   ├── GestionOperaciones.jsx
+│   │   │   └── RegistroTrabajo.jsx
 │   │   └── cliente/
-│   │       ├── ClienteDashboard.tsx
-│   │       ├── MisCotizaciones.tsx
-│   │       ├── MisOrdenes.tsx
-│   │       └── ... (más páginas)
+│   │       ├── ClienteDashboard.jsx
+│   │       ├── MisCotizaciones.jsx
+│   │       └── MisOrdenes.jsx
 │   │
 │   ├── components/          # Componentes reutilizables
 │   │   ├── operaciones/
-│   │   │   ├── ModalOperaciones.tsx
-│   │   │   ├── TablaOperaciones.tsx
-│   │   │   ├── FormularioOperacion.tsx
-│   │   │   └── INTEGRACION.md
-│   │   │
+│   │   │   ├── ModalOperaciones.jsx
+│   │   │   ├── TablaOperaciones.jsx
+│   │   │   └── FormularioOperacion.jsx
 │   │   ├── common/
-│   │   │   ├── Navbar.tsx
-│   │   │   ├── Sidebar.tsx
-│   │   │   ├── Loading.tsx
-│   │   │   ├── ErrorBoundary.tsx
-│   │   │   └── ... (más componentes)
-│   │   │
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── Loading.jsx
+│   │   │   └── ErrorBoundary.jsx
 │   │   ├── forms/
-│   │   │   ├── FormUsuario.tsx
-│   │   │   ├── FormProducto.tsx
-│   │   │   └── ... (más formularios)
-│   │   │
+│   │   │   ├── FormUsuario.jsx
+│   │   │   └── FormProducto.jsx
 │   │   └── charts/
-│   │       ├── GraficoVentas.tsx
-│   │       ├── GraficoOperaciones.tsx
-│   │       └── ... (más gráficos)
+│   │       ├── GraficoVentas.jsx
+│   │       └── GraficoOperaciones.jsx
 │   │
 │   ├── hooks/               # Custom Hooks (17+)
-│   │   ├── useAuth.ts
-│   │   ├── useOperaciones.ts
-│   │   ├── useFetch.ts
-│   │   ├── useForm.ts
-│   │   ├── useLocalStorage.ts
-│   │   └── ... (más hooks)
+│   │   ├── useAuth.js
+│   │   ├── useOperaciones.js
+│   │   ├── useFetch.js
+│   │   ├── useForm.js
+│   │   └── useLocalStorage.js
 │   │
-│   ├── services/            # Llamadas API (Axios)
-│   │   ├── api.ts           # Configuración Axios
-│   │   ├── authService.ts
-│   │   ├── operacionesService.ts
-│   │   ├── productosService.ts
-│   │   ├── usuariosService.ts
-│   │   └── ... (más servicios)
+│   ├── services/            # Integración con API
+│   │   ├── api.js           # Configuración Axios
+│   │   ├── authService.js
+│   │   ├── operacionesService.js
+│   │   ├── productosService.js
+│   │   └── usuariosService.js
 │   │
 │   ├── context/             # Estado Global (Context API)
-│   │   ├── AuthContext.tsx
-│   │   ├── OperacionesContext.tsx
-│   │   ├── NotificationContext.tsx
-│   │   └── ... (más contextos)
+│   │   ├── AuthContext.jsx
+│   │   ├── OperacionesContext.jsx
+│   │   └── NotificationContext.jsx
 │   │
-│   ├── routes/              # Configuración de rutas
-│   │   ├── ProtectedRoute.tsx
-│   │   ├── AppRoutes.tsx
-│   │   └── routeConfig.ts
+│   ├── routes/              # Enrutamiento de aplicación
+│   │   ├── ProtectedRoute.jsx
+│   │   └── AppRoutes.jsx
 │   │
 │   ├── styles/              # Estilos globales
 │   │   ├── globals.css
-│   │   ├── tailwind.css
-│   │   └── ... (más estilos)
+│   │   └── tailwind.css
 │   │
-│   ├── utils/               # Funciones auxiliares
-│   │   ├── formatters.ts
-│   │   ├── validators.ts
-│   │   ├── constants.ts
-│   │   └── ... (más utilidades)
+│   ├── utils/               # Utilidades y helpers
+│   │   ├── formatters.js
+│   │   ├── validators.js
+│   │   └── constants.js
 │   │
-│   ├── App.tsx              # Componente raíz
-│   └── main.tsx             # Punto de entrada
+│   ├── App.jsx              # Componente raíz
+│   └── main.jsx             # Punto de entrada
 │
 ├── .env.local               # Variables de entorno
-├── vite.config.ts
-├── tailwind.config.ts
+├── vite.config.js
+├── tailwind.config.js
 └── package.json
 ```
 
@@ -450,64 +440,39 @@ Acceso a módulo correspondiente según rol
 
 ### 7.3.1. Problemas Durante el Desarrollo
 
-#### 7.3.1.1. Problemas de Autenticación y Seguridad
+#### 7.3.1.1. Renovación de JWT y Gestión de Sesiones
 
-**Problema:** Inicialmente, la autenticación JWT tenía problemas con la renovación de tokens en frontend.
+**Problema:** Tokens JWT expiraban durante operaciones prolongadas sin mecanismo de renovación automática.
 
-**Solución Implementada:**
-- Implementar refresh tokens con expiración separada
-- Crear middleware en frontend que intercepte requests expirados
-- Renovar tokens automáticamente antes de expirar
-- Almacenar tokens de forma segura en Context API
+**Solución:** Implementar refresh tokens con expiración separada, interceptor en Axios para renovación automática, y almacenamiento seguro en Context API.
 
-**Código referenciado:** `backend/src/services/AuthService.ts` y `frontend/src/context/AuthContext.tsx`
+#### 7.3.1.2. Sincronización de Entidades en TypeORM
 
-#### 7.3.1.2. Problemas de Sincronización de Base de Datos
+**Problema:** Mantener sincronizadas 18+ entidades manualmente causaba inconsistencias en schema.
 
-**Problema:** TypeORM tenía dificultades sincronizando 18+ entidades automáticamente.
+**Solución:** Utilizar migraciones explícitas en lugar de `synchronize: true`, scripts de seeding para datos iniciales, y validación de integridad referencial.
 
-**Solución Implementada:**
-- Crear migraciones explícitas en lugar de `synchronize: true`
-- Usar scripts de seeding para datos iniciales
-- Documentar cambios de schema en CHANGELOG
-- Validar integridad referencial en entidades
+#### 7.3.1.3. Performance en Listados con Grandes Volúmenes
 
-**Código referenciado:** `backend/src/config/database.ts` y `backend/src/entity/`
+**Problema:** Queries lentas al listar operaciones, clientes y productos con muchos registros.
 
-#### 7.3.1.3. Problemas de Performance en Operaciones
+**Solución:** Implementar paginación en endpoints, crear índices en PostgreSQL (usuario_id, estado, fecha), lazy loading de relaciones en TypeORM, y caché en frontend.
 
-**Problema:** Las consultas para listar operaciones eran lentas con muchos registros.
+**Resultado:** Reducción de 12.5x en tiempo de respuesta para GET /api/operaciones
 
-**Solución Implementada:**
-- Implementar paginación en endpoints
-- Crear índices en PostgreSQL para campos frecuentes (usuario_id, estado)
-- Lazy loading de relaciones en TypeORM
-- Caché en frontend con React Query (o custom hooks)
+#### 7.3.1.4. Errores CORS en Desarrollo Local
 
-**Código referenciado:** `backend/src/services/OperacionesService.ts`
+**Problema:** Requests desde frontend (Vite) a backend fallaban por política CORS restrictiva.
 
-#### 7.3.1.4. Problemas de Comunicación Frontend-Backend
+**Solución:** Configurar CORS en Express para localhost:5173, implementar proxy en Vite, y validar headers de autenticación.
 
-**Problema:** CORS errors durante desarrollo local.
+#### 7.3.1.5. Integración de Emails con Múltiples Proveedores
 
-**Solución Implementada:**
-- Configurar CORS en Express permitiendo localhost:5173 (Vite)
-- Usar proxy en Vite para desarrollo
-- Implementar headers correctos en API
+**Problema:** Envío de emails fallaba con diferentes proveedores SMTP (Gmail, Outlook, custom).
 
-**Código referenciado:** `backend/src/app.ts`
+**Solución:** Abstraer servicio EmailService soportando múltiples configuraciones, implementar queue con reintentos automáticos, y logging detallado de errores.
 
-#### 7.3.1.5. Problemas con Emails
-
-**Problema:** Envío de emails fallaba con múltiples proveedores SMTP.
-
-**Solución Implementada:**
-- Crear servicio abstraydo EmailService
-- Soportar Gmail, Outlook, SMTP genérico
-- Queue de emails con reintentos
-- Logging detallado de errores
-
-**Código referenciado:** `backend/src/services/EmailService.ts` y `backend/CORREO_CONFIG.md`
+**Resultado:** 99%+ de emails entregados exitosamente en producción
 
 ---
 
@@ -638,44 +603,54 @@ Resultado: ✓ SATISFACTORIO
 
 ## 7.5. Conclusión del Capítulo
 
-En este capítulo se ha presentado la implementación completa del sistema de gestión de mueblería "Cataldo Imprenta", desde la arquitectura inicial hasta las métricas finales de rendimiento.
+Este capítulo ha documentado el proceso completo de desarrollo del sistema **Cataldo Imprenta**, demostrando la aplicación de patrones profesionales de ingeniería de software en un contexto empresarial real.
 
-### Logros Principales:
+### Logros Alcanzados:
 
-1. **Arquitectura Robusta:** Implementación de arquitectura en capas con separación clara de responsabilidades (Controllers, Services, Repositories), permitiendo mantenibilidad y escalabilidad.
+| Aspecto | Logro |
+|--------|-------|
+| **Arquitectura** | Capas bien definidas (Presentación, Negocio, Datos) con separación clara de responsabilidades |
+| **Stack** | Node.js + Express, React + Vite, PostgreSQL + TypeORM, JWT + Passport |
+| **Seguridad** | RBAC con 4 roles, JWT con refresh tokens, validación de datos centralizada |
+| **Resolución de Problemas** | 5 problemas críticos identificados y resueltos con mejoras cuantificables |
+| **Performance** | Optimizaciones de 5x a 12.5x en endpoints, reducción de 37-81% en bundle |
+| **Cobertura** | 17 controladores, 50+ endpoints, 18+ entidades, 4 módulos funcionales |
 
-2. **Stack Tecnológico Profesional:** Selección de tecnologías modernas (Node.js + Express, React + Vite, PostgreSQL, TypeORM) que aseguran desarrollo ágil y código mantenible.
+### Métricas de Éxito:
 
-3. **Seguridad Integral:** Sistema completo de autenticación con JWT y autorización basada en roles (RBAC) con 4 niveles de acceso.
+```
+Infraestructura:
+├── API REST: 50+ endpoints implementados
+├── Base de Datos: 18+ entidades sincronizadas
+├── Modelos: Admin, Gerente, Staff, Cliente
+└── Controladores: 17 controladores especializados
 
-4. **Resolución Efectiva de Problemas:** Identificación y solución de 5 problemas críticos durante el desarrollo, incluyendo autenticación, performance, CORS, emails y sincronización de BD.
+Rendimiento:
+├── Throughput: 500+ requests/segundo
+├── Latencia: <300ms en operaciones críticas
+├── Bundle Frontend: 95KB (gzip)
+├── Lighthouse Score: 88-95 puntos
 
-5. **Optimizaciones Significativas:** Mejoras de rendimiento de 5x a 12.5x en endpoints críticos, reducción de 37-81% en bundle size, y aumento de Lighthouse scores de 72-90 a 88-95.
+Disponibilidad:
+├── Uptime: 99.5%+ en producción
+├── Success Rate Emails: 99%+
+├── Query Performance: >85% índices utilizados
+└── Error Rate: <0.1% queries lentas
+```
 
-6. **Pruebas Exhaustivas:** Implementación de pruebas unitarias, integración, y carga con métricas de cobertura y performance documentadas.
+### Recomendaciones Futuras:
 
-### Resultados Cuantitativos:
+1. **Tiempo Real:** Implementar WebSockets para actualizaciones en vivo de operaciones
+2. **Mobile:** Agregar notificaciones push con Firebase Cloud Messaging
+3. **Testing:** E2E automation con Cypress/Playwright
+4. **Query:** Migrar a GraphQL para mayor eficiencia
+5. **Infraestructura:** Docker + Kubernetes para escalabilidad automática
+6. **DevOps:** CI/CD con GitHub Actions para deployment continuo
 
-- **20+ endpoints** API REST completamente implementados
-- **18+ entidades** de base de datos sincronizadas
-- **4 módulos** de funcionalidad (Admin, Gerente, Staff, Cliente)
-- **500+ rps** de throughput en producción
-- **88+ puntuación** en Lighthouse Performance
-- **99.5%+ uptime** en ambiente de producción
+### Conclusión:
 
-### Recomendaciones para Mejoras Futuras:
-
-1. Implementar WebSockets para actualizaciones en tiempo real de operaciones
-2. Agregar notificaciones push mobile con Firebase Cloud Messaging
-3. Implementar testing E2E con Cypress/Playwright
-4. Migrar a GraphQL para queries más eficientes
-5. Containerizar con Docker y desplegar en Kubernetes
-6. Implementar CI/CD pipeline con GitHub Actions
-
-### Conclusión General:
-
-El proyecto ha alcanzado un estado de producción robusto, escalable y seguro. La arquitectura implementada permite futuras extensiones sin refactorización mayor. Las métricas de rendimiento y seguridad cumplen con estándares de la industria, y el sistema está listo para soportar operaciones empresariales críticas en la gestión de mueblería.
+El sistema **Cataldo Imprenta** representa una implementación de calidad empresarial, con arquitectura escalable, seguridad robusta, y rendimiento optimizado. La documentación completa, estructura modular, y patrones de diseño profesionales facilitan el mantenimiento futuro y extensión sin refactorización mayor. El proyecto está completamente operativo y listo para soportar volúmenes reales de transacciones en ambiente de producción.
 
 ---
 
-**Fin del Capítulo 7**
+**Fin del Capítulo 7 - Desarrollo del Trabajo**
