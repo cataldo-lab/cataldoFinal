@@ -12,6 +12,12 @@ import {
     handleErrorServer,
     handleSuccess
 } from "../../handlers/responseHandlers.js";
+import {
+    createProductoValidation,
+    updateProductoValidation,
+    productosQueryValidation,
+    productoIdValidation
+} from "../../validations/producto.validation.js";
 
 /**
  * POST /api/productos
@@ -21,9 +27,13 @@ export async function createProducto(req, res) {
     try {
         const productoData = req.body;
 
-        const [producto, error] = await createProductoService(productoData);
+        // Validar datos con Joi
+        const { error } = createProductoValidation.validate(productoData);
+        if (error) return handleErrorClient(res, 400, error.message);
 
-        if (error) return handleErrorClient(res, 400, error);
+        const [producto, errorService] = await createProductoService(productoData);
+
+        if (errorService) return handleErrorClient(res, 400, errorService);
 
         handleSuccess(res, 201, "Producto creado exitosamente", producto);
 
@@ -38,21 +48,27 @@ export async function createProducto(req, res) {
  */
 export async function getProductos(req, res) {
     try {
-        const filtros = {
+        // Convertir strings a booleanos para validación
+        const queryParams = {
             categoria: req.query.categoria,
             activo: req.query.activo !== undefined ? req.query.activo === 'true' : undefined,
             servicio: req.query.servicio !== undefined ? req.query.servicio === 'true' : undefined,
             oferta: req.query.oferta !== undefined ? req.query.oferta === 'true' : undefined
         };
 
-        // Limpiar filtros vacíos
-        Object.keys(filtros).forEach(key => {
-            if (filtros[key] === undefined) delete filtros[key];
+        // Limpiar filtros vacíos antes de validar
+        const filtros = {};
+        Object.keys(queryParams).forEach(key => {
+            if (queryParams[key] !== undefined) filtros[key] = queryParams[key];
         });
 
-        const [productos, error] = await getProductosService(filtros);
+        // Validar query params
+        const { error } = productosQueryValidation.validate(filtros);
+        if (error) return handleErrorClient(res, 400, error.message);
 
-        if (error) return handleErrorServer(res, 500, error);
+        const [productos, errorService] = await getProductosService(filtros);
+
+        if (errorService) return handleErrorServer(res, 500, errorService);
 
         handleSuccess(res, 200, "Productos obtenidos exitosamente", productos);
 
@@ -69,9 +85,13 @@ export async function getProductoById(req, res) {
     try {
         const { id } = req.params;
 
-        const [producto, error] = await getProductoByIdService(parseInt(id));
+        // Validar ID
+        const { error } = productoIdValidation.validate({ id: parseInt(id) });
+        if (error) return handleErrorClient(res, 400, error.message);
 
-        if (error) return handleErrorClient(res, 404, error);
+        const [producto, errorService] = await getProductoByIdService(parseInt(id));
+
+        if (errorService) return handleErrorClient(res, 404, errorService);
 
         handleSuccess(res, 200, "Producto obtenido exitosamente", producto);
 
@@ -89,12 +109,20 @@ export async function updateProducto(req, res) {
         const { id } = req.params;
         const datosActualizados = req.body;
 
-        const [producto, error] = await updateProductoService(
+        // Validar ID
+        const { error: idError } = productoIdValidation.validate({ id: parseInt(id) });
+        if (idError) return handleErrorClient(res, 400, idError.message);
+
+        // Validar datos a actualizar
+        const { error: bodyError } = updateProductoValidation.validate(datosActualizados);
+        if (bodyError) return handleErrorClient(res, 400, bodyError.message);
+
+        const [producto, errorService] = await updateProductoService(
             parseInt(id),
             datosActualizados
         );
 
-        if (error) return handleErrorClient(res, 404, error);
+        if (errorService) return handleErrorClient(res, 404, errorService);
 
         handleSuccess(res, 200, "Producto actualizado exitosamente", producto);
 
@@ -110,9 +138,13 @@ export async function deleteProducto(req, res) {
     try {
         const { id } = req.params;
 
-        const [producto, error] = await deleteProductoService(parseInt(id));
+        // Validar ID
+        const { error } = productoIdValidation.validate({ id: parseInt(id) });
+        if (error) return handleErrorClient(res, 400, error.message);
 
-        if (error) return handleErrorClient(res, 404, error);
+        const [producto, errorService] = await deleteProductoService(parseInt(id));
+
+        if (errorService) return handleErrorClient(res, 404, errorService);
 
         handleSuccess(res, 200, "Producto eliminado exitosamente", producto);
 

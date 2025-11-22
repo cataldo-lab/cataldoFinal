@@ -1,5 +1,6 @@
 "use strict";
 import Joi from "joi";
+import { createRepresentanteValidation } from "./representante.validation.js";
 
 // Validación para crear proveedor
 export const createProveedorValidation = Joi.object({
@@ -103,9 +104,12 @@ export const createProveedorConRepresentanteValidation = Joi.object({
   proveedor: createProveedorValidation.required().messages({
     "any.required": "Los datos del proveedor son obligatorios.",
   }),
-  representante: Joi.object().required().messages({
-    "any.required": "Los datos del representante son obligatorios.",
-  }),
+  representante: createRepresentanteValidation
+    .fork(['id_proveedor'], (schema) => schema.optional())
+    .required()
+    .messages({
+      "any.required": "Los datos del representante son obligatorios.",
+    }),
 }).unknown(false).messages({
   "object.unknown": "No se permiten propiedades adicionales.",
 });
